@@ -1,13 +1,11 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "@/hooks/use-profile";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
 import { formatCurrency, formatDate, statusLabel, STATUS_COLORS } from "@/lib/format";
-import { ArrowUpRight, Calendar as CalendarIcon, FileText, Receipt, Plus } from "lucide-react";
+import { ArrowUpRight, FileText, Receipt, Plus } from "lucide-react";
 import { useMemo } from "react";
 import { cn } from "@/lib/utils";
 import {
