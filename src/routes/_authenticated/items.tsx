@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "@/hooks/use-profile";
@@ -49,6 +49,7 @@ function ItemsPage() {
   const tenantId = profile?.currentTenant?.id;
   const currency = profile?.currentTenant?.base_currency ?? "USD";
   const qc = useQueryClient();
+  const navigate = useNavigate();
 
   const [filter, setFilter] = useState<FilterKey>("all");
   const [query, setQuery] = useState("");
@@ -105,7 +106,7 @@ function ItemsPage() {
     onError: (e: any) => toast.error(e.message),
   });
 
-  const openNew = () => { setEditing({ name: "", item_type: "inventory" }); setDialogOpen(true); };
+  const openNew = () => navigate({ to: "/items/new" });
   const openEdit = (i: Item) => { setEditing(i); setDialogOpen(true); };
 
   const filterLabel = FILTERS.find((f) => f.key === filter)?.label ?? "All Items";
