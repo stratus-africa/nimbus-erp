@@ -20,7 +20,7 @@ import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/customers/new")({
   head: () => ({ meta: [{ title: "New Customer — Nimbus ERP" }] }),
-  component: NewCustomerPage,
+  component: () => <CustomerFormPage />,
 });
 
 // ---------- Validation ----------
@@ -129,14 +129,15 @@ function Row({
 }
 
 // ---------- Page ----------
-function NewCustomerPage() {
+export function CustomerFormPage({ customerId, initial }: { customerId?: string; initial?: Partial<FormValues> } = {}) {
   const navigate = useNavigate();
   const { data: profile } = useProfile();
   const tenantId = profile?.currentTenant?.id;
+  const isEdit = !!customerId;
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: defaults,
+    defaultValues: { ...defaults, ...(initial ?? {}) },
     mode: "onBlur",
   });
   const { register, handleSubmit, control, watch, formState, setValue } = form;
@@ -204,6 +205,16 @@ function NewCustomerPage() {
           : Number(values.payment_terms.replace(/\D/g, "")) || 30,
         notes: values.remarks || null,
       };
+      if (isEdit && customerId) {
+        const { data, error } = await supabase
+          .from("customers")
+          .update(payload)
+          .eq("id", customerId)
+          .select("id")
+          .single();
+        if (error) throw error;
+        return data.id as string;
+      }
       const { data, error } = await supabase
         .from("customers")
         .insert(payload)
@@ -213,7 +224,7 @@ function NewCustomerPage() {
       return data.id as string;
     },
     onSuccess: (id) => {
-      toast.success("Customer created");
+      toast.success(isEdit ? "Customer updated" : "Customer created");
       navigate({ to: "/customers", search: { highlight: id } as any, replace: true });
     },
     onError: (e: any) => toast.error(e.message),
@@ -225,8 +236,10 @@ function NewCustomerPage() {
     <div className="-m-6">
       {/* Header */}
       <div className="border-b bg-card px-6 py-4">
-        <h1 className="text-xl font-semibold">New Customer</h1>
+        <h1 className="text-xl font-semibold">{isEdit ? "Edit Customer" : "New Customer"}</h1>
       </div>
+
+
 
       <form
         onSubmit={handleSubmit(
