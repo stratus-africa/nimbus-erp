@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { SupplierFormPage } from "./suppliers.new";
 
-export const Route = createFileRoute("/_authenticated/suppliers/$supplierId/edit")({
+export const Route = createFileRoute("/_authenticated/suppliers/$supplierId_/edit")({
   head: () => ({ meta: [{ title: "Edit Supplier — Nimbus ERP" }] }),
   component: EditSupplierRoute,
 });
