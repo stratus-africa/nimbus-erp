@@ -294,7 +294,6 @@ function CustomerDetailsPage() {
                                 <div className="text-sm text-primary">{customer.email}</div>
                               )}
                               <div className="mt-2 flex gap-3 text-xs">
-                                <button className="text-primary hover:underline">Invite to Portal</button>
                                 <button className="text-primary hover:underline">Send Email</button>
                               </div>
                             </div>
