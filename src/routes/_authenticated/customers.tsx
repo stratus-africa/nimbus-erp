@@ -58,6 +58,7 @@ function CustomersPage() {
   const [filter, setFilter] = useState<FilterKey>("active");
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [viewingId, setViewingId] = useState<string | null>(null);
   const highlightRef = useRef<HTMLTableRowElement | null>(null);
 
   // Scroll & clear highlight after a moment
