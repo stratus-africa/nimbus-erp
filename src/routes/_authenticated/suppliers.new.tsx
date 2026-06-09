@@ -396,9 +396,6 @@ export function SupplierFormPage({ supplierId, initial }: { supplierId?: string;
                     />
                   </Row>
                 )}
-                <Row label="PIN Number">
-                  <Input placeholder="KRA PIN / Tax ID" {...register("pin_number")} />
-                </Row>
                 <Row label="Withholding VAT">
                   <Controller control={control} name="withholding_vat" render={({ field }) => (
                     <label className="flex items-center gap-2 text-sm pt-2">
