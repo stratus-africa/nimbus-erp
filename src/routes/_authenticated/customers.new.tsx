@@ -444,7 +444,7 @@ function NewCustomerPage() {
                           <SelectValue placeholder="" />
                         </SelectTrigger>
                         <SelectContent>
-                          {["Registered Business", "Non Registered Business", "Overseas"].map((s) => (
+                          {["VAT Registered", "Non VAT Registered"].map((s) => (
                             <SelectItem key={s} value={s}>{s}</SelectItem>
                           ))}
                         </SelectContent>
