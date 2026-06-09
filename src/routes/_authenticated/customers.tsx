@@ -224,9 +224,13 @@ function CustomersPage() {
                     <Checkbox checked={selected.has(c.id)} onCheckedChange={() => toggleOne(c.id)} />
                   </TableCell>
                   <TableCell>
-                    <button onClick={() => setViewingId(c.id)} className="text-primary hover:underline font-normal text-left">
+                    <Link
+                      to="/customers/$customerId"
+                      params={{ customerId: c.id }}
+                      className="text-primary hover:underline font-normal text-left"
+                    >
                       {c.name}
-                    </button>
+                    </Link>
                   </TableCell>
                   <TableCell>{c.company_name ?? c.name}</TableCell>
                   <TableCell className="text-muted-foreground">{c.email ?? ""}</TableCell>
