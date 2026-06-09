@@ -49,7 +49,9 @@ type Line = {
   position: number;
 };
 
-export function TransactionsModule({ config }: { config: DocConfig }) {
+export type TxFilter = { from?: string; to?: string; onlyOpen?: boolean };
+
+export function TransactionsModule({ config, filter, onClearFilter }: { config: DocConfig; filter?: TxFilter; onClearFilter?: () => void }) {
   const { data: profile } = useProfile();
   const tenantId = profile?.currentTenant?.id;
   const currency = profile?.currentTenant?.base_currency ?? "USD";
@@ -58,19 +60,24 @@ export function TransactionsModule({ config }: { config: DocConfig }) {
 
   const { data: rows, isLoading } = useQuery({
     enabled: !!tenantId,
-    queryKey: [config.docTable, tenantId],
+    queryKey: [config.docTable, tenantId, filter?.from, filter?.to, filter?.onlyOpen],
     queryFn: async () => {
       const partyJoin = config.partyTable === "customers" ? "customers(name)" : "suppliers(name)";
-      const { data, error } = await supabase
+      let q = supabase
         .from(config.docTable)
         .select(`*, ${partyJoin}`)
         .eq("tenant_id", tenantId!)
-        .is("deleted_at", null)
-        .order("created_at", { ascending: false });
+        .is("deleted_at", null);
+      if (filter?.from) q = q.gte(config.dateField, filter.from);
+      if (filter?.to) q = q.lte(config.dateField, filter.to);
+      if (filter?.onlyOpen) q = q.gt("balance_due", 0);
+      const { data, error } = await q.order("created_at", { ascending: false });
       if (error) throw error;
       return data;
     },
   });
+
+  const hasFilter = !!(filter?.from || filter?.to || filter?.onlyOpen);
 
   return (
     <div>
@@ -79,6 +86,17 @@ export function TransactionsModule({ config }: { config: DocConfig }) {
         description={config.description}
         action={<NewButton onClick={() => dlg.openFor(null)} label={`New ${config.kind.replace("_", " ")}`} />}
       />
+      {hasFilter && (
+        <div className="mb-3 flex flex-wrap items-center gap-2 rounded-md border bg-muted/30 px-3 py-2 text-xs">
+          <span className="text-muted-foreground">Filtered:</span>
+          {filter?.onlyOpen && <Badge variant="outline">Open only</Badge>}
+          {filter?.from && <Badge variant="outline">From {formatDate(filter.from)}</Badge>}
+          {filter?.to && <Badge variant="outline">To {formatDate(filter.to)}</Badge>}
+          {onClearFilter && (
+            <Button variant="ghost" size="sm" className="ml-auto h-7" onClick={onClearFilter}>Clear</Button>
+          )}
+        </div>
+      )}
       <Card>
         <Table>
           <TableHeader>
