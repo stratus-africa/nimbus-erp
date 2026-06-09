@@ -217,7 +217,16 @@ function NewCustomerPage() {
         <h1 className="text-xl font-semibold">New Customer</h1>
       </div>
 
-      <form onSubmit={handleSubmit((v) => save.mutate(v))} noValidate>
+      <form
+        onSubmit={handleSubmit(
+          (v) => save.mutate(v),
+          (errs) => {
+            const first = Object.values(errs)[0] as any;
+            toast.error(first?.message || "Please fix the highlighted fields");
+          },
+        )}
+        noValidate
+      >
         <div className="bg-card px-6 py-6">
           <div className="space-y-1">
             <Row label="Customer Type" info>
