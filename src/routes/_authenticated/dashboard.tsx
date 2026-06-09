@@ -86,12 +86,8 @@ function Dashboard() {
   const currency = profile?.currentTenant?.base_currency ?? "USD";
   const tenantId = profile?.currentTenant?.id;
   const search = Route.useSearch();
-  const navigate = useNavigate();
-  const { preset, from, to } = useMemo(() => resolveRange(search), [search]);
+  const { from, to } = useMemo(() => resolveRange(search), [search]);
 
-  const setPreset = (p: RangePreset, extra?: { from?: string; to?: string }) => {
-    navigate({ to: "/dashboard", search: { range: p, ...extra } });
-  };
 
   const { data } = useQuery({
     enabled: !!tenantId,
