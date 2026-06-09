@@ -499,7 +499,7 @@ function CustomerSlideOver({
                     <TableBody>
                       {credits.map((c: any) => (
                         <TableRow key={c.id}>
-                          <TableCell>{formatDate(c.credit_date ?? c.created_at)}</TableCell>
+                          <TableCell>{formatDate(c.issue_date ?? c.created_at)}</TableCell>
                           <TableCell className="font-mono text-xs">{c.reference ?? c.credit_number ?? "—"}</TableCell>
                           <TableCell>
                             <Badge variant="outline" className={STATUS_COLORS[c.status] ?? ""}>{statusLabel(c.status)}</Badge>
