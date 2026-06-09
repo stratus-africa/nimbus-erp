@@ -49,6 +49,7 @@ function ItemsPage() {
   const tenantId = profile?.currentTenant?.id;
   const currency = profile?.currentTenant?.base_currency ?? "USD";
   const qc = useQueryClient();
+  const navigate = useNavigate();
 
   const [filter, setFilter] = useState<FilterKey>("all");
   const [query, setQuery] = useState("");
