@@ -38,6 +38,7 @@ const schema = z.object({
   comm_email: z.boolean(),
   comm_whatsapp: z.boolean(),
   vat_treatment: z.string().min(1, "VAT treatment is required"),
+  vat_registration_no: z.string().trim().max(10, "Max 10 characters").optional().or(z.literal("")),
   pin_number: z.string().trim().max(50).optional().or(z.literal("")),
   withholding_vat: z.boolean(),
   withholding_tax: z.boolean(),
@@ -50,6 +51,15 @@ const schema = z.object({
   billing_address: z.string().max(500).optional().or(z.literal("")),
   shipping_address: z.string().max(500).optional().or(z.literal("")),
   remarks: z.string().max(1000).optional().or(z.literal("")),
+}).superRefine((val, ctx) => {
+  if (val.vat_treatment === "VAT Registered") {
+    const v = (val.vat_registration_no ?? "").trim();
+    if (!v) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["vat_registration_no"], message: "VAT Registration Number is required" });
+    } else if (v.length !== 10) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["vat_registration_no"], message: "Must be exactly 10 characters" });
+    }
+  }
 });
 type FormValues = z.infer<typeof schema>;
 
