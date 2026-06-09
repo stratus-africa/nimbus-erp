@@ -20,7 +20,7 @@ import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/customers/new")({
   head: () => ({ meta: [{ title: "New Customer — Nimbus ERP" }] }),
-  component: NewCustomerPage,
+  component: () => <CustomerFormPage />,
 });
 
 // ---------- Validation ----------
