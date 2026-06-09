@@ -345,7 +345,7 @@ function Dashboard() {
               <span className="text-xs text-muted-foreground">Latest events in this range</span>
             </div>
           </CardHeader>
-          <CardContent className="grid gap-6 p-6 lg:grid-cols-[300px_1fr]">
+          <CardContent className="grid gap-6 p-6">
             {/* Timeline */}
             <div>
               <h3 className="mb-3 text-sm font-medium">Timeline</h3>
