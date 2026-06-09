@@ -128,7 +128,6 @@ function CustomersPage() {
     setSelected(next);
   };
 
-  const navigate = useNavigate();
   const openNew = () => navigate({ to: "/customers/new" });
   const openEdit = (c: Customer) => { setEditing(c); setDialogOpen(true); };
 
