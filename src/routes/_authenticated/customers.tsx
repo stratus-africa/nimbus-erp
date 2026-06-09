@@ -112,7 +112,8 @@ function CustomersPage() {
     setSelected(next);
   };
 
-  const openNew = () => { setEditing({ name: "" }); setDialogOpen(true); };
+  const navigate = useNavigate();
+  const openNew = () => navigate({ to: "/customers/new" });
   const openEdit = (c: Customer) => { setEditing(c); setDialogOpen(true); };
 
   const filterLabel = FILTERS.find((f) => f.key === filter)?.label ?? "Active Customers";
