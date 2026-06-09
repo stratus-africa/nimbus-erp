@@ -91,16 +91,10 @@ const SECTIONS: Section[] = [
           { label: "Tasks" },
         ],
       }],
-      [
-        {
-          title: "Inventory", icon: Boxes, tone: "rose",
-          items: [{ label: "Inventory Adjustments", to: "/inventory-adjustments" }],
-        },
-        {
-          title: "Online Payments", icon: CreditCard, tone: "amber",
-          items: [{ label: "Payment Gateways" }],
-        },
-      ],
+      [{
+        title: "Inventory", icon: Boxes, tone: "rose",
+        items: [{ label: "Inventory Adjustments", to: "/inventory-adjustments" }],
+      }],
       [{
         title: "Sales", icon: ShoppingCart, tone: "sky",
         items: [
