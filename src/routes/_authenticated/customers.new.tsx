@@ -40,6 +40,7 @@ const schema = z.object({
   comm_email: z.boolean(),
   comm_whatsapp: z.boolean(),
   vat_treatment: z.string().min(1, "VAT treatment is required"),
+  vat_registration_no: z.string().trim().max(10, "Max 10 characters").optional().or(z.literal("")),
   tax_exemption_no: z.string().trim().max(50).optional().or(z.literal("")),
   withholding_vat: z.boolean(),
   withholding_tax: z.boolean(),
@@ -53,6 +54,15 @@ const schema = z.object({
   billing_address: z.string().max(500, "Max 500 characters").optional().or(z.literal("")),
   shipping_address: z.string().max(500, "Max 500 characters").optional().or(z.literal("")),
   remarks: z.string().max(1000, "Max 1000 characters").optional().or(z.literal("")),
+}).superRefine((val, ctx) => {
+  if (val.vat_treatment === "VAT Registered") {
+    const v = (val.vat_registration_no ?? "").trim();
+    if (!v) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["vat_registration_no"], message: "VAT Registration Number is required" });
+    } else if (v.length !== 10) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["vat_registration_no"], message: "Must be exactly 10 characters" });
+    }
+  }
 });
 type FormValues = z.infer<typeof schema>;
 
@@ -69,7 +79,8 @@ const defaults: FormValues = {
   language: "English",
   comm_email: true,
   comm_whatsapp: false,
-  vat_treatment: "Registered Business",
+  vat_treatment: "VAT Registered",
+  vat_registration_no: "",
   tax_exemption_no: "",
   withholding_vat: false,
   withholding_tax: false,
@@ -185,7 +196,7 @@ function NewCustomerPage() {
         contact_person: `${values.salutation ?? ""} ${values.first_name ?? ""} ${values.last_name ?? ""}`.trim() || null,
         email: values.email || null,
         phone: values.work_phone || values.mobile || null,
-        vat_number: values.tax_exemption_no || null,
+        vat_number: values.vat_registration_no || values.tax_exemption_no || null,
         billing_address: values.billing_address || null,
         shipping_address: values.shipping_address || null,
         payment_terms_days: values.payment_terms === "Due on Receipt"
@@ -433,7 +444,7 @@ function NewCustomerPage() {
                           <SelectValue placeholder="" />
                         </SelectTrigger>
                         <SelectContent>
-                          {["Registered Business", "Non Registered Business", "Overseas"].map((s) => (
+                          {["VAT Registered", "Non VAT Registered"].map((s) => (
                             <SelectItem key={s} value={s}>{s}</SelectItem>
                           ))}
                         </SelectContent>
@@ -441,6 +452,17 @@ function NewCustomerPage() {
                     )}
                   />
                 </Row>
+                {watch("vat_treatment") === "VAT Registered" && (
+                  <Row label="VAT Registration Number" required error={errors.vat_registration_no?.message}>
+                    <Input
+                      maxLength={10}
+                      placeholder="10-character VAT number"
+                      aria-invalid={!!errors.vat_registration_no}
+                      className={cn(errors.vat_registration_no && "border-destructive")}
+                      {...register("vat_registration_no")}
+                    />
+                  </Row>
+                )}
                 <Row label="Tax Exemption Certificate Number">
                   <Input placeholder="Number" {...register("tax_exemption_no")} />
                 </Row>
