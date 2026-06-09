@@ -113,14 +113,15 @@ function Row({ label, required, info, error, children }: {
   );
 }
 
-function NewSupplierPage() {
+export function SupplierFormPage({ supplierId, initial }: { supplierId?: string; initial?: Partial<FormValues> } = {}) {
   const navigate = useNavigate();
   const { data: profile } = useProfile();
   const tenantId = profile?.currentTenant?.id;
+  const isEdit = !!supplierId;
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: defaults,
+    defaultValues: { ...defaults, ...(initial ?? {}) },
     mode: "onBlur",
   });
   const { register, handleSubmit, control, watch, formState, setValue } = form;
@@ -180,6 +181,16 @@ function NewSupplierPage() {
           ? 0
           : Number(values.payment_terms.replace(/\D/g, "")) || 30,
       };
+      if (isEdit && supplierId) {
+        const { data, error } = await supabase
+          .from("suppliers")
+          .update(payload)
+          .eq("id", supplierId)
+          .select("id")
+          .single();
+        if (error) throw error;
+        return data.id as string;
+      }
       const { data, error } = await supabase
         .from("suppliers")
         .insert(payload)
@@ -189,7 +200,7 @@ function NewSupplierPage() {
       return data.id as string;
     },
     onSuccess: (id) => {
-      toast.success("Supplier created");
+      toast.success(isEdit ? "Supplier updated" : "Supplier created");
       navigate({ to: "/suppliers", search: { highlight: id } as any, replace: true });
     },
     onError: (e: any) => toast.error(e.message),
@@ -200,8 +211,10 @@ function NewSupplierPage() {
   return (
     <div className="-m-6">
       <div className="border-b bg-card px-6 py-4">
-        <h1 className="text-xl font-semibold">New Supplier</h1>
+        <h1 className="text-xl font-semibold">{isEdit ? "Edit Supplier" : "New Supplier"}</h1>
       </div>
+
+
 
       <form
         onSubmit={handleSubmit(
