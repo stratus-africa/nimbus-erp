@@ -404,64 +404,6 @@ function Dashboard() {
   );
 }
 
-function DateRangeFilter({
-  preset, from, to, onChange,
-}: {
-  preset: RangePreset;
-  from: string;
-  to: string;
-  onChange: (p: RangePreset, extra?: { from?: string; to?: string }) => void;
-}) {
-  const opts: { key: RangePreset; label: string }[] = [
-    { key: "today", label: "Today" },
-    { key: "month", label: "This Month" },
-    { key: "year", label: "This Year" },
-  ];
-  return (
-    <div className="flex flex-wrap items-center gap-2">
-      <div className="inline-flex overflow-hidden rounded-md border bg-card">
-        {opts.map((o) => (
-          <button
-            key={o.key}
-            onClick={() => onChange(o.key)}
-            className={cn(
-              "px-3 py-1.5 text-sm transition-colors",
-              preset === o.key ? "bg-primary text-primary-foreground" : "hover:bg-muted",
-            )}
-          >
-            {o.label}
-          </button>
-        ))}
-        <Popover>
-          <PopoverTrigger asChild>
-            <button
-              className={cn(
-                "flex items-center gap-1.5 px-3 py-1.5 text-sm transition-colors",
-                preset === "custom" ? "bg-primary text-primary-foreground" : "hover:bg-muted",
-              )}
-            >
-              <CalendarIcon className="h-3.5 w-3.5" />
-              Custom
-            </button>
-          </PopoverTrigger>
-          <PopoverContent align="end" className="w-72 space-y-3">
-            <div className="space-y-2">
-              <label className="text-xs font-medium text-muted-foreground">From</label>
-              <Input type="date" defaultValue={from} onChange={(e) => onChange("custom", { from: e.target.value, to })} />
-            </div>
-            <div className="space-y-2">
-              <label className="text-xs font-medium text-muted-foreground">To</label>
-              <Input type="date" defaultValue={to} onChange={(e) => onChange("custom", { from, to: e.target.value })} />
-            </div>
-          </PopoverContent>
-        </Popover>
-      </div>
-      <span className="text-xs text-muted-foreground">
-        {formatDate(from)} — {formatDate(to)}
-      </span>
-    </div>
-  );
-}
 
 function ActivityTable({
   title, rows, currency, link,
