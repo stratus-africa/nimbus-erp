@@ -271,6 +271,139 @@ export type Database = {
           },
         ]
       }
+      credit_applications: {
+        Row: {
+          amount: number
+          applied_on: string
+          created_at: string
+          created_by: string | null
+          credit_id: string
+          id: string
+          invoice_id: string
+          notes: string | null
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          applied_on?: string
+          created_at?: string
+          created_by?: string | null
+          credit_id: string
+          id?: string
+          invoice_id: string
+          notes?: string | null
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          applied_on?: string
+          created_at?: string
+          created_by?: string | null
+          credit_id?: string
+          id?: string
+          invoice_id?: string
+          notes?: string | null
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "credit_applications_credit_id_fkey"
+            columns: ["credit_id"]
+            isOneToOne: false
+            referencedRelation: "customer_credits"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "credit_applications_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "credit_applications_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      customer_credits: {
+        Row: {
+          amount: number
+          balance: number
+          created_at: string
+          created_by: string | null
+          credit_number: string | null
+          currency: string
+          customer_id: string
+          deleted_at: string | null
+          id: string
+          issue_date: string
+          memo: string | null
+          reference: string | null
+          source: string
+          status: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          balance: number
+          created_at?: string
+          created_by?: string | null
+          credit_number?: string | null
+          currency?: string
+          customer_id: string
+          deleted_at?: string | null
+          id?: string
+          issue_date?: string
+          memo?: string | null
+          reference?: string | null
+          source?: string
+          status?: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          balance?: number
+          created_at?: string
+          created_by?: string | null
+          credit_number?: string | null
+          currency?: string
+          customer_id?: string
+          deleted_at?: string | null
+          id?: string
+          issue_date?: string
+          memo?: string | null
+          reference?: string | null
+          source?: string
+          status?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_credits_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_credits_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       customers: {
         Row: {
           billing_address: string | null
