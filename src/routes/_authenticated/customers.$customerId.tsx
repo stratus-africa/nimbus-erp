@@ -311,7 +311,7 @@ function CustomerDetailsPage() {
                         <KV label="Customer Type" value={customer.company_name ? "Business" : "Individual"} />
                         <KV label="Default Currency" value={currency} />
                         <KV label="VAT Treatment" value={customer.vat_number ? "VAT Registered" : "Not Registered"} link />
-                        <KV label="PIN" value={customer.pin_number ?? "—"} link />
+                        <KV label="VAT Registration Number" value={customer.vat_number ?? "—"} link />
                         
                         <KV label="Customer Language" value="English" />
                       </Section>
