@@ -117,8 +117,8 @@ const SECTIONS: Section[] = [
         ],
       }],
       [{
-        title: "Custom Modules", icon: Layers, tone: "indigo",
-        items: [{ label: "Overview" }],
+        title: "Online Payments", icon: CreditCard, tone: "amber",
+        items: [{ label: "Payment Gateways" }],
       }],
     ],
   },
