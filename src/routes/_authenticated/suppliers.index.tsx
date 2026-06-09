@@ -30,7 +30,6 @@ type Supplier = {
   email?: string | null;
   phone?: string | null;
   address?: string | null;
-  pin_number?: string | null;
   contact_person?: string | null;
 };
 
