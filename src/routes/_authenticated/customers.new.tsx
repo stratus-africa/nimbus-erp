@@ -69,7 +69,7 @@ const defaults: FormValues = {
   language: "English",
   comm_email: true,
   comm_whatsapp: false,
-  vat_treatment: "",
+  vat_treatment: "Registered Business",
   tax_exemption_no: "",
   withholding_vat: false,
   withholding_tax: false,
@@ -289,21 +289,19 @@ function NewCustomerPage() {
                 control={control}
                 name="display_name"
                 render={({ field }) => (
-                  <Select value={field.value} onValueChange={field.onChange}>
-                    <SelectTrigger
+                  <>
+                    <Input
+                      list="display-name-options"
+                      placeholder="Select or type to add"
                       aria-invalid={!!errors.display_name}
                       className={cn(errors.display_name && "border-destructive")}
-                    >
-                      <SelectValue placeholder="Select or type to add" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {displayOptions.length === 0 ? (
-                        <SelectItem value="—" disabled>Fill in contact info first</SelectItem>
-                      ) : (
-                        displayOptions.map((o) => <SelectItem key={o} value={o}>{o}</SelectItem>)
-                      )}
-                    </SelectContent>
-                  </Select>
+                      value={field.value}
+                      onChange={(e) => field.onChange(e.target.value)}
+                    />
+                    <datalist id="display-name-options">
+                      {displayOptions.map((o) => <option key={o} value={o} />)}
+                    </datalist>
+                  </>
                 )}
               />
             </Row>
