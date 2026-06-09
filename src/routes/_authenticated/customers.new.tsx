@@ -146,6 +146,14 @@ function NewCustomerPage() {
     return Array.from(new Set(opts));
   }, [salutation, firstName, lastName, companyName]);
 
+  // Auto-fill display name when empty
+  const displayName = watch("display_name");
+  useEffect(() => {
+    if (!displayName && displayOptions[0]) {
+      setValue("display_name", displayOptions[0], { shouldDirty: false, shouldValidate: false });
+    }
+  }, [displayOptions, displayName, setValue]);
+
   // Unsaved-changes guards
   const shouldBlock = isDirty && !isSubmitSuccessful;
   useBlocker({
