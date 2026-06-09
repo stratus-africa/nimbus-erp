@@ -134,6 +134,7 @@ function CustomersPage() {
 
   const openNew = () => navigate({ to: "/customers/new" });
   const openEdit = (c: Customer) => { setEditing(c); setDialogOpen(true); };
+  const viewing = useMemo(() => (customers ?? []).find((c: any) => c.id === viewingId) ?? null, [customers, viewingId]);
 
   const filterLabel = FILTERS.find((f) => f.key === filter)?.label ?? "Active Customers";
 
