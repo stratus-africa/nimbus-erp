@@ -3,8 +3,8 @@ import { useProfile } from "@/hooks/use-profile";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
-  Search, X, Building2, Users, Settings as SettingsIcon, Palette, Zap,
-  Receipt, Boxes, ShoppingCart, ShoppingBag, LayoutGrid, CreditCard, Layers,
+  Search, X, Building2, Users, Settings as SettingsIcon, Palette,
+  Receipt, Boxes, ShoppingCart, ShoppingBag, LayoutGrid, CreditCard,
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
@@ -38,24 +38,14 @@ const SECTIONS: Section[] = [
           { label: "Manage Subscription" },
         ],
       }],
-      [
-        {
-          title: "Users & Roles", icon: Users, tone: "rose",
-          items: [
-            { label: "Users", to: "/admin" },
-            { label: "Roles" },
-            { label: "User Preferences" },
-          ],
-        },
-        {
-          title: "Taxes & Compliance", icon: Receipt, tone: "sky",
-          items: [
-            { label: "VAT" },
-            { label: "Withholding Tax" },
-            { label: "e-Invoicing" },
-          ],
-        },
-      ],
+      [{
+        title: "Users & Roles", icon: Users, tone: "rose",
+        items: [
+          { label: "Users", to: "/admin" },
+          { label: "Roles" },
+          { label: "User Preferences" },
+        ],
+      }],
       [{
         title: "Setup & Configurations", icon: SettingsIcon, tone: "amber",
         items: [
@@ -80,12 +70,11 @@ const SECTIONS: Section[] = [
         ],
       }],
       [{
-        title: "Automation", icon: Zap, tone: "rose",
+        title: "Taxes & Compliance", icon: Receipt, tone: "sky",
         items: [
-          { label: "Workflow Rules" },
-          { label: "Workflow Actions" },
-          { label: "Workflow Logs" },
-          { label: "Schedules" },
+          { label: "VAT" },
+          { label: "Withholding Tax" },
+          { label: "e-Invoicing" },
         ],
       }],
     ],
@@ -102,16 +91,10 @@ const SECTIONS: Section[] = [
           { label: "Tasks" },
         ],
       }],
-      [
-        {
-          title: "Inventory", icon: Boxes, tone: "rose",
-          items: [{ label: "Inventory Adjustments", to: "/inventory-adjustments" }],
-        },
-        {
-          title: "Online Payments", icon: CreditCard, tone: "amber",
-          items: [{ label: "Payment Gateways" }],
-        },
-      ],
+      [{
+        title: "Inventory", icon: Boxes, tone: "rose",
+        items: [{ label: "Inventory Adjustments", to: "/inventory-adjustments" }],
+      }],
       [{
         title: "Sales", icon: ShoppingCart, tone: "sky",
         items: [
@@ -134,8 +117,8 @@ const SECTIONS: Section[] = [
         ],
       }],
       [{
-        title: "Custom Modules", icon: Layers, tone: "indigo",
-        items: [{ label: "Overview" }],
+        title: "Online Payments", icon: CreditCard, tone: "amber",
+        items: [{ label: "Payment Gateways" }],
       }],
     ],
   },
