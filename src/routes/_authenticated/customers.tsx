@@ -206,7 +206,15 @@ function CustomersPage() {
             ) : filtered.map((c: any) => {
               const receivable = receivables?.get(c.id) ?? 0;
               return (
-                <TableRow key={c.id} className={cn("group", selected.has(c.id) && "bg-primary/5")}>
+                <TableRow
+                  key={c.id}
+                  ref={highlight === c.id ? highlightRef : undefined}
+                  className={cn(
+                    "group transition-colors",
+                    selected.has(c.id) && "bg-primary/5",
+                    highlight === c.id && "bg-emerald-50 dark:bg-emerald-950/30 ring-2 ring-inset ring-emerald-500/60 animate-in fade-in",
+                  )}
+                >
                   <TableCell className="pl-6">
                     <Checkbox checked={selected.has(c.id)} onCheckedChange={() => toggleOne(c.id)} />
                   </TableCell>
