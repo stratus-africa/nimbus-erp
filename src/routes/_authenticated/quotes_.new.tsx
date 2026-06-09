@@ -30,7 +30,7 @@ import {
   CalendarIcon,
 } from "lucide-react";
 
-export const Route = createFileRoute("/_authenticated/quotes/new")({
+export const Route = createFileRoute("/_authenticated/quotes_/new")({
   head: () => ({ meta: [{ title: "New Quote — Nimbus ERP" }] }),
   component: NewQuotePage,
 });
