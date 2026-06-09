@@ -248,6 +248,15 @@ function CustomersPage() {
         onSubmit={(c) => upsert.mutate(c)}
         saving={upsert.isPending}
       />
+
+      <CustomerSlideOver
+        customer={viewing}
+        tenantId={tenantId}
+        currency={currency}
+        open={!!viewingId}
+        onOpenChange={(v) => !v && setViewingId(null)}
+        onEdit={(c) => { setViewingId(null); openEdit(c); }}
+      />
     </div>
   );
 }
