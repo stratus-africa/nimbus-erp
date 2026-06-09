@@ -172,7 +172,7 @@ export function SupplierFormPage({ supplierId, initial }: { supplierId?: string;
         contact_person: `${values.salutation ?? ""} ${values.first_name ?? ""} ${values.last_name ?? ""}`.trim() || null,
         email: values.email || null,
         phone: values.work_phone || values.mobile || null,
-        pin_number: values.pin_number || null,
+        vat_number: values.vat_registration_no || null,
         address: values.billing_address || null,
         notes: values.remarks || null,
         payment_terms_days: values.payment_terms === "Due on Receipt"
