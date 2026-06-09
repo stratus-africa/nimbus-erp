@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "@/hooks/use-profile";
@@ -80,6 +80,7 @@ function QuotesPage() {
   const tenantId = profile?.currentTenant?.id;
   const currency = profile?.currentTenant?.base_currency ?? "KES";
   const qc = useQueryClient();
+  const navigate = useNavigate();
 
   const [view, setView] = useState<(typeof VIEWS)[number]>("All Quotes");
   const [search, setSearch] = useState("");
@@ -135,9 +136,9 @@ function QuotesPage() {
   };
 
   const openNew = () => {
-    setEditing(null);
-    setDialogOpen(true);
+    navigate({ to: "/quotes/new" });
   };
+
   const openRow = (r: any) => {
     setEditing(r);
     setDialogOpen(true);
