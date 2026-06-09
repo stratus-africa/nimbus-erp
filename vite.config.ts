@@ -8,8 +8,23 @@ import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
 export default defineConfig({
   tanstackStart: {
-    // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
-    // nitro/vite builds from this
     server: { entry: "server" },
+  },
+  vite: {
+    optimizeDeps: {
+      // Prebundle commonly-used deps so the first navigation doesn't trigger
+      // a re-optimization reload (which can surface as transient 504s).
+      include: [
+        "@radix-ui/react-tooltip",
+        "@radix-ui/react-separator",
+        "@radix-ui/react-dialog",
+        "@radix-ui/react-select",
+        "@radix-ui/react-dropdown-menu",
+        "@radix-ui/react-tabs",
+        "@radix-ui/react-label",
+        "recharts",
+        "sonner",
+      ],
+    },
   },
 });
