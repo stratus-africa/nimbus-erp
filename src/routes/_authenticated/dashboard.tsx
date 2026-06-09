@@ -381,7 +381,7 @@ function Dashboard() {
             </div>
 
             {/* Tables */}
-            <div className="grid gap-6 md:grid-cols-2">
+            <div className="grid gap-6">
               <ActivityTable
                 title="Latest Customer Invoices"
                 link={{ to: "/invoices", search: { from, to } as any }}
