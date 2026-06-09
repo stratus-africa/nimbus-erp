@@ -48,11 +48,24 @@ function CustomersPage() {
   const tenantId = profile?.currentTenant?.id;
   const currency = profile?.currentTenant?.base_currency ?? "USD";
   const qc = useQueryClient();
+  const { highlight } = Route.useSearch();
+  const navigate = useNavigate();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Customer | null>(null);
   const [filter, setFilter] = useState<FilterKey>("active");
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const highlightRef = useRef<HTMLTableRowElement | null>(null);
+
+  // Scroll & clear highlight after a moment
+  useEffect(() => {
+    if (!highlight) return;
+    highlightRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    const t = setTimeout(() => {
+      navigate({ to: "/customers", search: {}, replace: true });
+    }, 4000);
+    return () => clearTimeout(t);
+  }, [highlight, navigate]);
 
   const { data: customers, isLoading } = useQuery({
     enabled: !!tenantId,
