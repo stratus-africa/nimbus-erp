@@ -217,7 +217,7 @@ function ItemsPage() {
                 </TableCell>
                 <TableCell>
                   <button
-                    onClick={() => openEdit(i)}
+                    onClick={() => navigate({ to: "/items/$itemId", params: { itemId: i.id } })}
                     className="text-primary hover:underline font-normal text-left"
                   >
                     {i.name}
