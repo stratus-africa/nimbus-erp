@@ -452,6 +452,17 @@ function NewCustomerPage() {
                     )}
                   />
                 </Row>
+                {watch("vat_treatment") === "VAT Registered" && (
+                  <Row label="VAT Registration Number" required error={errors.vat_registration_no?.message}>
+                    <Input
+                      maxLength={10}
+                      placeholder="10-character VAT number"
+                      aria-invalid={!!errors.vat_registration_no}
+                      className={cn(errors.vat_registration_no && "border-destructive")}
+                      {...register("vat_registration_no")}
+                    />
+                  </Row>
+                )}
                 <Row label="Tax Exemption Certificate Number">
                   <Input placeholder="Number" {...register("tax_exemption_no")} />
                 </Row>
