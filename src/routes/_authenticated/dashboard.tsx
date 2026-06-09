@@ -231,7 +231,7 @@ function Dashboard() {
       </div>
 
       {/* Cash Flow, Income & Expense, Top Expenses (left) | Recent Activity (right) */}
-      <div className="grid gap-4 lg:grid-cols-[1fr_520px]">
+      <div className="grid gap-4 lg:grid-cols-[1fr_380px]">
         {/* Left column: Cash Flow, Income & Expense, Top Expenses */}
         <div className="space-y-4">
           {/* Cash Flow */}
@@ -345,7 +345,7 @@ function Dashboard() {
               <span className="text-xs text-muted-foreground">Latest events in this range</span>
             </div>
           </CardHeader>
-          <CardContent className="grid gap-6 p-6 lg:grid-cols-[300px_1fr]">
+          <CardContent className="grid gap-6 p-6">
             {/* Timeline */}
             <div>
               <h3 className="mb-3 text-sm font-medium">Timeline</h3>
@@ -381,7 +381,7 @@ function Dashboard() {
             </div>
 
             {/* Tables */}
-            <div className="grid gap-6 md:grid-cols-2">
+            <div className="grid gap-6">
               <ActivityTable
                 title="Latest Customer Invoices"
                 link={{ to: "/invoices", search: { from, to } as any }}
