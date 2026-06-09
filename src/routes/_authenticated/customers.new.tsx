@@ -40,6 +40,7 @@ const schema = z.object({
   comm_email: z.boolean(),
   comm_whatsapp: z.boolean(),
   vat_treatment: z.string().min(1, "VAT treatment is required"),
+  vat_registration_no: z.string().trim().max(10, "Max 10 characters").optional().or(z.literal("")),
   tax_exemption_no: z.string().trim().max(50).optional().or(z.literal("")),
   withholding_vat: z.boolean(),
   withholding_tax: z.boolean(),
