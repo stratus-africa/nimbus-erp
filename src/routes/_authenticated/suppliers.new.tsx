@@ -9,7 +9,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Info, Mail, Upload, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { useEffect, useMemo } from "react";
@@ -18,46 +17,44 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { cn } from "@/lib/utils";
 
-export const Route = createFileRoute("/_authenticated/customers/new")({
-  head: () => ({ meta: [{ title: "New Customer — Nimbus ERP" }] }),
-  component: NewCustomerPage,
+export const Route = createFileRoute("/_authenticated/suppliers/new")({
+  head: () => ({ meta: [{ title: "New Supplier — Nimbus ERP" }] }),
+  component: NewSupplierPage,
 });
 
-// ---------- Validation ----------
 const phoneRegex = /^[0-9\s+()-]*$/;
 
 const schema = z.object({
-  customer_type: z.enum(["business", "individual"]),
+  supplier_type: z.enum(["business", "individual"]),
   salutation: z.string().max(10).optional().or(z.literal("")),
-  first_name: z.string().trim().max(60, "Max 60 characters").optional().or(z.literal("")),
-  last_name: z.string().trim().min(1, "Last name is required").max(60, "Max 60 characters"),
-  company_name: z.string().trim().max(120, "Max 120 characters").optional().or(z.literal("")),
-  display_name: z.string().trim().min(1, "Display name is required").max(120, "Max 120 characters"),
-  email: z.string().trim().max(255, "Max 255 characters").email("Invalid email address").optional().or(z.literal("")),
-  work_phone: z.string().trim().max(20, "Max 20 characters").regex(phoneRegex, "Digits only").optional().or(z.literal("")),
-  mobile: z.string().trim().max(20, "Max 20 characters").regex(phoneRegex, "Digits only").optional().or(z.literal("")),
+  first_name: z.string().trim().max(60).optional().or(z.literal("")),
+  last_name: z.string().trim().min(1, "Last name is required").max(60),
+  company_name: z.string().trim().max(120).optional().or(z.literal("")),
+  display_name: z.string().trim().min(1, "Display name is required").max(120),
+  email: z.string().trim().max(255).email("Invalid email address").optional().or(z.literal("")),
+  work_phone: z.string().trim().max(20).regex(phoneRegex, "Digits only").optional().or(z.literal("")),
+  mobile: z.string().trim().max(20).regex(phoneRegex, "Digits only").optional().or(z.literal("")),
   language: z.string(),
   comm_email: z.boolean(),
   comm_whatsapp: z.boolean(),
   vat_treatment: z.string().min(1, "VAT treatment is required"),
-  tax_exemption_no: z.string().trim().max(50).optional().or(z.literal("")),
+  pin_number: z.string().trim().max(50).optional().or(z.literal("")),
   withholding_vat: z.boolean(),
   withholding_tax: z.boolean(),
-  location_code: z.string().trim().max(40).optional().or(z.literal("")),
   currency: z.string(),
-  accounts_receivable: z.string().optional().or(z.literal("")),
+  accounts_payable: z.string().optional().or(z.literal("")),
   opening_balance_branch: z.string(),
   opening_balance_amount: z.string().regex(/^-?\d*(\.\d{0,2})?$/, "Invalid amount").optional().or(z.literal("")),
   payment_terms: z.string(),
   enable_portal: z.boolean(),
-  billing_address: z.string().max(500, "Max 500 characters").optional().or(z.literal("")),
-  shipping_address: z.string().max(500, "Max 500 characters").optional().or(z.literal("")),
-  remarks: z.string().max(1000, "Max 1000 characters").optional().or(z.literal("")),
+  billing_address: z.string().max(500).optional().or(z.literal("")),
+  shipping_address: z.string().max(500).optional().or(z.literal("")),
+  remarks: z.string().max(1000).optional().or(z.literal("")),
 });
 type FormValues = z.infer<typeof schema>;
 
 const defaults: FormValues = {
-  customer_type: "business",
+  supplier_type: "business",
   salutation: "",
   first_name: "",
   last_name: "",
@@ -70,12 +67,11 @@ const defaults: FormValues = {
   comm_email: true,
   comm_whatsapp: false,
   vat_treatment: "Registered Business",
-  tax_exemption_no: "",
+  pin_number: "",
   withholding_vat: false,
   withholding_tax: false,
-  location_code: "",
   currency: "KES",
-  accounts_receivable: "",
+  accounts_payable: "",
   opening_balance_branch: "Head Office",
   opening_balance_amount: "",
   payment_terms: "Due on Receipt",
@@ -85,19 +81,8 @@ const defaults: FormValues = {
   remarks: "",
 };
 
-// ---------- Layout helpers ----------
-function Row({
-  label,
-  required,
-  info,
-  error,
-  children,
-}: {
-  label: string;
-  required?: boolean;
-  info?: boolean;
-  error?: string;
-  children: React.ReactNode;
+function Row({ label, required, info, error, children }: {
+  label: string; required?: boolean; info?: boolean; error?: string; children: React.ReactNode;
 }) {
   return (
     <div className="grid grid-cols-[180px_1fr] items-start gap-6 py-2">
@@ -117,8 +102,7 @@ function Row({
   );
 }
 
-// ---------- Page ----------
-function NewCustomerPage() {
+function NewSupplierPage() {
   const navigate = useNavigate();
   const { data: profile } = useProfile();
   const tenantId = profile?.currentTenant?.id;
@@ -146,7 +130,6 @@ function NewCustomerPage() {
     return Array.from(new Set(opts));
   }, [salutation, firstName, lastName, companyName]);
 
-  // Auto-fill display name when empty
   const displayName = watch("display_name");
   useEffect(() => {
     if (!displayName && displayOptions[0]) {
@@ -154,7 +137,6 @@ function NewCustomerPage() {
     }
   }, [displayOptions, displayName, setValue]);
 
-  // Unsaved-changes guards
   const shouldBlock = isDirty && !isSubmitSuccessful;
   useBlocker({
     shouldBlockFn: () => {
@@ -165,10 +147,7 @@ function NewCustomerPage() {
   });
   useEffect(() => {
     const onBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (shouldBlock) {
-        e.preventDefault();
-        e.returnValue = "";
-      }
+      if (shouldBlock) { e.preventDefault(); e.returnValue = ""; }
     };
     window.addEventListener("beforeunload", onBeforeUnload);
     return () => window.removeEventListener("beforeunload", onBeforeUnload);
@@ -177,24 +156,21 @@ function NewCustomerPage() {
   const save = useMutation({
     mutationFn: async (values: FormValues) => {
       if (!tenantId) throw new Error("No tenant selected");
-      const name = values.display_name.trim();
       const payload: any = {
         tenant_id: tenantId,
-        name,
-        company_name: values.company_name || null,
+        name: values.display_name.trim(),
         contact_person: `${values.salutation ?? ""} ${values.first_name ?? ""} ${values.last_name ?? ""}`.trim() || null,
         email: values.email || null,
         phone: values.work_phone || values.mobile || null,
-        vat_number: values.tax_exemption_no || null,
-        billing_address: values.billing_address || null,
-        shipping_address: values.shipping_address || null,
+        pin_number: values.pin_number || null,
+        address: values.billing_address || null,
+        notes: values.remarks || null,
         payment_terms_days: values.payment_terms === "Due on Receipt"
           ? 0
           : Number(values.payment_terms.replace(/\D/g, "")) || 30,
-        notes: values.remarks || null,
       };
       const { data, error } = await supabase
-        .from("customers")
+        .from("suppliers")
         .insert(payload)
         .select("id")
         .single();
@@ -202,19 +178,18 @@ function NewCustomerPage() {
       return data.id as string;
     },
     onSuccess: (id) => {
-      toast.success("Customer created");
-      navigate({ to: "/customers", search: { highlight: id } as any, replace: true });
+      toast.success("Supplier created");
+      navigate({ to: "/suppliers", search: { highlight: id } as any, replace: true });
     },
     onError: (e: any) => toast.error(e.message),
   });
 
-  const onCancel = () => navigate({ to: "/customers" });
+  const onCancel = () => navigate({ to: "/suppliers" });
 
   return (
     <div className="-m-6">
-      {/* Header */}
       <div className="border-b bg-card px-6 py-4">
-        <h1 className="text-xl font-semibold">New Customer</h1>
+        <h1 className="text-xl font-semibold">New Supplier</h1>
       </div>
 
       <form
@@ -229,28 +204,18 @@ function NewCustomerPage() {
       >
         <div className="bg-card px-6 py-6">
           <div className="space-y-1">
-            <Row label="Customer Type" info>
+            <Row label="Supplier Type" info>
               <Controller
                 control={control}
-                name="customer_type"
+                name="supplier_type"
                 render={({ field }) => (
                   <div className="flex items-center gap-6 pt-2">
                     <label className="flex items-center gap-2 text-sm cursor-pointer">
-                      <input
-                        type="radio"
-                        checked={field.value === "business"}
-                        onChange={() => field.onChange("business")}
-                        className="accent-primary"
-                      />
+                      <input type="radio" checked={field.value === "business"} onChange={() => field.onChange("business")} className="accent-primary" />
                       Business
                     </label>
                     <label className="flex items-center gap-2 text-sm cursor-pointer">
-                      <input
-                        type="radio"
-                        checked={field.value === "individual"}
-                        onChange={() => field.onChange("individual")}
-                        className="accent-primary"
-                      />
+                      <input type="radio" checked={field.value === "individual"} onChange={() => field.onChange("individual")} className="accent-primary" />
                       Individual
                     </label>
                   </div>
@@ -258,11 +223,7 @@ function NewCustomerPage() {
               />
             </Row>
 
-            <Row
-              label="Primary Contact"
-              info
-              error={errors.last_name?.message || errors.first_name?.message}
-            >
+            <Row label="Primary Contact" info error={errors.last_name?.message || errors.first_name?.message}>
               <div className="grid grid-cols-[120px_1fr_1fr] gap-3">
                 <Controller
                   control={control}
@@ -278,27 +239,13 @@ function NewCustomerPage() {
                     </Select>
                   )}
                 />
-                <Input
-                  placeholder="First Name"
-                  aria-invalid={!!errors.first_name}
-                  className={cn(errors.first_name && "border-destructive")}
-                  {...register("first_name")}
-                />
-                <Input
-                  placeholder="Last Name*"
-                  aria-invalid={!!errors.last_name}
-                  className={cn(errors.last_name && "border-destructive")}
-                  {...register("last_name")}
-                />
+                <Input placeholder="First Name" aria-invalid={!!errors.first_name} className={cn(errors.first_name && "border-destructive")} {...register("first_name")} />
+                <Input placeholder="Last Name*" aria-invalid={!!errors.last_name} className={cn(errors.last_name && "border-destructive")} {...register("last_name")} />
               </div>
             </Row>
 
             <Row label="Company Name" error={errors.company_name?.message}>
-              <Input
-                aria-invalid={!!errors.company_name}
-                className={cn(errors.company_name && "border-destructive")}
-                {...register("company_name")}
-              />
+              <Input aria-invalid={!!errors.company_name} className={cn(errors.company_name && "border-destructive")} {...register("company_name")} />
             </Row>
 
             <Row label="Display Name" required info error={errors.display_name?.message}>
@@ -308,14 +255,14 @@ function NewCustomerPage() {
                 render={({ field }) => (
                   <>
                     <Input
-                      list="display-name-options"
+                      list="supplier-display-name-options"
                       placeholder="Select or type to add"
                       aria-invalid={!!errors.display_name}
                       className={cn(errors.display_name && "border-destructive")}
                       value={field.value}
                       onChange={(e) => field.onChange(e.target.value)}
                     />
-                    <datalist id="display-name-options">
+                    <datalist id="supplier-display-name-options">
                       {displayOptions.map((o) => <option key={o} value={o} />)}
                     </datalist>
                   </>
@@ -326,12 +273,7 @@ function NewCustomerPage() {
             <Row label="Email Address" info error={errors.email?.message}>
               <div className="relative">
                 <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  type="email"
-                  className={cn("pl-9", errors.email && "border-destructive")}
-                  aria-invalid={!!errors.email}
-                  {...register("email")}
-                />
+                <Input type="email" className={cn("pl-9", errors.email && "border-destructive")} aria-invalid={!!errors.email} {...register("email")} />
               </div>
             </Row>
 
@@ -339,24 +281,16 @@ function NewCustomerPage() {
               <div className="grid grid-cols-2 gap-3">
                 <div className="flex">
                   <div className="flex items-center px-3 border border-r-0 rounded-l-md bg-muted/40 text-sm text-muted-foreground">+254</div>
-                  <Input
-                    placeholder="Work Phone"
-                    className={cn("rounded-l-none", errors.work_phone && "border-destructive")}
-                    {...register("work_phone")}
-                  />
+                  <Input placeholder="Work Phone" className={cn("rounded-l-none", errors.work_phone && "border-destructive")} {...register("work_phone")} />
                 </div>
                 <div className="flex">
                   <div className="flex items-center px-3 border border-r-0 rounded-l-md bg-muted/40 text-sm text-muted-foreground">+254</div>
-                  <Input
-                    placeholder="Mobile"
-                    className={cn("rounded-l-none", errors.mobile && "border-destructive")}
-                    {...register("mobile")}
-                  />
+                  <Input placeholder="Mobile" className={cn("rounded-l-none", errors.mobile && "border-destructive")} {...register("mobile")} />
                 </div>
               </div>
             </Row>
 
-            <Row label="Customer Language" info>
+            <Row label="Supplier Language" info>
               <Controller
                 control={control}
                 name="language"
@@ -375,29 +309,20 @@ function NewCustomerPage() {
 
             <Row label="Communication Channels">
               <div className="flex items-center gap-6 pt-2">
-                <Controller
-                  control={control}
-                  name="comm_email"
-                  render={({ field }) => (
-                    <label className="flex items-center gap-2 text-sm">
-                      <Checkbox checked={field.value} onCheckedChange={(v) => field.onChange(!!v)} /> Email
-                    </label>
-                  )}
-                />
-                <Controller
-                  control={control}
-                  name="comm_whatsapp"
-                  render={({ field }) => (
-                    <label className="flex items-center gap-2 text-sm">
-                      <Checkbox checked={field.value} onCheckedChange={(v) => field.onChange(!!v)} /> WhatsApp
-                    </label>
-                  )}
-                />
+                <Controller control={control} name="comm_email" render={({ field }) => (
+                  <label className="flex items-center gap-2 text-sm">
+                    <Checkbox checked={field.value} onCheckedChange={(v) => field.onChange(!!v)} /> Email
+                  </label>
+                )} />
+                <Controller control={control} name="comm_whatsapp" render={({ field }) => (
+                  <label className="flex items-center gap-2 text-sm">
+                    <Checkbox checked={field.value} onCheckedChange={(v) => field.onChange(!!v)} /> WhatsApp
+                  </label>
+                )} />
               </div>
             </Row>
           </div>
 
-          {/* Tabs */}
           <div className="mt-8">
             <Tabs defaultValue="other">
               <TabsList className="w-full justify-start gap-6 rounded-none border-b bg-transparent p-0 h-auto">
@@ -426,10 +351,7 @@ function NewCustomerPage() {
                     name="vat_treatment"
                     render={({ field }) => (
                       <Select value={field.value} onValueChange={field.onChange}>
-                        <SelectTrigger
-                          aria-invalid={!!errors.vat_treatment}
-                          className={cn(errors.vat_treatment && "border-destructive")}
-                        >
+                        <SelectTrigger aria-invalid={!!errors.vat_treatment} className={cn(errors.vat_treatment && "border-destructive")}>
                           <SelectValue placeholder="" />
                         </SelectTrigger>
                         <SelectContent>
@@ -441,118 +363,82 @@ function NewCustomerPage() {
                     )}
                   />
                 </Row>
-                <Row label="Tax Exemption Certificate Number">
-                  <Input placeholder="Number" {...register("tax_exemption_no")} />
+                <Row label="PIN Number">
+                  <Input placeholder="KRA PIN / Tax ID" {...register("pin_number")} />
                 </Row>
                 <Row label="Withholding VAT">
-                  <Controller
-                    control={control}
-                    name="withholding_vat"
-                    render={({ field }) => (
-                      <label className="flex items-center gap-2 text-sm pt-2">
-                        <Checkbox checked={field.value} onCheckedChange={(v) => field.onChange(!!v)} />
-                        Apply Withholding VAT for this customer
-                      </label>
-                    )}
-                  />
+                  <Controller control={control} name="withholding_vat" render={({ field }) => (
+                    <label className="flex items-center gap-2 text-sm pt-2">
+                      <Checkbox checked={field.value} onCheckedChange={(v) => field.onChange(!!v)} />
+                      Apply Withholding VAT for this supplier
+                    </label>
+                  )} />
                 </Row>
                 <Row label="Withholding Tax">
-                  <Controller
-                    control={control}
-                    name="withholding_tax"
-                    render={({ field }) => (
-                      <label className="flex items-center gap-2 text-sm pt-2">
-                        <Checkbox checked={field.value} onCheckedChange={(v) => field.onChange(!!v)} />
-                        Enable Withholding Tax for this Customer
-                      </label>
-                    )}
-                  />
-                </Row>
-                <Row label="Location Code" info>
-                  <Input {...register("location_code")} />
+                  <Controller control={control} name="withholding_tax" render={({ field }) => (
+                    <label className="flex items-center gap-2 text-sm pt-2">
+                      <Checkbox checked={field.value} onCheckedChange={(v) => field.onChange(!!v)} />
+                      Enable Withholding Tax for this supplier
+                    </label>
+                  )} />
                 </Row>
                 <Row label="Currency">
-                  <Controller
-                    control={control}
-                    name="currency"
-                    render={({ field }) => (
-                      <Select value={field.value} onValueChange={field.onChange}>
-                        <SelectTrigger><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          {["KES- Kenyan Shilling", "USD- US Dollar", "EUR- Euro", "GBP- British Pound"].map((s) => (
-                            <SelectItem key={s} value={s.split("-")[0]}>{s}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    )}
-                  />
+                  <Controller control={control} name="currency" render={({ field }) => (
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {["KES- Kenyan Shilling", "USD- US Dollar", "EUR- Euro", "GBP- British Pound"].map((s) => (
+                          <SelectItem key={s} value={s.split("-")[0]}>{s}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )} />
                 </Row>
-                <Row label="Accounts Receivable" info>
-                  <Controller
-                    control={control}
-                    name="accounts_receivable"
-                    render={({ field }) => (
-                      <Select value={field.value} onValueChange={field.onChange}>
-                        <SelectTrigger><SelectValue placeholder="Select an account" /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="ar-default">Accounts Receivable</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    )}
-                  />
+                <Row label="Accounts Payable" info>
+                  <Controller control={control} name="accounts_payable" render={({ field }) => (
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <SelectTrigger><SelectValue placeholder="Select an account" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="ap-default">Accounts Payable</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )} />
                 </Row>
                 <Row label="Opening Balance" error={errors.opening_balance_amount?.message}>
                   <div className="grid grid-cols-[180px_1fr] gap-3">
-                    <Controller
-                      control={control}
-                      name="opening_balance_branch"
-                      render={({ field }) => (
-                        <Select value={field.value} onValueChange={field.onChange}>
-                          <SelectTrigger><SelectValue /></SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="Head Office">Head Office</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      )}
-                    />
+                    <Controller control={control} name="opening_balance_branch" render={({ field }) => (
+                      <Select value={field.value} onValueChange={field.onChange}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Head Office">Head Office</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    )} />
                     <div className="flex">
-                      <div className="flex items-center px-3 border border-r-0 rounded-l-md bg-muted/40 text-sm text-muted-foreground">
-                        {currency}
-                      </div>
-                      <Input
-                        className={cn("rounded-l-none", errors.opening_balance_amount && "border-destructive")}
-                        {...register("opening_balance_amount")}
-                      />
+                      <div className="flex items-center px-3 border border-r-0 rounded-l-md bg-muted/40 text-sm text-muted-foreground">{currency}</div>
+                      <Input className={cn("rounded-l-none", errors.opening_balance_amount && "border-destructive")} {...register("opening_balance_amount")} />
                     </div>
                   </div>
                 </Row>
                 <Row label="Payment Terms">
-                  <Controller
-                    control={control}
-                    name="payment_terms"
-                    render={({ field }) => (
-                      <Select value={field.value} onValueChange={field.onChange}>
-                        <SelectTrigger><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          {["Due on Receipt", "Net 15", "Net 30", "Net 45", "Net 60"].map((s) => (
-                            <SelectItem key={s} value={s}>{s}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    )}
-                  />
+                  <Controller control={control} name="payment_terms" render={({ field }) => (
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {["Due on Receipt", "Net 15", "Net 30", "Net 45", "Net 60"].map((s) => (
+                          <SelectItem key={s} value={s}>{s}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )} />
                 </Row>
                 <Row label="Enable Portal?" info>
-                  <Controller
-                    control={control}
-                    name="enable_portal"
-                    render={({ field }) => (
-                      <label className="flex items-center gap-2 text-sm pt-2">
-                        <Checkbox checked={field.value} onCheckedChange={(v) => field.onChange(!!v)} />
-                        Allow portal access for this customer
-                      </label>
-                    )}
-                  />
+                  <Controller control={control} name="enable_portal" render={({ field }) => (
+                    <label className="flex items-center gap-2 text-sm pt-2">
+                      <Checkbox checked={field.value} onCheckedChange={(v) => field.onChange(!!v)} />
+                      Allow portal access for this supplier
+                    </label>
+                  )} />
                 </Row>
                 <Row label="Documents">
                   <div>
@@ -585,29 +471,16 @@ function NewCustomerPage() {
             </Tabs>
           </div>
 
-          <button
-            type="button"
-            onClick={() => setValue("remarks", watch("remarks") ?? "", { shouldDirty: false })}
-            className="mt-6 text-sm font-medium text-primary hover:underline"
-          >
-            Add more details
-          </button>
-
           <div className="mt-8 border-t pt-6">
             <p className="text-sm text-muted-foreground">
-              <span className="font-medium text-foreground">Customer Owner:</span> Assign a user as the customer owner to provide access only to the data of this customer.{" "}
+              <span className="font-medium text-foreground">Supplier Owner:</span> Assign a user as the supplier owner to provide access only to the data of this supplier.{" "}
               <button type="button" className="text-primary hover:underline">Learn More</button>
             </p>
           </div>
         </div>
 
-        {/* Sticky footer */}
         <div className="sticky bottom-0 border-t bg-card px-6 py-3 flex items-center gap-3">
-          <Button
-            type="submit"
-            disabled={isSubmitting || save.isPending}
-            className="bg-emerald-600 hover:bg-emerald-700 text-white"
-          >
+          <Button type="submit" disabled={isSubmitting || save.isPending} className="bg-emerald-600 hover:bg-emerald-700 text-white">
             {isSubmitting || save.isPending ? "Saving…" : "Save"}
           </Button>
           <Button type="button" variant="outline" onClick={onCancel}>Cancel</Button>
@@ -617,24 +490,5 @@ function NewCustomerPage() {
         </div>
       </form>
     </div>
-  );
-}
-
-// Optional confirm dialog component (not currently wired; native confirm is used via useBlocker)
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function ConfirmLeaveDialog({ open, onCancel, onLeave }: { open: boolean; onCancel: () => void; onLeave: () => void }) {
-  return (
-    <AlertDialog open={open}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Discard unsaved changes?</AlertDialogTitle>
-          <AlertDialogDescription>You have entered data that hasn't been saved. Leaving will lose your changes.</AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel onClick={onCancel}>Stay on page</AlertDialogCancel>
-          <AlertDialogAction onClick={onLeave}>Discard & leave</AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
   );
 }
