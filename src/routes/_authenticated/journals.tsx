@@ -103,7 +103,7 @@ function JournalDialog({ open, onOpenChange, tenantId, currency, onSaved }: { op
       const { data: num } = await supabase.rpc("next_doc_number", { _tenant: tenantId, _doc_type: "journal" });
       const { data: entry, error } = await supabase.from("journal_entries").insert({
         tenant_id: tenantId,
-        entry_number: num,
+        entry_number: num ?? "",
         entry_date: date,
         description,
         reference,
