@@ -1,13 +1,11 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "@/hooks/use-profile";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
 import { formatCurrency, formatDate, statusLabel, STATUS_COLORS } from "@/lib/format";
-import { ArrowUpRight, Calendar as CalendarIcon, FileText, Receipt, Plus } from "lucide-react";
+import { ArrowUpRight, FileText, Receipt, Plus } from "lucide-react";
 import { useMemo } from "react";
 import { cn } from "@/lib/utils";
 import {
@@ -88,12 +86,7 @@ function Dashboard() {
   const currency = profile?.currentTenant?.base_currency ?? "USD";
   const tenantId = profile?.currentTenant?.id;
   const search = Route.useSearch();
-  const navigate = useNavigate();
-  const { preset, from, to } = useMemo(() => resolveRange(search), [search]);
-
-  const setPreset = (p: RangePreset, extra?: { from?: string; to?: string }) => {
-    navigate({ to: "/dashboard", search: { range: p, ...extra } });
-  };
+  const { from, to } = useMemo(() => resolveRange(search), [search]);
 
   const { data } = useQuery({
     enabled: !!tenantId,
@@ -209,17 +202,14 @@ function Dashboard() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold">
-            Welcome back
-            {profile?.profile?.full_name ? `, ${profile.profile.full_name.split(" ")[0]}` : ""}
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Here's how {profile?.currentTenant?.name ?? "your workspace"} is doing.
-          </p>
-        </div>
-        <DateRangeFilter preset={preset} from={from} to={to} onChange={setPreset} />
+      <div>
+        <h1 className="text-2xl font-semibold">
+          Welcome back
+          {profile?.profile?.full_name ? `, ${profile.profile.full_name.split(" ")[0]}` : ""}
+        </h1>
+        <p className="text-sm text-muted-foreground">
+          Here's how {profile?.currentTenant?.name ?? "your workspace"} is doing.
+        </p>
       </div>
 
       {/* Receivables & Payables */}
@@ -240,234 +230,180 @@ function Dashboard() {
         />
       </div>
 
-      {/* Cash Flow */}
-      <Card className="overflow-hidden">
-        <CardHeader className="border-b bg-muted/30">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-base font-semibold">Cash Flow</CardTitle>
-            <span className="text-xs text-muted-foreground">{formatDate(from)} — {formatDate(to)}</span>
-          </div>
-        </CardHeader>
-        <CardContent className="grid gap-6 p-6 lg:grid-cols-[1fr_240px]">
-          <div className="h-72">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={computed.series} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="cf" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.35} />
-                    <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0.02} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid vertical={false} strokeDasharray="3 3" className="stroke-border" />
-                <XAxis dataKey="name" tick={{ fontSize: 11 }} tickLine={false} axisLine={false} interval={0} />
-                <YAxis tick={{ fontSize: 11 }} tickLine={false} axisLine={false} tickFormatter={(v) => `${Math.round(Number(v) / 1000)} K`} />
-                <Tooltip
-                  formatter={(v: any) => formatCurrency(v, currency)}
-                  contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 }}
-                />
-                <Area type="monotone" dataKey="cash" stroke="hsl(var(--primary))" strokeWidth={2} fill="url(#cf)" dot={{ r: 3, fill: "hsl(var(--primary))" }} activeDot={{ r: 5 }} />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-          <div className="space-y-5 text-sm">
-            <CashRow dot="bg-muted-foreground/40" label={`Cash on ${formatDate(from)}`} value={formatCurrency(computed.cashStart, currency)} />
-            <CashRow dot="bg-success" label="Incoming" value={`${formatCurrency(computed.incoming, currency)} ( + )`} />
-            <CashRow dot="bg-destructive" label="Outgoing" value={`${formatCurrency(computed.outgoing, currency)} ( - )`} />
-            <CashRow dot="bg-primary" label={`Cash on ${formatDate(to)}`} value={`${formatCurrency(computed.cashEnd, currency)} ( = )`} />
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Income & Expense + Top Expenses */}
-      <div className="grid gap-4 lg:grid-cols-2">
+      {/* Recent Activity (left) | Cash Flow, Income & Expense, Top Expenses (right) */}
+      <div className="grid gap-4 lg:grid-cols-[1fr_520px]">
+        {/* Recent Activity */}
         <Card className="overflow-hidden">
           <CardHeader className="border-b bg-muted/30">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-base font-semibold">Income and Expense</CardTitle>
-              <span className="text-xs text-muted-foreground">{formatDate(from)} — {formatDate(to)}</span>
+              <CardTitle className="text-base font-semibold">Recent Activity</CardTitle>
+              <span className="text-xs text-muted-foreground">Latest events in this range</span>
             </div>
           </CardHeader>
-          <CardContent className="p-6">
-            <div className="mb-4 flex flex-wrap items-center gap-6 text-sm">
-              <Legend dot="bg-success" label="Total Income" value={formatCurrency(computed.totalIncome, currency)} />
-              <Legend dot="bg-destructive" label="Total Expenses" value={formatCurrency(computed.totalExpense, currency)} />
-            </div>
-            <div className="h-60">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={computed.series} barGap={4}>
-                  <CartesianGrid vertical={false} strokeDasharray="3 3" className="stroke-border" />
-                  <XAxis dataKey="name" tick={{ fontSize: 11 }} tickLine={false} axisLine={false} interval={0} />
-                  <YAxis tick={{ fontSize: 11 }} tickLine={false} axisLine={false} tickFormatter={(v) => `${Math.round(Number(v) / 1000)} K`} />
-                  <Tooltip
-                    formatter={(v: any) => formatCurrency(v, currency)}
-                    contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 }}
-                  />
-                  <Bar dataKey="income" fill="hsl(var(--success))" radius={[3, 3, 0, 0]} />
-                  <Bar dataKey="expense" fill="hsl(var(--destructive))" radius={[3, 3, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="overflow-hidden">
-          <CardHeader className="border-b bg-muted/30">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-base font-semibold">Top Expenses</CardTitle>
-              <span className="text-xs text-muted-foreground">{formatDate(from)} — {formatDate(to)}</span>
-            </div>
-          </CardHeader>
-          <CardContent className="p-6">
-            {computed.topExpenses.length ? (
-              <ul className="space-y-3">
-                {computed.topExpenses.map((e, i) => {
-                  const max = computed.topExpenses[0].total || 1;
-                  const pct = Math.max(4, Math.round((e.total / max) * 100));
-                  return (
-                    <li key={e.name + i} className="space-y-1">
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="truncate">{e.name}</span>
-                        <span className="font-medium tabular-nums">{formatCurrency(e.total, currency)}</span>
+          <CardContent className="grid gap-6 p-6 lg:grid-cols-[300px_1fr]">
+            {/* Timeline */}
+            <div>
+              <h3 className="mb-3 text-sm font-medium">Timeline</h3>
+              {computed.timeline.length ? (
+                <ol className="relative space-y-4 border-l pl-5">
+                  {computed.timeline.map((e: any) => (
+                    <li key={`${e.kind}-${e.id}`} className="relative">
+                      <span
+                        className={cn(
+                          "absolute -left-[26px] mt-1 grid h-5 w-5 place-items-center rounded-full border bg-background",
+                          e.kind === "invoice" ? "text-emerald-600" : "text-amber-600",
+                        )}
+                      >
+                        {e.kind === "invoice" ? <FileText className="h-3 w-3" /> : <Receipt className="h-3 w-3" />}
+                      </span>
+                      <div className="text-xs text-muted-foreground">{formatDate(e.created ?? e.date)}</div>
+                      <div className="text-sm">
+                        <span className="font-medium">
+                          {e.kind === "invoice" ? "Invoice" : "Bill"} {e.number}
+                        </span>{" "}
+                        <span className="text-muted-foreground">to {e.party}</span>
                       </div>
-                      <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
-                        <div className="h-full rounded-full bg-primary" style={{ width: `${pct}%` }} />
+                      <div className="mt-0.5 flex items-center gap-2 text-xs">
+                        <Badge variant="outline" className={STATUS_COLORS[e.status] ?? ""}>{statusLabel(e.status)}</Badge>
+                        <span className="tabular-nums text-muted-foreground">{formatCurrency(e.total, currency)}</span>
                       </div>
                     </li>
-                  );
-                })}
-              </ul>
-            ) : (
-              <div className="grid h-40 place-items-center text-sm text-muted-foreground">No expense data in this range.</div>
-            )}
+                  ))}
+                </ol>
+              ) : (
+                <div className="text-sm text-muted-foreground">No activity in this range.</div>
+              )}
+            </div>
+
+            {/* Tables */}
+            <div className="grid gap-6 md:grid-cols-2">
+              <ActivityTable
+                title="Latest Customer Invoices"
+                link={{ to: "/invoices", search: { from, to } as any }}
+                rows={computed.recentInvoices.map((r: any) => ({
+                  id: r.id, number: r.invoice_number, party: r.customers?.name ?? "—",
+                  date: r.invoice_date, status: r.status, total: Number(r.total ?? 0),
+                }))}
+                currency={currency}
+              />
+              <ActivityTable
+                title="Latest Supplier Bills"
+                link={{ to: "/bills", search: { from, to } as any }}
+                rows={computed.recentBills.map((r: any) => ({
+                  id: r.id, number: r.bill_number, party: r.suppliers?.name ?? "—",
+                  date: r.bill_date, status: r.status, total: Number(r.total ?? 0),
+                }))}
+                currency={currency}
+              />
+            </div>
           </CardContent>
         </Card>
-      </div>
 
-      {/* Recent Activity */}
-      <Card className="overflow-hidden">
-        <CardHeader className="border-b bg-muted/30">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-base font-semibold">Recent Activity</CardTitle>
-            <span className="text-xs text-muted-foreground">Latest events in this range</span>
-          </div>
-        </CardHeader>
-        <CardContent className="grid gap-6 p-6 lg:grid-cols-[300px_1fr]">
-          {/* Timeline */}
-          <div>
-            <h3 className="mb-3 text-sm font-medium">Timeline</h3>
-            {computed.timeline.length ? (
-              <ol className="relative space-y-4 border-l pl-5">
-                {computed.timeline.map((e: any) => (
-                  <li key={`${e.kind}-${e.id}`} className="relative">
-                    <span
-                      className={cn(
-                        "absolute -left-[26px] mt-1 grid h-5 w-5 place-items-center rounded-full border bg-background",
-                        e.kind === "invoice" ? "text-emerald-600" : "text-amber-600",
-                      )}
-                    >
-                      {e.kind === "invoice" ? <FileText className="h-3 w-3" /> : <Receipt className="h-3 w-3" />}
-                    </span>
-                    <div className="text-xs text-muted-foreground">{formatDate(e.created ?? e.date)}</div>
-                    <div className="text-sm">
-                      <span className="font-medium">
-                        {e.kind === "invoice" ? "Invoice" : "Bill"} {e.number}
-                      </span>{" "}
-                      <span className="text-muted-foreground">to {e.party}</span>
-                    </div>
-                    <div className="mt-0.5 flex items-center gap-2 text-xs">
-                      <Badge variant="outline" className={STATUS_COLORS[e.status] ?? ""}>{statusLabel(e.status)}</Badge>
-                      <span className="tabular-nums text-muted-foreground">{formatCurrency(e.total, currency)}</span>
-                    </div>
-                  </li>
-                ))}
-              </ol>
-            ) : (
-              <div className="text-sm text-muted-foreground">No activity in this range.</div>
-            )}
-          </div>
+        {/* Right column: Cash Flow, Income & Expense, Top Expenses */}
+        <div className="space-y-4">
+          {/* Cash Flow */}
+          <Card className="overflow-hidden">
+            <CardHeader className="border-b bg-muted/30">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base font-semibold">Cash Flow</CardTitle>
+                <span className="text-xs text-muted-foreground">{formatDate(from)} — {formatDate(to)}</span>
+              </div>
+            </CardHeader>
+            <CardContent className="grid gap-6 p-6 lg:grid-cols-[1fr_240px]">
+              <div className="h-72">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={computed.series} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="cf" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.35} />
+                        <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0.02} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid vertical={false} strokeDasharray="3 3" className="stroke-border" />
+                    <XAxis dataKey="name" tick={{ fontSize: 11 }} tickLine={false} axisLine={false} interval={0} />
+                    <YAxis tick={{ fontSize: 11 }} tickLine={false} axisLine={false} tickFormatter={(v) => `${Math.round(Number(v) / 1000)} K`} />
+                    <Tooltip
+                      formatter={(v: any) => formatCurrency(v, currency)}
+                      contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 }}
+                    />
+                    <Area type="monotone" dataKey="cash" stroke="hsl(var(--primary))" strokeWidth={2} fill="url(#cf)" dot={{ r: 3, fill: "hsl(var(--primary))" }} activeDot={{ r: 5 }} />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="space-y-5 text-sm">
+                <CashRow dot="bg-muted-foreground/40" label={`Cash on ${formatDate(from)}`} value={formatCurrency(computed.cashStart, currency)} />
+                <CashRow dot="bg-success" label="Incoming" value={`${formatCurrency(computed.incoming, currency)} ( + )`} />
+                <CashRow dot="bg-destructive" label="Outgoing" value={`${formatCurrency(computed.outgoing, currency)} ( - )`} />
+                <CashRow dot="bg-primary" label={`Cash on ${formatDate(to)}`} value={`${formatCurrency(computed.cashEnd, currency)} ( = )`} />
+              </div>
+            </CardContent>
+          </Card>
 
-          {/* Tables */}
-          <div className="grid gap-6 md:grid-cols-2">
-            <ActivityTable
-              title="Latest Customer Invoices"
-              link={{ to: "/invoices", search: { from, to } as any }}
-              rows={computed.recentInvoices.map((r: any) => ({
-                id: r.id, number: r.invoice_number, party: r.customers?.name ?? "—",
-                date: r.invoice_date, status: r.status, total: Number(r.total ?? 0),
-              }))}
-              currency={currency}
-            />
-            <ActivityTable
-              title="Latest Supplier Bills"
-              link={{ to: "/bills", search: { from, to } as any }}
-              rows={computed.recentBills.map((r: any) => ({
-                id: r.id, number: r.bill_number, party: r.suppliers?.name ?? "—",
-                date: r.bill_date, status: r.status, total: Number(r.total ?? 0),
-              }))}
-              currency={currency}
-            />
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
+          {/* Income & Expense */}
+          <Card className="overflow-hidden">
+            <CardHeader className="border-b bg-muted/30">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base font-semibold">Income and Expense</CardTitle>
+                <span className="text-xs text-muted-foreground">{formatDate(from)} — {formatDate(to)}</span>
+              </div>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="mb-4 flex flex-wrap items-center gap-6 text-sm">
+                <Legend dot="bg-success" label="Total Income" value={formatCurrency(computed.totalIncome, currency)} />
+                <Legend dot="bg-destructive" label="Total Expenses" value={formatCurrency(computed.totalExpense, currency)} />
+              </div>
+              <div className="h-60">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={computed.series} barGap={4}>
+                    <CartesianGrid vertical={false} strokeDasharray="3 3" className="stroke-border" />
+                    <XAxis dataKey="name" tick={{ fontSize: 11 }} tickLine={false} axisLine={false} interval={0} />
+                    <YAxis tick={{ fontSize: 11 }} tickLine={false} axisLine={false} tickFormatter={(v) => `${Math.round(Number(v) / 1000)} K`} />
+                    <Tooltip
+                      formatter={(v: any) => formatCurrency(v, currency)}
+                      contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 }}
+                    />
+                    <Bar dataKey="income" fill="hsl(var(--success))" radius={[3, 3, 0, 0]} />
+                    <Bar dataKey="expense" fill="hsl(var(--destructive))" radius={[3, 3, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
 
-function DateRangeFilter({
-  preset, from, to, onChange,
-}: {
-  preset: RangePreset;
-  from: string;
-  to: string;
-  onChange: (p: RangePreset, extra?: { from?: string; to?: string }) => void;
-}) {
-  const opts: { key: RangePreset; label: string }[] = [
-    { key: "today", label: "Today" },
-    { key: "month", label: "This Month" },
-    { key: "year", label: "This Year" },
-  ];
-  return (
-    <div className="flex flex-wrap items-center gap-2">
-      <div className="inline-flex overflow-hidden rounded-md border bg-card">
-        {opts.map((o) => (
-          <button
-            key={o.key}
-            onClick={() => onChange(o.key)}
-            className={cn(
-              "px-3 py-1.5 text-sm transition-colors",
-              preset === o.key ? "bg-primary text-primary-foreground" : "hover:bg-muted",
-            )}
-          >
-            {o.label}
-          </button>
-        ))}
-        <Popover>
-          <PopoverTrigger asChild>
-            <button
-              className={cn(
-                "flex items-center gap-1.5 px-3 py-1.5 text-sm transition-colors",
-                preset === "custom" ? "bg-primary text-primary-foreground" : "hover:bg-muted",
+          {/* Top Expenses */}
+          <Card className="overflow-hidden">
+            <CardHeader className="border-b bg-muted/30">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base font-semibold">Top Expenses</CardTitle>
+                <span className="text-xs text-muted-foreground">{formatDate(from)} — {formatDate(to)}</span>
+              </div>
+            </CardHeader>
+            <CardContent className="p-6">
+              {computed.topExpenses.length ? (
+                <ul className="space-y-3">
+                  {computed.topExpenses.map((e, i) => {
+                    const max = computed.topExpenses[0].total || 1;
+                    const pct = Math.max(4, Math.round((e.total / max) * 100));
+                    return (
+                      <li key={e.name + i} className="space-y-1">
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="truncate">{e.name}</span>
+                          <span className="font-medium tabular-nums">{formatCurrency(e.total, currency)}</span>
+                        </div>
+                        <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
+                          <div className="h-full rounded-full bg-primary" style={{ width: `${pct}%` }} />
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              ) : (
+                <div className="grid h-40 place-items-center text-sm text-muted-foreground">No expense data in this range.</div>
               )}
-            >
-              <CalendarIcon className="h-3.5 w-3.5" />
-              Custom
-            </button>
-          </PopoverTrigger>
-          <PopoverContent align="end" className="w-72 space-y-3">
-            <div className="space-y-2">
-              <label className="text-xs font-medium text-muted-foreground">From</label>
-              <Input type="date" defaultValue={from} onChange={(e) => onChange("custom", { from: e.target.value, to })} />
-            </div>
-            <div className="space-y-2">
-              <label className="text-xs font-medium text-muted-foreground">To</label>
-              <Input type="date" defaultValue={to} onChange={(e) => onChange("custom", { from, to: e.target.value })} />
-            </div>
-          </PopoverContent>
-        </Popover>
+            </CardContent>
+          </Card>
+        </div>
       </div>
-      <span className="text-xs text-muted-foreground">
-        {formatDate(from)} — {formatDate(to)}
-      </span>
     </div>
   );
 }
@@ -612,4 +548,3 @@ function Legend({ dot, label, value }: { dot: string; label: string; value?: str
     </div>
   );
 }
-
