@@ -16,7 +16,7 @@ import { ChevronDown, Plus, MoreHorizontal, SlidersHorizontal, Search } from "lu
 import { formatCurrency } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
-export const Route = createFileRoute("/_authenticated/suppliers")({
+export const Route = createFileRoute("/_authenticated/suppliers/")({
   head: () => ({ meta: [{ title: "Suppliers — Nimbus ERP" }] }),
   validateSearch: (s: Record<string, unknown>) => ({
     highlight: typeof s.highlight === "string" ? s.highlight : undefined,
