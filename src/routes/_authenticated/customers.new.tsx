@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, useBlocker } from "@tanstack/react-router";
 import { useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "@/hooks/use-profile";
@@ -9,45 +9,54 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Info, Mail, Upload } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Info, Mail, Upload, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/customers/new")({
   head: () => ({ meta: [{ title: "New Customer — Nimbus ERP" }] }),
   component: NewCustomerPage,
 });
 
-type Form = {
-  customer_type: "business" | "individual";
-  salutation: string;
-  first_name: string;
-  last_name: string;
-  company_name: string;
-  display_name: string;
-  email: string;
-  work_phone: string;
-  mobile: string;
-  language: string;
-  comm_email: boolean;
-  comm_whatsapp: boolean;
-  vat_treatment: string;
-  tax_exemption_no: string;
-  withholding_vat: boolean;
-  withholding_tax: boolean;
-  location_code: string;
-  currency: string;
-  accounts_receivable: string;
-  opening_balance_branch: string;
-  opening_balance_amount: string;
-  payment_terms: string;
-  enable_portal: boolean;
-  billing_address: string;
-  shipping_address: string;
-  remarks: string;
-};
+// ---------- Validation ----------
+const phoneRegex = /^[0-9\s+()-]*$/;
 
-const initial: Form = {
+const schema = z.object({
+  customer_type: z.enum(["business", "individual"]),
+  salutation: z.string().max(10).optional().or(z.literal("")),
+  first_name: z.string().trim().max(60, "Max 60 characters").optional().or(z.literal("")),
+  last_name: z.string().trim().min(1, "Last name is required").max(60, "Max 60 characters"),
+  company_name: z.string().trim().max(120, "Max 120 characters").optional().or(z.literal("")),
+  display_name: z.string().trim().min(1, "Display name is required").max(120, "Max 120 characters"),
+  email: z.string().trim().max(255, "Max 255 characters").email("Invalid email address").optional().or(z.literal("")),
+  work_phone: z.string().trim().max(20, "Max 20 characters").regex(phoneRegex, "Digits only").optional().or(z.literal("")),
+  mobile: z.string().trim().max(20, "Max 20 characters").regex(phoneRegex, "Digits only").optional().or(z.literal("")),
+  language: z.string(),
+  comm_email: z.boolean(),
+  comm_whatsapp: z.boolean(),
+  vat_treatment: z.string().min(1, "VAT treatment is required"),
+  tax_exemption_no: z.string().trim().max(50).optional().or(z.literal("")),
+  withholding_vat: z.boolean(),
+  withholding_tax: z.boolean(),
+  location_code: z.string().trim().max(40).optional().or(z.literal("")),
+  currency: z.string(),
+  accounts_receivable: z.string().optional().or(z.literal("")),
+  opening_balance_branch: z.string(),
+  opening_balance_amount: z.string().regex(/^-?\d*(\.\d{0,2})?$/, "Invalid amount").optional().or(z.literal("")),
+  payment_terms: z.string(),
+  enable_portal: z.boolean(),
+  billing_address: z.string().max(500, "Max 500 characters").optional().or(z.literal("")),
+  shipping_address: z.string().max(500, "Max 500 characters").optional().or(z.literal("")),
+  remarks: z.string().max(1000, "Max 1000 characters").optional().or(z.literal("")),
+});
+type FormValues = z.infer<typeof schema>;
+
+const defaults: FormValues = {
   customer_type: "business",
   salutation: "",
   first_name: "",
@@ -76,58 +85,122 @@ const initial: Form = {
   remarks: "",
 };
 
-function Row({ label, required, info, children }: { label: string; required?: boolean; info?: boolean; children: React.ReactNode }) {
+// ---------- Layout helpers ----------
+function Row({
+  label,
+  required,
+  info,
+  error,
+  children,
+}: {
+  label: string;
+  required?: boolean;
+  info?: boolean;
+  error?: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className="grid grid-cols-[180px_1fr] items-start gap-6 py-2">
       <Label className="pt-2 text-sm font-normal flex items-center gap-1.5">
         <span className={required ? "text-destructive" : ""}>{label}{required && "*"}</span>
         {info && <Info className="h-3.5 w-3.5 text-muted-foreground" />}
       </Label>
-      <div className="max-w-2xl">{children}</div>
+      <div className="max-w-2xl">
+        {children}
+        {error && (
+          <p className="mt-1.5 flex items-center gap-1 text-xs text-destructive">
+            <AlertCircle className="h-3 w-3" /> {error}
+          </p>
+        )}
+      </div>
     </div>
   );
 }
 
+// ---------- Page ----------
 function NewCustomerPage() {
   const navigate = useNavigate();
   const { data: profile } = useProfile();
   const tenantId = profile?.currentTenant?.id;
-  const [f, setF] = useState<Form>(initial);
-  const set = <K extends keyof Form>(k: K, v: Form[K]) => setF((p) => ({ ...p, [k]: v }));
+
+  const form = useForm<FormValues>({
+    resolver: zodResolver(schema),
+    defaultValues: defaults,
+    mode: "onBlur",
+  });
+  const { register, handleSubmit, control, watch, formState, setValue } = form;
+  const { errors, isDirty, isSubmitting, isSubmitSuccessful } = formState;
+
+  const salutation = watch("salutation");
+  const firstName = watch("first_name");
+  const lastName = watch("last_name");
+  const companyName = watch("company_name");
+  const currency = watch("currency");
 
   const displayOptions = useMemo(() => {
     const opts: string[] = [];
-    const fn = `${f.salutation} ${f.first_name} ${f.last_name}`.trim();
+    const fn = `${salutation ?? ""} ${firstName ?? ""} ${lastName ?? ""}`.trim();
     if (fn) opts.push(fn);
-    if (f.company_name) opts.push(f.company_name);
-    if (f.first_name && f.last_name) opts.push(`${f.last_name}, ${f.first_name}`);
+    if (companyName) opts.push(companyName);
+    if (firstName && lastName) opts.push(`${lastName}, ${firstName}`);
     return Array.from(new Set(opts));
-  }, [f.salutation, f.first_name, f.last_name, f.company_name]);
+  }, [salutation, firstName, lastName, companyName]);
+
+  // Unsaved-changes guards
+  const shouldBlock = isDirty && !isSubmitSuccessful;
+  useBlocker({
+    shouldBlockFn: () => {
+      if (!shouldBlock) return false;
+      return !window.confirm("You have unsaved changes. Leave this page anyway?");
+    },
+    enableBeforeUnload: () => shouldBlock,
+  });
+  useEffect(() => {
+    const onBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (shouldBlock) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    };
+    window.addEventListener("beforeunload", onBeforeUnload);
+    return () => window.removeEventListener("beforeunload", onBeforeUnload);
+  }, [shouldBlock]);
 
   const save = useMutation({
-    mutationFn: async () => {
-      if (!tenantId) throw new Error("No tenant");
-      const name = f.display_name || `${f.first_name} ${f.last_name}`.trim() || f.company_name;
-      if (!name) throw new Error("Display name is required");
+    mutationFn: async (values: FormValues) => {
+      if (!tenantId) throw new Error("No tenant selected");
+      const name = values.display_name.trim();
       const payload: any = {
         tenant_id: tenantId,
         name,
-        company_name: f.company_name || null,
-        contact_person: `${f.salutation} ${f.first_name} ${f.last_name}`.trim() || null,
-        email: f.email || null,
-        phone: f.work_phone || f.mobile || null,
-        vat_number: f.tax_exemption_no || null,
-        billing_address: f.billing_address || null,
-        shipping_address: f.shipping_address || null,
-        payment_terms_days: f.payment_terms === "Due on Receipt" ? 0 : 30,
-        notes: f.remarks || null,
+        company_name: values.company_name || null,
+        contact_person: `${values.salutation ?? ""} ${values.first_name ?? ""} ${values.last_name ?? ""}`.trim() || null,
+        email: values.email || null,
+        phone: values.work_phone || values.mobile || null,
+        vat_number: values.tax_exemption_no || null,
+        billing_address: values.billing_address || null,
+        shipping_address: values.shipping_address || null,
+        payment_terms_days: values.payment_terms === "Due on Receipt"
+          ? 0
+          : Number(values.payment_terms.replace(/\D/g, "")) || 30,
+        notes: values.remarks || null,
       };
-      const { error } = await supabase.from("customers").insert(payload);
+      const { data, error } = await supabase
+        .from("customers")
+        .insert(payload)
+        .select("id")
+        .single();
       if (error) throw error;
+      return data.id as string;
     },
-    onSuccess: () => { toast.success("Customer created"); navigate({ to: "/customers" }); },
+    onSuccess: (id) => {
+      toast.success("Customer created");
+      navigate({ to: "/customers", search: { highlight: id } as any, replace: true });
+    },
     onError: (e: any) => toast.error(e.message),
   });
+
+  const onCancel = () => navigate({ to: "/customers" });
 
   return (
     <div className="-m-6">
@@ -136,229 +209,417 @@ function NewCustomerPage() {
         <h1 className="text-xl font-semibold">New Customer</h1>
       </div>
 
-      <div className="bg-card px-6 py-6">
-        <div className="space-y-1">
-          <Row label="Customer Type" info>
-            <div className="flex items-center gap-6 pt-2">
-              <label className="flex items-center gap-2 text-sm cursor-pointer">
-                <input type="radio" checked={f.customer_type === "business"} onChange={() => set("customer_type", "business")} className="accent-primary" />
-                Business
-              </label>
-              <label className="flex items-center gap-2 text-sm cursor-pointer">
-                <input type="radio" checked={f.customer_type === "individual"} onChange={() => set("customer_type", "individual")} className="accent-primary" />
-                Individual
-              </label>
-            </div>
-          </Row>
+      <form onSubmit={handleSubmit((v) => save.mutate(v))} noValidate>
+        <div className="bg-card px-6 py-6">
+          <div className="space-y-1">
+            <Row label="Customer Type" info>
+              <Controller
+                control={control}
+                name="customer_type"
+                render={({ field }) => (
+                  <div className="flex items-center gap-6 pt-2">
+                    <label className="flex items-center gap-2 text-sm cursor-pointer">
+                      <input
+                        type="radio"
+                        checked={field.value === "business"}
+                        onChange={() => field.onChange("business")}
+                        className="accent-primary"
+                      />
+                      Business
+                    </label>
+                    <label className="flex items-center gap-2 text-sm cursor-pointer">
+                      <input
+                        type="radio"
+                        checked={field.value === "individual"}
+                        onChange={() => field.onChange("individual")}
+                        className="accent-primary"
+                      />
+                      Individual
+                    </label>
+                  </div>
+                )}
+              />
+            </Row>
 
-          <Row label="Primary Contact" info>
-            <div className="space-y-1.5">
+            <Row
+              label="Primary Contact"
+              info
+              error={errors.last_name?.message || errors.first_name?.message}
+            >
               <div className="grid grid-cols-[120px_1fr_1fr] gap-3">
-                <Select value={f.salutation} onValueChange={(v) => set("salutation", v)}>
-                  <SelectTrigger><SelectValue placeholder="Salutation" /></SelectTrigger>
-                  <SelectContent>
-                    {["Mr.", "Mrs.", "Ms.", "Dr.", "Prof."].map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-                <Input placeholder="First Name" value={f.first_name} onChange={(e) => set("first_name", e.target.value)} />
-                <Input placeholder="Last Name*" value={f.last_name} onChange={(e) => set("last_name", e.target.value)} />
+                <Controller
+                  control={control}
+                  name="salutation"
+                  render={({ field }) => (
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <SelectTrigger><SelectValue placeholder="Salutation" /></SelectTrigger>
+                      <SelectContent>
+                        {["Mr.", "Mrs.", "Ms.", "Dr.", "Prof."].map((s) => (
+                          <SelectItem key={s} value={s}>{s}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+                <Input
+                  placeholder="First Name"
+                  aria-invalid={!!errors.first_name}
+                  className={cn(errors.first_name && "border-destructive")}
+                  {...register("first_name")}
+                />
+                <Input
+                  placeholder="Last Name*"
+                  aria-invalid={!!errors.last_name}
+                  className={cn(errors.last_name && "border-destructive")}
+                  {...register("last_name")}
+                />
               </div>
-            </div>
-          </Row>
+            </Row>
 
-          <Row label="Company Name">
-            <Input value={f.company_name} onChange={(e) => set("company_name", e.target.value)} />
-          </Row>
+            <Row label="Company Name" error={errors.company_name?.message}>
+              <Input
+                aria-invalid={!!errors.company_name}
+                className={cn(errors.company_name && "border-destructive")}
+                {...register("company_name")}
+              />
+            </Row>
 
-          <Row label="Display Name" required info>
-            <Select value={f.display_name} onValueChange={(v) => set("display_name", v)}>
-              <SelectTrigger><SelectValue placeholder="Select or type to add" /></SelectTrigger>
-              <SelectContent>
-                {displayOptions.length === 0 ? <SelectItem value="—" disabled>Fill in contact info first</SelectItem> :
-                  displayOptions.map((o) => <SelectItem key={o} value={o}>{o}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </Row>
-
-          <Row label="Email Address" info>
-            <div className="relative">
-              <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input type="email" className="pl-9" value={f.email} onChange={(e) => set("email", e.target.value)} />
-            </div>
-          </Row>
-
-          <Row label="Phone" info>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="flex">
-                <div className="flex items-center px-3 border border-r-0 rounded-l-md bg-muted/40 text-sm text-muted-foreground">+254</div>
-                <Input placeholder="Work Phone" className="rounded-l-none" value={f.work_phone} onChange={(e) => set("work_phone", e.target.value)} />
-              </div>
-              <div className="flex">
-                <div className="flex items-center px-3 border border-r-0 rounded-l-md bg-muted/40 text-sm text-muted-foreground">+254</div>
-                <Input placeholder="Mobile" className="rounded-l-none" value={f.mobile} onChange={(e) => set("mobile", e.target.value)} />
-              </div>
-            </div>
-          </Row>
-
-          <Row label="Customer Language" info>
-            <Select value={f.language} onValueChange={(v) => set("language", v)}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                {["English", "Swahili", "French", "Spanish"].map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </Row>
-
-          <Row label="Communication Channels">
-            <div className="flex items-center gap-6 pt-2">
-              <label className="flex items-center gap-2 text-sm">
-                <Checkbox checked={f.comm_email} onCheckedChange={(v) => set("comm_email", !!v)} /> Email
-              </label>
-              <label className="flex items-center gap-2 text-sm">
-                <Checkbox checked={f.comm_whatsapp} onCheckedChange={(v) => set("comm_whatsapp", !!v)} /> WhatsApp
-              </label>
-            </div>
-          </Row>
-        </div>
-
-        {/* Tabs */}
-        <div className="mt-8">
-          <Tabs defaultValue="other">
-            <TabsList className="w-full justify-start gap-6 rounded-none border-b bg-transparent p-0 h-auto">
-              {[
-                { v: "other", l: "Other Details" },
-                { v: "address", l: "Address" },
-                { v: "contacts", l: "Contact Persons" },
-                { v: "custom", l: "Custom Fields" },
-                { v: "tags", l: "Reporting Tags" },
-                { v: "remarks", l: "Remarks" },
-              ].map((t) => (
-                <TabsTrigger
-                  key={t.v}
-                  value={t.v}
-                  className="rounded-none border-b-2 border-transparent bg-transparent px-1 pb-3 pt-2 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-foreground"
-                >
-                  {t.l}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-
-            <TabsContent value="other" className="pt-6 space-y-1">
-              <Row label="VAT Treatment" required>
-                <Select value={f.vat_treatment} onValueChange={(v) => set("vat_treatment", v)}>
-                  <SelectTrigger><SelectValue placeholder="" /></SelectTrigger>
-                  <SelectContent>
-                    {["Registered Business", "Non Registered Business", "Overseas"].map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </Row>
-              <Row label="Tax Exemption Certificate Number">
-                <Input placeholder="Number" value={f.tax_exemption_no} onChange={(e) => set("tax_exemption_no", e.target.value)} />
-              </Row>
-              <Row label="Withholding VAT">
-                <label className="flex items-center gap-2 text-sm pt-2">
-                  <Checkbox checked={f.withholding_vat} onCheckedChange={(v) => set("withholding_vat", !!v)} /> Apply Withholding VAT for this customer
-                </label>
-              </Row>
-              <Row label="Withholding Tax">
-                <label className="flex items-center gap-2 text-sm pt-2">
-                  <Checkbox checked={f.withholding_tax} onCheckedChange={(v) => set("withholding_tax", !!v)} /> Enable Withholding Tax for this Customer
-                </label>
-              </Row>
-              <Row label="Location Code" info>
-                <Input value={f.location_code} onChange={(e) => set("location_code", e.target.value)} />
-              </Row>
-              <Row label="Currency">
-                <Select value={f.currency} onValueChange={(v) => set("currency", v)}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {["KES- Kenyan Shilling", "USD- US Dollar", "EUR- Euro", "GBP- British Pound"].map((s) =>
-                      <SelectItem key={s} value={s.split("-")[0]}>{s}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </Row>
-              <Row label="Accounts Receivable" info>
-                <Select value={f.accounts_receivable} onValueChange={(v) => set("accounts_receivable", v)}>
-                  <SelectTrigger><SelectValue placeholder="Select an account" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="ar-default">Accounts Receivable</SelectItem>
-                  </SelectContent>
-                </Select>
-              </Row>
-              <Row label="Opening Balance">
-                <div className="grid grid-cols-[180px_1fr] gap-3">
-                  <Select value={f.opening_balance_branch} onValueChange={(v) => set("opening_balance_branch", v)}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
+            <Row label="Display Name" required info error={errors.display_name?.message}>
+              <Controller
+                control={control}
+                name="display_name"
+                render={({ field }) => (
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger
+                      aria-invalid={!!errors.display_name}
+                      className={cn(errors.display_name && "border-destructive")}
+                    >
+                      <SelectValue placeholder="Select or type to add" />
+                    </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Head Office">Head Office</SelectItem>
+                      {displayOptions.length === 0 ? (
+                        <SelectItem value="—" disabled>Fill in contact info first</SelectItem>
+                      ) : (
+                        displayOptions.map((o) => <SelectItem key={o} value={o}>{o}</SelectItem>)
+                      )}
                     </SelectContent>
                   </Select>
-                  <div className="flex">
-                    <div className="flex items-center px-3 border border-r-0 rounded-l-md bg-muted/40 text-sm text-muted-foreground">{f.currency}</div>
-                    <Input className="rounded-l-none" value={f.opening_balance_amount} onChange={(e) => set("opening_balance_amount", e.target.value)} />
+                )}
+              />
+            </Row>
+
+            <Row label="Email Address" info error={errors.email?.message}>
+              <div className="relative">
+                <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  type="email"
+                  className={cn("pl-9", errors.email && "border-destructive")}
+                  aria-invalid={!!errors.email}
+                  {...register("email")}
+                />
+              </div>
+            </Row>
+
+            <Row label="Phone" info error={errors.work_phone?.message || errors.mobile?.message}>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="flex">
+                  <div className="flex items-center px-3 border border-r-0 rounded-l-md bg-muted/40 text-sm text-muted-foreground">+254</div>
+                  <Input
+                    placeholder="Work Phone"
+                    className={cn("rounded-l-none", errors.work_phone && "border-destructive")}
+                    {...register("work_phone")}
+                  />
+                </div>
+                <div className="flex">
+                  <div className="flex items-center px-3 border border-r-0 rounded-l-md bg-muted/40 text-sm text-muted-foreground">+254</div>
+                  <Input
+                    placeholder="Mobile"
+                    className={cn("rounded-l-none", errors.mobile && "border-destructive")}
+                    {...register("mobile")}
+                  />
+                </div>
+              </div>
+            </Row>
+
+            <Row label="Customer Language" info>
+              <Controller
+                control={control}
+                name="language"
+                render={({ field }) => (
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {["English", "Swahili", "French", "Spanish"].map((s) => (
+                        <SelectItem key={s} value={s}>{s}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+            </Row>
+
+            <Row label="Communication Channels">
+              <div className="flex items-center gap-6 pt-2">
+                <Controller
+                  control={control}
+                  name="comm_email"
+                  render={({ field }) => (
+                    <label className="flex items-center gap-2 text-sm">
+                      <Checkbox checked={field.value} onCheckedChange={(v) => field.onChange(!!v)} /> Email
+                    </label>
+                  )}
+                />
+                <Controller
+                  control={control}
+                  name="comm_whatsapp"
+                  render={({ field }) => (
+                    <label className="flex items-center gap-2 text-sm">
+                      <Checkbox checked={field.value} onCheckedChange={(v) => field.onChange(!!v)} /> WhatsApp
+                    </label>
+                  )}
+                />
+              </div>
+            </Row>
+          </div>
+
+          {/* Tabs */}
+          <div className="mt-8">
+            <Tabs defaultValue="other">
+              <TabsList className="w-full justify-start gap-6 rounded-none border-b bg-transparent p-0 h-auto">
+                {[
+                  { v: "other", l: "Other Details" },
+                  { v: "address", l: "Address" },
+                  { v: "contacts", l: "Contact Persons" },
+                  { v: "custom", l: "Custom Fields" },
+                  { v: "tags", l: "Reporting Tags" },
+                  { v: "remarks", l: "Remarks" },
+                ].map((t) => (
+                  <TabsTrigger
+                    key={t.v}
+                    value={t.v}
+                    className="rounded-none border-b-2 border-transparent bg-transparent px-1 pb-3 pt-2 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-foreground"
+                  >
+                    {t.l}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+
+              <TabsContent value="other" className="pt-6 space-y-1">
+                <Row label="VAT Treatment" required error={errors.vat_treatment?.message}>
+                  <Controller
+                    control={control}
+                    name="vat_treatment"
+                    render={({ field }) => (
+                      <Select value={field.value} onValueChange={field.onChange}>
+                        <SelectTrigger
+                          aria-invalid={!!errors.vat_treatment}
+                          className={cn(errors.vat_treatment && "border-destructive")}
+                        >
+                          <SelectValue placeholder="" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {["Registered Business", "Non Registered Business", "Overseas"].map((s) => (
+                            <SelectItem key={s} value={s}>{s}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
+                </Row>
+                <Row label="Tax Exemption Certificate Number">
+                  <Input placeholder="Number" {...register("tax_exemption_no")} />
+                </Row>
+                <Row label="Withholding VAT">
+                  <Controller
+                    control={control}
+                    name="withholding_vat"
+                    render={({ field }) => (
+                      <label className="flex items-center gap-2 text-sm pt-2">
+                        <Checkbox checked={field.value} onCheckedChange={(v) => field.onChange(!!v)} />
+                        Apply Withholding VAT for this customer
+                      </label>
+                    )}
+                  />
+                </Row>
+                <Row label="Withholding Tax">
+                  <Controller
+                    control={control}
+                    name="withholding_tax"
+                    render={({ field }) => (
+                      <label className="flex items-center gap-2 text-sm pt-2">
+                        <Checkbox checked={field.value} onCheckedChange={(v) => field.onChange(!!v)} />
+                        Enable Withholding Tax for this Customer
+                      </label>
+                    )}
+                  />
+                </Row>
+                <Row label="Location Code" info>
+                  <Input {...register("location_code")} />
+                </Row>
+                <Row label="Currency">
+                  <Controller
+                    control={control}
+                    name="currency"
+                    render={({ field }) => (
+                      <Select value={field.value} onValueChange={field.onChange}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {["KES- Kenyan Shilling", "USD- US Dollar", "EUR- Euro", "GBP- British Pound"].map((s) => (
+                            <SelectItem key={s} value={s.split("-")[0]}>{s}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
+                </Row>
+                <Row label="Accounts Receivable" info>
+                  <Controller
+                    control={control}
+                    name="accounts_receivable"
+                    render={({ field }) => (
+                      <Select value={field.value} onValueChange={field.onChange}>
+                        <SelectTrigger><SelectValue placeholder="Select an account" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="ar-default">Accounts Receivable</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
+                </Row>
+                <Row label="Opening Balance" error={errors.opening_balance_amount?.message}>
+                  <div className="grid grid-cols-[180px_1fr] gap-3">
+                    <Controller
+                      control={control}
+                      name="opening_balance_branch"
+                      render={({ field }) => (
+                        <Select value={field.value} onValueChange={field.onChange}>
+                          <SelectTrigger><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Head Office">Head Office</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
+                    <div className="flex">
+                      <div className="flex items-center px-3 border border-r-0 rounded-l-md bg-muted/40 text-sm text-muted-foreground">
+                        {currency}
+                      </div>
+                      <Input
+                        className={cn("rounded-l-none", errors.opening_balance_amount && "border-destructive")}
+                        {...register("opening_balance_amount")}
+                      />
+                    </div>
                   </div>
-                </div>
-              </Row>
-              <Row label="Payment Terms">
-                <Select value={f.payment_terms} onValueChange={(v) => set("payment_terms", v)}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {["Due on Receipt", "Net 15", "Net 30", "Net 45", "Net 60"].map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </Row>
-              <Row label="Enable Portal?" info>
-                <label className="flex items-center gap-2 text-sm pt-2">
-                  <Checkbox checked={f.enable_portal} onCheckedChange={(v) => set("enable_portal", !!v)} /> Allow portal access for this customer
-                </label>
-              </Row>
-              <Row label="Documents">
-                <div>
-                  <Button variant="outline" type="button" className="gap-2"><Upload className="h-4 w-4" /> Upload File</Button>
-                  <p className="mt-1.5 text-xs text-muted-foreground">You can upload a maximum of 10 files, 10MB each</p>
-                </div>
-              </Row>
-            </TabsContent>
+                </Row>
+                <Row label="Payment Terms">
+                  <Controller
+                    control={control}
+                    name="payment_terms"
+                    render={({ field }) => (
+                      <Select value={field.value} onValueChange={field.onChange}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {["Due on Receipt", "Net 15", "Net 30", "Net 45", "Net 60"].map((s) => (
+                            <SelectItem key={s} value={s}>{s}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
+                </Row>
+                <Row label="Enable Portal?" info>
+                  <Controller
+                    control={control}
+                    name="enable_portal"
+                    render={({ field }) => (
+                      <label className="flex items-center gap-2 text-sm pt-2">
+                        <Checkbox checked={field.value} onCheckedChange={(v) => field.onChange(!!v)} />
+                        Allow portal access for this customer
+                      </label>
+                    )}
+                  />
+                </Row>
+                <Row label="Documents">
+                  <div>
+                    <Button variant="outline" type="button" className="gap-2"><Upload className="h-4 w-4" /> Upload File</Button>
+                    <p className="mt-1.5 text-xs text-muted-foreground">You can upload a maximum of 10 files, 10MB each</p>
+                  </div>
+                </Row>
+              </TabsContent>
 
-            <TabsContent value="address" className="pt-6 space-y-1">
-              <Row label="Billing Address">
-                <Textarea rows={3} value={f.billing_address} onChange={(e) => set("billing_address", e.target.value)} />
-              </Row>
-              <Row label="Shipping Address">
-                <Textarea rows={3} value={f.shipping_address} onChange={(e) => set("shipping_address", e.target.value)} />
-              </Row>
-            </TabsContent>
+              <TabsContent value="address" className="pt-6 space-y-1">
+                <Row label="Billing Address" error={errors.billing_address?.message}>
+                  <Textarea rows={3} {...register("billing_address")} />
+                </Row>
+                <Row label="Shipping Address" error={errors.shipping_address?.message}>
+                  <Textarea rows={3} {...register("shipping_address")} />
+                </Row>
+              </TabsContent>
 
-            <TabsContent value="contacts" className="pt-6 text-sm text-muted-foreground">No additional contacts yet.</TabsContent>
-            <TabsContent value="custom" className="pt-6 text-sm text-muted-foreground">No custom fields configured.</TabsContent>
-            <TabsContent value="tags" className="pt-6 text-sm text-muted-foreground">No reporting tags.</TabsContent>
-            <TabsContent value="remarks" className="pt-6">
-              <Textarea rows={4} placeholder="Internal notes…" value={f.remarks} onChange={(e) => set("remarks", e.target.value)} />
-            </TabsContent>
-          </Tabs>
+              <TabsContent value="contacts" className="pt-6 text-sm text-muted-foreground">No additional contacts yet.</TabsContent>
+              <TabsContent value="custom" className="pt-6 text-sm text-muted-foreground">No custom fields configured.</TabsContent>
+              <TabsContent value="tags" className="pt-6 text-sm text-muted-foreground">No reporting tags.</TabsContent>
+              <TabsContent value="remarks" className="pt-6">
+                <Textarea rows={4} placeholder="Internal notes…" {...register("remarks")} />
+                {errors.remarks && (
+                  <p className="mt-1.5 flex items-center gap-1 text-xs text-destructive">
+                    <AlertCircle className="h-3 w-3" /> {errors.remarks.message}
+                  </p>
+                )}
+              </TabsContent>
+            </Tabs>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setValue("remarks", watch("remarks") ?? "", { shouldDirty: false })}
+            className="mt-6 text-sm font-medium text-primary hover:underline"
+          >
+            Add more details
+          </button>
+
+          <div className="mt-8 border-t pt-6">
+            <p className="text-sm text-muted-foreground">
+              <span className="font-medium text-foreground">Customer Owner:</span> Assign a user as the customer owner to provide access only to the data of this customer.{" "}
+              <button type="button" className="text-primary hover:underline">Learn More</button>
+            </p>
+          </div>
         </div>
 
-        <button className="mt-6 text-sm font-medium text-primary hover:underline">Add more details</button>
-
-        <div className="mt-8 border-t pt-6">
-          <p className="text-sm text-muted-foreground">
-            <span className="font-medium text-foreground">Customer Owner:</span> Assign a user as the customer owner to provide access only to the data of this customer.{" "}
-            <button className="text-primary hover:underline">Learn More</button>
-          </p>
+        {/* Sticky footer */}
+        <div className="sticky bottom-0 border-t bg-card px-6 py-3 flex items-center gap-3">
+          <Button
+            type="submit"
+            disabled={isSubmitting || save.isPending}
+            className="bg-emerald-600 hover:bg-emerald-700 text-white"
+          >
+            {isSubmitting || save.isPending ? "Saving…" : "Save"}
+          </Button>
+          <Button type="button" variant="outline" onClick={onCancel}>Cancel</Button>
+          {Object.keys(errors).length > 0 && (
+            <p className="text-xs text-destructive ml-2">Fix the highlighted fields above.</p>
+          )}
         </div>
-      </div>
-
-      {/* Sticky footer */}
-      <div className="sticky bottom-0 border-t bg-card px-6 py-3 flex items-center gap-3">
-        <Button
-          onClick={() => save.mutate()}
-          disabled={save.isPending || !f.display_name}
-          className="bg-emerald-600 hover:bg-emerald-700 text-white"
-        >
-          {save.isPending ? "Saving…" : "Save"}
-        </Button>
-        <Button variant="outline" onClick={() => navigate({ to: "/customers" })}>Cancel</Button>
-      </div>
+      </form>
     </div>
+  );
+}
+
+// Optional confirm dialog component (not currently wired; native confirm is used via useBlocker)
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function ConfirmLeaveDialog({ open, onCancel, onLeave }: { open: boolean; onCancel: () => void; onLeave: () => void }) {
+  return (
+    <AlertDialog open={open}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Discard unsaved changes?</AlertDialogTitle>
+          <AlertDialogDescription>You have entered data that hasn't been saved. Leaving will lose your changes.</AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel onClick={onCancel}>Stay on page</AlertDialogCancel>
+          <AlertDialogAction onClick={onLeave}>Discard & leave</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }
