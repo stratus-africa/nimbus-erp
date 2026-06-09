@@ -130,7 +130,7 @@ function SuppliersPage() {
   };
 
   const openNew = () => navigate({ to: "/suppliers/new" });
-  const openEdit = (s: Supplier) => { if (s.id) navigate({ to: "/suppliers/$supplierId/edit", params: { supplierId: s.id } }); };
+  const openEdit = (s: Supplier) => { if (s.id) navigate({ to: "/suppliers/$supplierId", params: { supplierId: s.id } }); };
 
   const filterLabel = FILTERS.find((f) => f.key === filter)?.label ?? "Active Suppliers";
 
