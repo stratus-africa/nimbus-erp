@@ -231,7 +231,7 @@ function Dashboard() {
       </div>
 
       {/* Cash Flow, Income & Expense, Top Expenses (left) | Recent Activity (right) */}
-      <div className="grid gap-4 lg:grid-cols-[1fr_520px]">
+      <div className="grid gap-4 lg:grid-cols-[1fr_380px]">
         {/* Left column: Cash Flow, Income & Expense, Top Expenses */}
         <div className="space-y-4">
           {/* Cash Flow */}
