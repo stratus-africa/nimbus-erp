@@ -77,7 +77,6 @@ const defaults: FormValues = {
   comm_whatsapp: false,
   vat_treatment: "VAT Registered",
   vat_registration_no: "",
-  pin_number: "",
   withholding_vat: false,
   withholding_tax: false,
   currency: "KES",
