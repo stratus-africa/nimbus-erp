@@ -64,12 +64,11 @@ function EditSupplierRoute() {
     display_name: s.name ?? "",
     email: s.email ?? "",
     work_phone: s.phone ?? "",
-    pin_number: s.pin_number ?? "",
-    vat_registration_no: "",
+    vat_registration_no: s.vat_number ?? s.pin_number ?? "",
     billing_address: s.address ?? "",
     payment_terms: paymentTermsLabel(s.payment_terms_days),
     remarks: s.notes ?? "",
-    vat_treatment: s.pin_number ? "VAT Registered" : "Non VAT Registered",
+    vat_treatment: (s.vat_number || s.pin_number) ? "VAT Registered" : "Non VAT Registered",
   };
 
   return <SupplierFormPage supplierId={supplierId} initial={initial} />;
