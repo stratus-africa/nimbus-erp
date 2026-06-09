@@ -38,24 +38,14 @@ const SECTIONS: Section[] = [
           { label: "Manage Subscription" },
         ],
       }],
-      [
-        {
-          title: "Users & Roles", icon: Users, tone: "rose",
-          items: [
-            { label: "Users", to: "/admin" },
-            { label: "Roles" },
-            { label: "User Preferences" },
-          ],
-        },
-        {
-          title: "Taxes & Compliance", icon: Receipt, tone: "sky",
-          items: [
-            { label: "VAT" },
-            { label: "Withholding Tax" },
-            { label: "e-Invoicing" },
-          ],
-        },
-      ],
+      [{
+        title: "Users & Roles", icon: Users, tone: "rose",
+        items: [
+          { label: "Users", to: "/admin" },
+          { label: "Roles" },
+          { label: "User Preferences" },
+        ],
+      }],
       [{
         title: "Setup & Configurations", icon: SettingsIcon, tone: "amber",
         items: [
