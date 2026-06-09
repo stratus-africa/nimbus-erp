@@ -3,8 +3,8 @@ import { useProfile } from "@/hooks/use-profile";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
-  Search, X, Building2, Users, Settings as SettingsIcon, Palette, Zap,
-  Receipt, Boxes, ShoppingCart, ShoppingBag, LayoutGrid, CreditCard, Layers,
+  Search, X, Building2, Users, Settings as SettingsIcon, Palette,
+  Receipt, Boxes, ShoppingCart, ShoppingBag, LayoutGrid, CreditCard,
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
