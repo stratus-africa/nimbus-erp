@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { PageHeader, NewButton, useDialogState } from "@/components/page-header";
+import { formatCurrency } from "@/lib/format";
 import { toast } from "sonner";
 import { useEffect, useState } from "react";
 
@@ -24,12 +25,11 @@ type Item = {
   sku?: string | null;
   name: string;
   description?: string | null;
-  item_type: "goods" | "service";
+  item_type: "inventory" | "service" | "non_inventory";
   unit?: string | null;
-  sale_price?: number | null;
-  purchase_price?: number | null;
-  track_inventory?: boolean;
-  on_hand?: number | null;
+  selling_price?: number | null;
+  cost_price?: number | null;
+  reorder_level?: number | null;
 };
 
 function ItemsPage() {
@@ -61,12 +61,10 @@ function ItemsPage() {
 
   return (
     <div>
-      <PageHeader title="Items" description="Product and service catalog." action={<NewButton onClick={() => dlg.openFor({ name: "", item_type: "goods" })} label="New item" />} />
+      <PageHeader title="Items" description="Product and service catalog." action={<NewButton onClick={() => dlg.openFor({ name: "", item_type: "inventory" })} label="New item" />} />
       <Card>
         <Table>
-          <TableHeader>
-            <TableRow><TableHead>SKU</TableHead><TableHead>Name</TableHead><TableHead>Type</TableHead><TableHead className="text-right">Sale</TableHead><TableHead className="text-right">Purchase</TableHead><TableHead className="text-right">On hand</TableHead><TableHead></TableHead></TableRow>
-          </TableHeader>
+          <TableHeader><TableRow><TableHead>SKU</TableHead><TableHead>Name</TableHead><TableHead>Type</TableHead><TableHead className="text-right">Sell</TableHead><TableHead className="text-right">Cost</TableHead><TableHead className="text-right">On hand</TableHead><TableHead></TableHead></TableRow></TableHeader>
           <TableBody>
             {isLoading ? <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground">Loading…</TableCell></TableRow>
               : !rows?.length ? <TableRow><TableCell colSpan={7} className="py-8 text-center text-muted-foreground">No items yet.</TableCell></TableRow>
@@ -74,25 +72,24 @@ function ItemsPage() {
                 <TableRow key={i.id}>
                   <TableCell>{i.sku ?? "—"}</TableCell>
                   <TableCell className="font-medium">{i.name}</TableCell>
-                  <TableCell className="capitalize">{i.item_type}</TableCell>
-                  <TableCell className="text-right">{new Intl.NumberFormat("en-US", { style: "currency", currency }).format(Number(i.sale_price ?? 0))}</TableCell>
-                  <TableCell className="text-right">{new Intl.NumberFormat("en-US", { style: "currency", currency }).format(Number(i.purchase_price ?? 0))}</TableCell>
-                  <TableCell className="text-right">{i.track_inventory ? Number(i.on_hand ?? 0) : "—"}</TableCell>
+                  <TableCell className="capitalize">{String(i.item_type).replace("_", " ")}</TableCell>
+                  <TableCell className="text-right">{formatCurrency(i.selling_price, currency)}</TableCell>
+                  <TableCell className="text-right">{formatCurrency(i.cost_price, currency)}</TableCell>
+                  <TableCell className="text-right">{i.item_type === "inventory" ? Number(i.stock_on_hand ?? 0) : "—"}</TableCell>
                   <TableCell className="text-right"><Button variant="ghost" size="sm" onClick={() => dlg.openFor(i)}>Edit</Button></TableCell>
                 </TableRow>
               ))}
           </TableBody>
         </Table>
       </Card>
-
-      <ItemDialog open={dlg.open} onOpenChange={dlg.setOpen} initial={dlg.data} onSubmit={(i) => upsert.mutate(i)} saving={upsert.isPending} />
+      <ItemDialog open={dlg.open} onOpenChange={dlg.setOpen} initial={dlg.data} onSubmit={(i: Item) => upsert.mutate(i)} saving={upsert.isPending} />
     </div>
   );
 }
 
-function ItemDialog({ open, onOpenChange, initial, onSubmit, saving }: any) {
-  const [i, setI] = useState<Item>({ name: "", item_type: "goods" });
-  useEffect(() => { setI(initial ?? { name: "", item_type: "goods" }); }, [initial, open]);
+function ItemDialog({ open, onOpenChange, initial, onSubmit, saving }: { open: boolean; onOpenChange: (v: boolean) => void; initial: Item | null; onSubmit: (i: Item) => void; saving: boolean }) {
+  const [i, setI] = useState<Item>({ name: "", item_type: "inventory" });
+  useEffect(() => { setI(initial ?? { name: "", item_type: "inventory" }); }, [initial, open]);
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
@@ -104,16 +101,17 @@ function ItemDialog({ open, onOpenChange, initial, onSubmit, saving }: any) {
             <Label>Type</Label>
             <Select value={i.item_type} onValueChange={(v: any) => setI({ ...i, item_type: v })}>
               <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent><SelectItem value="goods">Goods</SelectItem><SelectItem value="service">Service</SelectItem></SelectContent>
+              <SelectContent>
+                <SelectItem value="inventory">Inventory</SelectItem>
+                <SelectItem value="service">Service</SelectItem>
+                <SelectItem value="non_inventory">Non-inventory</SelectItem>
+              </SelectContent>
             </Select>
           </div>
           <div className="space-y-2"><Label>Unit</Label><Input value={i.unit ?? ""} onChange={(e) => setI({ ...i, unit: e.target.value })} placeholder="pcs, hrs, kg…" /></div>
-          <div className="space-y-2"><Label>Sale price</Label><Input type="number" step="0.01" value={i.sale_price ?? ""} onChange={(e) => setI({ ...i, sale_price: parseFloat(e.target.value) || 0 })} /></div>
-          <div className="space-y-2"><Label>Purchase price</Label><Input type="number" step="0.01" value={i.purchase_price ?? ""} onChange={(e) => setI({ ...i, purchase_price: parseFloat(e.target.value) || 0 })} /></div>
-          <div className="space-y-2 sm:col-span-2 flex items-center gap-2">
-            <input id="ti" type="checkbox" checked={!!i.track_inventory} onChange={(e) => setI({ ...i, track_inventory: e.target.checked })} disabled={i.item_type === "service"} />
-            <Label htmlFor="ti">Track inventory</Label>
-          </div>
+          <div className="space-y-2"><Label>Selling price</Label><Input type="number" step="0.01" value={i.selling_price ?? ""} onChange={(e) => setI({ ...i, selling_price: parseFloat(e.target.value) || 0 })} /></div>
+          <div className="space-y-2"><Label>Cost price</Label><Input type="number" step="0.01" value={i.cost_price ?? ""} onChange={(e) => setI({ ...i, cost_price: parseFloat(e.target.value) || 0 })} /></div>
+          <div className="space-y-2"><Label>Reorder level</Label><Input type="number" step="0.01" value={i.reorder_level ?? ""} onChange={(e) => setI({ ...i, reorder_level: parseFloat(e.target.value) || 0 })} /></div>
           <div className="space-y-2 sm:col-span-2"><Label>Description</Label><Textarea value={i.description ?? ""} onChange={(e) => setI({ ...i, description: e.target.value })} /></div>
         </div>
         <DialogFooter>

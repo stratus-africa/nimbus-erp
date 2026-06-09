@@ -18,14 +18,7 @@ export const Route = createFileRoute("/_authenticated/suppliers")({
   component: SuppliersPage,
 });
 
-type Supplier = {
-  id?: string;
-  display_name: string;
-  email?: string | null;
-  phone?: string | null;
-  address?: string | null;
-  tax_number?: string | null;
-};
+type Supplier = { id?: string; name: string; email?: string | null; phone?: string | null; address?: string | null; pin_number?: string | null; contact_person?: string | null };
 
 function SuppliersPage() {
   const { data: profile } = useProfile();
@@ -37,12 +30,7 @@ function SuppliersPage() {
     enabled: !!tenantId,
     queryKey: ["suppliers", tenantId],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("suppliers")
-        .select("*")
-        .eq("tenant_id", tenantId!)
-        .is("deleted_at", null)
-        .order("created_at", { ascending: false });
+      const { data, error } = await supabase.from("suppliers").select("*").eq("tenant_id", tenantId!).is("deleted_at", null).order("created_at", { ascending: false });
       if (error) throw error;
       return data;
     },
@@ -50,10 +38,8 @@ function SuppliersPage() {
 
   const upsert = useMutation({
     mutationFn: async (c: Supplier) => {
-      const payload = { ...c, tenant_id: tenantId! };
-      const { error } = c.id
-        ? await supabase.from("suppliers").update(payload).eq("id", c.id)
-        : await supabase.from("suppliers").insert(payload);
+      const payload: any = { ...c, tenant_id: tenantId! };
+      const { error } = c.id ? await supabase.from("suppliers").update(payload).eq("id", c.id) : await supabase.from("suppliers").insert(payload);
       if (error) throw error;
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["suppliers"] }); toast.success("Saved"); dlg.setOpen(false); },
@@ -62,50 +48,48 @@ function SuppliersPage() {
 
   return (
     <div>
-      <PageHeader title="Suppliers" description="Manage your vendor accounts." action={<NewButton onClick={() => dlg.openFor({ display_name: "" })} label="New supplier" />} />
+      <PageHeader title="Suppliers" description="Manage your vendor accounts." action={<NewButton onClick={() => dlg.openFor({ name: "" })} label="New supplier" />} />
       <Card>
         <Table>
-          <TableHeader>
-            <TableRow><TableHead>Name</TableHead><TableHead>Email</TableHead><TableHead>Phone</TableHead><TableHead>Tax #</TableHead><TableHead className="text-right">Actions</TableHead></TableRow>
-          </TableHeader>
+          <TableHeader><TableRow><TableHead>Name</TableHead><TableHead>Contact</TableHead><TableHead>Email</TableHead><TableHead>Phone</TableHead><TableHead></TableHead></TableRow></TableHeader>
           <TableBody>
             {isLoading ? <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground">Loading…</TableCell></TableRow>
               : !rows?.length ? <TableRow><TableCell colSpan={5} className="py-8 text-center text-muted-foreground">No suppliers yet.</TableCell></TableRow>
               : rows.map((c: any) => (
                 <TableRow key={c.id}>
-                  <TableCell className="font-medium">{c.display_name}</TableCell>
+                  <TableCell className="font-medium">{c.name}</TableCell>
+                  <TableCell>{c.contact_person ?? "—"}</TableCell>
                   <TableCell>{c.email ?? "—"}</TableCell>
                   <TableCell>{c.phone ?? "—"}</TableCell>
-                  <TableCell>{c.tax_number ?? "—"}</TableCell>
                   <TableCell className="text-right"><Button variant="ghost" size="sm" onClick={() => dlg.openFor(c)}>Edit</Button></TableCell>
                 </TableRow>
               ))}
           </TableBody>
         </Table>
       </Card>
-
       <SupplierDialog open={dlg.open} onOpenChange={dlg.setOpen} initial={dlg.data} onSubmit={(c) => upsert.mutate(c)} saving={upsert.isPending} />
     </div>
   );
 }
 
-function SupplierDialog({ open, onOpenChange, initial, onSubmit, saving }: any) {
-  const [c, setC] = useState<Supplier>({ display_name: "" });
-  useEffect(() => { setC(initial ?? { display_name: "" }); }, [initial, open]);
+function SupplierDialog({ open, onOpenChange, initial, onSubmit, saving }: { open: boolean; onOpenChange: (v: boolean) => void; initial: Supplier | null; onSubmit: (c: Supplier) => void; saving: boolean }) {
+  const [c, setC] = useState<Supplier>({ name: "" });
+  useEffect(() => { setC(initial ?? { name: "" }); }, [initial, open]);
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader><DialogTitle>{c.id ? "Edit supplier" : "New supplier"}</DialogTitle></DialogHeader>
         <div className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-2 sm:col-span-2"><Label>Display name *</Label><Input value={c.display_name} onChange={(e) => setC({ ...c, display_name: e.target.value })} /></div>
+          <div className="space-y-2 sm:col-span-2"><Label>Name *</Label><Input value={c.name} onChange={(e) => setC({ ...c, name: e.target.value })} /></div>
+          <div className="space-y-2"><Label>Contact person</Label><Input value={c.contact_person ?? ""} onChange={(e) => setC({ ...c, contact_person: e.target.value })} /></div>
+          <div className="space-y-2"><Label>PIN #</Label><Input value={c.pin_number ?? ""} onChange={(e) => setC({ ...c, pin_number: e.target.value })} /></div>
           <div className="space-y-2"><Label>Email</Label><Input type="email" value={c.email ?? ""} onChange={(e) => setC({ ...c, email: e.target.value })} /></div>
           <div className="space-y-2"><Label>Phone</Label><Input value={c.phone ?? ""} onChange={(e) => setC({ ...c, phone: e.target.value })} /></div>
-          <div className="space-y-2"><Label>Tax #</Label><Input value={c.tax_number ?? ""} onChange={(e) => setC({ ...c, tax_number: e.target.value })} /></div>
           <div className="space-y-2 sm:col-span-2"><Label>Address</Label><Textarea value={c.address ?? ""} onChange={(e) => setC({ ...c, address: e.target.value })} /></div>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button disabled={!c.display_name || saving} onClick={() => onSubmit(c)}>{saving ? "Saving…" : "Save"}</Button>
+          <Button disabled={!c.name || saving} onClick={() => onSubmit(c)}>{saving ? "Saving…" : "Save"}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

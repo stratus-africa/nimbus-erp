@@ -39,20 +39,16 @@ function Dashboard() {
     queryKey: ["dashboard", tenantId],
     queryFn: async () => {
       const [inv, bills, cust, items] = await Promise.all([
-        supabase.from("invoices").select("total, status, issue_date").eq("tenant_id", tenantId!),
-        supabase.from("bills").select("total, status").eq("tenant_id", tenantId!),
-        supabase.from("customers").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId!),
-        supabase.from("items").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId!),
+        supabase.from("invoices").select("total, balance_due, status, invoice_date").eq("tenant_id", tenantId!).is("deleted_at", null),
+        supabase.from("bills").select("total, balance_due, status").eq("tenant_id", tenantId!).is("deleted_at", null),
+        supabase.from("customers").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId!).is("deleted_at", null),
+        supabase.from("items").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId!).is("deleted_at", null),
       ]);
       const invoices = inv.data ?? [];
       const billsArr = bills.data ?? [];
       const totalRevenue = invoices.reduce((s, r: any) => s + Number(r.total ?? 0), 0);
-      const outstanding = invoices
-        .filter((r: any) => ["sent", "partially_paid", "overdue"].includes(r.status))
-        .reduce((s, r: any) => s + Number(r.total ?? 0), 0);
-      const payables = billsArr
-        .filter((r: any) => ["received", "partially_paid", "overdue", "open"].includes(r.status))
-        .reduce((s, r: any) => s + Number(r.total ?? 0), 0);
+      const outstanding = invoices.reduce((s, r: any) => s + Number(r.balance_due ?? 0), 0);
+      const payables = billsArr.reduce((s, r: any) => s + Number(r.balance_due ?? 0), 0);
       // monthly buckets (last 6)
       const months: { name: string; revenue: number }[] = [];
       const now = new Date();
@@ -61,8 +57,8 @@ function Dashboard() {
         const key = d.toLocaleString("en-US", { month: "short" });
         const sum = invoices
           .filter((r: any) => {
-            if (!r.issue_date) return false;
-            const x = new Date(r.issue_date);
+            if (!r.invoice_date) return false;
+            const x = new Date(r.invoice_date);
             return x.getFullYear() === d.getFullYear() && x.getMonth() === d.getMonth();
           })
           .reduce((s, r: any) => s + Number(r.total ?? 0), 0);
