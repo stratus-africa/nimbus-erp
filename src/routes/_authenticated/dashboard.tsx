@@ -230,76 +230,9 @@ function Dashboard() {
         />
       </div>
 
-      {/* Recent Activity (left) | Cash Flow, Income & Expense, Top Expenses (right) */}
+      {/* Cash Flow, Income & Expense, Top Expenses (left) | Recent Activity (right) */}
       <div className="grid gap-4 lg:grid-cols-[1fr_520px]">
-        {/* Recent Activity */}
-        <Card className="overflow-hidden">
-          <CardHeader className="border-b bg-muted/30">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-base font-semibold">Recent Activity</CardTitle>
-              <span className="text-xs text-muted-foreground">Latest events in this range</span>
-            </div>
-          </CardHeader>
-          <CardContent className="grid gap-6 p-6 lg:grid-cols-[300px_1fr]">
-            {/* Timeline */}
-            <div>
-              <h3 className="mb-3 text-sm font-medium">Timeline</h3>
-              {computed.timeline.length ? (
-                <ol className="relative space-y-4 border-l pl-5">
-                  {computed.timeline.map((e: any) => (
-                    <li key={`${e.kind}-${e.id}`} className="relative">
-                      <span
-                        className={cn(
-                          "absolute -left-[26px] mt-1 grid h-5 w-5 place-items-center rounded-full border bg-background",
-                          e.kind === "invoice" ? "text-emerald-600" : "text-amber-600",
-                        )}
-                      >
-                        {e.kind === "invoice" ? <FileText className="h-3 w-3" /> : <Receipt className="h-3 w-3" />}
-                      </span>
-                      <div className="text-xs text-muted-foreground">{formatDate(e.created ?? e.date)}</div>
-                      <div className="text-sm">
-                        <span className="font-medium">
-                          {e.kind === "invoice" ? "Invoice" : "Bill"} {e.number}
-                        </span>{" "}
-                        <span className="text-muted-foreground">to {e.party}</span>
-                      </div>
-                      <div className="mt-0.5 flex items-center gap-2 text-xs">
-                        <Badge variant="outline" className={STATUS_COLORS[e.status] ?? ""}>{statusLabel(e.status)}</Badge>
-                        <span className="tabular-nums text-muted-foreground">{formatCurrency(e.total, currency)}</span>
-                      </div>
-                    </li>
-                  ))}
-                </ol>
-              ) : (
-                <div className="text-sm text-muted-foreground">No activity in this range.</div>
-              )}
-            </div>
-
-            {/* Tables */}
-            <div className="grid gap-6 md:grid-cols-2">
-              <ActivityTable
-                title="Latest Customer Invoices"
-                link={{ to: "/invoices", search: { from, to } as any }}
-                rows={computed.recentInvoices.map((r: any) => ({
-                  id: r.id, number: r.invoice_number, party: r.customers?.name ?? "—",
-                  date: r.invoice_date, status: r.status, total: Number(r.total ?? 0),
-                }))}
-                currency={currency}
-              />
-              <ActivityTable
-                title="Latest Supplier Bills"
-                link={{ to: "/bills", search: { from, to } as any }}
-                rows={computed.recentBills.map((r: any) => ({
-                  id: r.id, number: r.bill_number, party: r.suppliers?.name ?? "—",
-                  date: r.bill_date, status: r.status, total: Number(r.total ?? 0),
-                }))}
-                currency={currency}
-              />
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Right column: Cash Flow, Income & Expense, Top Expenses */}
+        {/* Left column: Cash Flow, Income & Expense, Top Expenses */}
         <div className="space-y-4">
           {/* Cash Flow */}
           <Card className="overflow-hidden">
