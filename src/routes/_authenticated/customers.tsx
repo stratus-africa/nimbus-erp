@@ -224,7 +224,7 @@ function CustomersPage() {
                     <Checkbox checked={selected.has(c.id)} onCheckedChange={() => toggleOne(c.id)} />
                   </TableCell>
                   <TableCell>
-                    <button onClick={() => openEdit(c)} className="text-primary hover:underline font-normal text-left">
+                    <button onClick={() => setViewingId(c.id)} className="text-primary hover:underline font-normal text-left">
                       {c.name}
                     </button>
                   </TableCell>
