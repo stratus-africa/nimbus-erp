@@ -135,9 +135,9 @@ function QuotesPage() {
   };
 
   const openNew = () => {
-    setEditing(null);
-    setDialogOpen(true);
+    navigate({ to: "/quotes/new" });
   };
+
   const openRow = (r: any) => {
     setEditing(r);
     setDialogOpen(true);
