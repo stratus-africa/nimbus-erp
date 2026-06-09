@@ -18,6 +18,9 @@ import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/customers")({
   head: () => ({ meta: [{ title: "Customers — Nimbus ERP" }] }),
+  validateSearch: (s: Record<string, unknown>) => ({
+    highlight: typeof s.highlight === "string" ? s.highlight : undefined,
+  }),
   component: CustomersPage,
 });
 
