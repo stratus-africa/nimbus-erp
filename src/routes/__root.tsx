@@ -77,14 +77,18 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
+      { title: "NImbus ERP" },
+      { name: "description", content: "Harmony ERP is a SaaS platform for SMEs and enterprises, offering comprehensive financial and operational management." },
       { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { property: "og:title", content: "NImbus ERP" },
+      { property: "og:description", content: "Harmony ERP is a SaaS platform for SMEs and enterprises, offering comprehensive financial and operational management." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: "NImbus ERP" },
+      { name: "twitter:description", content: "Harmony ERP is a SaaS platform for SMEs and enterprises, offering comprehensive financial and operational management." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/3b68e9ab-3a57-475e-97a8-66ef3889e914/id-preview-5c6461e0--4d601949-0fcb-4ff2-9833-5bade24c435e.lovable.app-1781042024017.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/3b68e9ab-3a57-475e-97a8-66ef3889e914/id-preview-5c6461e0--4d601949-0fcb-4ff2-9833-5bade24c435e.lovable.app-1781042024017.png" },
     ],
     links: [
       {
