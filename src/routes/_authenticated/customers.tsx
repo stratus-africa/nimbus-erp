@@ -11,13 +11,16 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ChevronDown, Plus, MoreHorizontal, SlidersHorizontal, Search } from "lucide-react";
 import { formatCurrency } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/customers")({
   head: () => ({ meta: [{ title: "Customers — Nimbus ERP" }] }),
+  validateSearch: (s: Record<string, unknown>) => ({
+    highlight: typeof s.highlight === "string" ? s.highlight : undefined,
+  }),
   component: CustomersPage,
 });
 
@@ -45,11 +48,24 @@ function CustomersPage() {
   const tenantId = profile?.currentTenant?.id;
   const currency = profile?.currentTenant?.base_currency ?? "USD";
   const qc = useQueryClient();
+  const { highlight } = Route.useSearch();
+  const navigate = useNavigate();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Customer | null>(null);
   const [filter, setFilter] = useState<FilterKey>("active");
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const highlightRef = useRef<HTMLTableRowElement | null>(null);
+
+  // Scroll & clear highlight after a moment
+  useEffect(() => {
+    if (!highlight) return;
+    highlightRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    const t = setTimeout(() => {
+      navigate({ to: "/customers", search: {}, replace: true });
+    }, 4000);
+    return () => clearTimeout(t);
+  }, [highlight, navigate]);
 
   const { data: customers, isLoading } = useQuery({
     enabled: !!tenantId,
@@ -112,7 +128,6 @@ function CustomersPage() {
     setSelected(next);
   };
 
-  const navigate = useNavigate();
   const openNew = () => navigate({ to: "/customers/new" });
   const openEdit = (c: Customer) => { setEditing(c); setDialogOpen(true); };
 
@@ -191,7 +206,15 @@ function CustomersPage() {
             ) : filtered.map((c: any) => {
               const receivable = receivables?.get(c.id) ?? 0;
               return (
-                <TableRow key={c.id} className={cn("group", selected.has(c.id) && "bg-primary/5")}>
+                <TableRow
+                  key={c.id}
+                  ref={highlight === c.id ? highlightRef : undefined}
+                  className={cn(
+                    "group transition-colors",
+                    selected.has(c.id) && "bg-primary/5",
+                    highlight === c.id && "bg-emerald-50 dark:bg-emerald-950/30 ring-2 ring-inset ring-emerald-500/60 animate-in fade-in",
+                  )}
+                >
                   <TableCell className="pl-6">
                     <Checkbox checked={selected.has(c.id)} onCheckedChange={() => toggleOne(c.id)} />
                   </TableCell>
