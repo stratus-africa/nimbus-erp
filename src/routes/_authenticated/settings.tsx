@@ -70,12 +70,11 @@ const SECTIONS: Section[] = [
         ],
       }],
       [{
-        title: "Automation", icon: Zap, tone: "rose",
+        title: "Taxes & Compliance", icon: Receipt, tone: "sky",
         items: [
-          { label: "Workflow Rules" },
-          { label: "Workflow Actions" },
-          { label: "Workflow Logs" },
-          { label: "Schedules" },
+          { label: "VAT" },
+          { label: "Withholding Tax" },
+          { label: "e-Invoicing" },
         ],
       }],
     ],
