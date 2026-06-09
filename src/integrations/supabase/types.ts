@@ -420,7 +420,6 @@ export type Database = {
           notes: string | null
           payment_terms_days: number | null
           phone: string | null
-          pin_number: string | null
           shipping_address: string | null
           tenant_id: string
           updated_at: string
@@ -441,7 +440,6 @@ export type Database = {
           notes?: string | null
           payment_terms_days?: number | null
           phone?: string | null
-          pin_number?: string | null
           shipping_address?: string | null
           tenant_id: string
           updated_at?: string
@@ -462,7 +460,6 @@ export type Database = {
           notes?: string | null
           payment_terms_days?: number | null
           phone?: string | null
-          pin_number?: string | null
           shipping_address?: string | null
           tenant_id?: string
           updated_at?: string
@@ -1295,9 +1292,9 @@ export type Database = {
           notes: string | null
           payment_terms_days: number | null
           phone: string | null
-          pin_number: string | null
           tenant_id: string
           updated_at: string
+          vat_number: string | null
         }
         Insert: {
           address?: string | null
@@ -1312,9 +1309,9 @@ export type Database = {
           notes?: string | null
           payment_terms_days?: number | null
           phone?: string | null
-          pin_number?: string | null
           tenant_id: string
           updated_at?: string
+          vat_number?: string | null
         }
         Update: {
           address?: string | null
@@ -1329,9 +1326,9 @@ export type Database = {
           notes?: string | null
           payment_terms_days?: number | null
           phone?: string | null
-          pin_number?: string | null
           tenant_id?: string
           updated_at?: string
+          vat_number?: string | null
         }
         Relationships: [
           {

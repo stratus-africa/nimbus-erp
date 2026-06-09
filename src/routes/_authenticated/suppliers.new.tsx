@@ -39,7 +39,6 @@ const schema = z.object({
   comm_whatsapp: z.boolean(),
   vat_treatment: z.string().min(1, "VAT treatment is required"),
   vat_registration_no: z.string().trim().max(10, "Max 10 characters").optional().or(z.literal("")),
-  pin_number: z.string().trim().max(50).optional().or(z.literal("")),
   withholding_vat: z.boolean(),
   withholding_tax: z.boolean(),
   currency: z.string(),
@@ -78,7 +77,6 @@ const defaults: FormValues = {
   comm_whatsapp: false,
   vat_treatment: "VAT Registered",
   vat_registration_no: "",
-  pin_number: "",
   withholding_vat: false,
   withholding_tax: false,
   currency: "KES",
@@ -174,7 +172,7 @@ export function SupplierFormPage({ supplierId, initial }: { supplierId?: string;
         contact_person: `${values.salutation ?? ""} ${values.first_name ?? ""} ${values.last_name ?? ""}`.trim() || null,
         email: values.email || null,
         phone: values.work_phone || values.mobile || null,
-        pin_number: values.pin_number || null,
+        vat_number: values.vat_registration_no || null,
         address: values.billing_address || null,
         notes: values.remarks || null,
         payment_terms_days: values.payment_terms === "Due on Receipt"
@@ -398,9 +396,6 @@ export function SupplierFormPage({ supplierId, initial }: { supplierId?: string;
                     />
                   </Row>
                 )}
-                <Row label="PIN Number">
-                  <Input placeholder="KRA PIN / Tax ID" {...register("pin_number")} />
-                </Row>
                 <Row label="Withholding VAT">
                   <Controller control={control} name="withholding_vat" render={({ field }) => (
                     <label className="flex items-center gap-2 text-sm pt-2">
