@@ -366,7 +366,7 @@ function NewSupplierPage() {
                           <SelectValue placeholder="" />
                         </SelectTrigger>
                         <SelectContent>
-                          {["Registered Business", "Non Registered Business", "Overseas"].map((s) => (
+                          {["VAT Registered", "Non VAT Registered"].map((s) => (
                             <SelectItem key={s} value={s}>{s}</SelectItem>
                           ))}
                         </SelectContent>
@@ -374,6 +374,17 @@ function NewSupplierPage() {
                     )}
                   />
                 </Row>
+                {watch("vat_treatment") === "VAT Registered" && (
+                  <Row label="VAT Registration Number" required error={errors.vat_registration_no?.message}>
+                    <Input
+                      maxLength={10}
+                      placeholder="10-character VAT number"
+                      aria-invalid={!!errors.vat_registration_no}
+                      className={cn(errors.vat_registration_no && "border-destructive")}
+                      {...register("vat_registration_no")}
+                    />
+                  </Row>
+                )}
                 <Row label="PIN Number">
                   <Input placeholder="KRA PIN / Tax ID" {...register("pin_number")} />
                 </Row>
