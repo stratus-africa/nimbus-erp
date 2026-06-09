@@ -196,7 +196,7 @@ function NewCustomerPage() {
         contact_person: `${values.salutation ?? ""} ${values.first_name ?? ""} ${values.last_name ?? ""}`.trim() || null,
         email: values.email || null,
         phone: values.work_phone || values.mobile || null,
-        vat_number: values.tax_exemption_no || null,
+        vat_number: values.vat_registration_no || values.tax_exemption_no || null,
         billing_address: values.billing_address || null,
         shipping_address: values.shipping_address || null,
         payment_terms_days: values.payment_terms === "Due on Receipt"
