@@ -80,6 +80,7 @@ function QuotesPage() {
   const tenantId = profile?.currentTenant?.id;
   const currency = profile?.currentTenant?.base_currency ?? "KES";
   const qc = useQueryClient();
+  const navigate = useNavigate();
 
   const [view, setView] = useState<(typeof VIEWS)[number]>("All Quotes");
   const [search, setSearch] = useState("");
