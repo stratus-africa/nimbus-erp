@@ -19,7 +19,7 @@ import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/suppliers/new")({
   head: () => ({ meta: [{ title: "New Supplier — Nimbus ERP" }] }),
-  component: NewSupplierPage,
+  component: () => <SupplierFormPage />,
 });
 
 const phoneRegex = /^[0-9\s+()-]*$/;
