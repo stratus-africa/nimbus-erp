@@ -255,7 +255,6 @@ function SupplierDialog({ open, onOpenChange, initial, onSubmit, saving }: { ope
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2 sm:col-span-2"><Label>Name *</Label><Input value={c.name} onChange={(e) => setC({ ...c, name: e.target.value })} /></div>
           <div className="space-y-2"><Label>Contact person</Label><Input value={c.contact_person ?? ""} onChange={(e) => setC({ ...c, contact_person: e.target.value })} /></div>
-          <div className="space-y-2"><Label>PIN #</Label><Input value={c.pin_number ?? ""} onChange={(e) => setC({ ...c, pin_number: e.target.value })} /></div>
           <div className="space-y-2"><Label>Email</Label><Input type="email" value={c.email ?? ""} onChange={(e) => setC({ ...c, email: e.target.value })} /></div>
           <div className="space-y-2"><Label>Phone</Label><Input value={c.phone ?? ""} onChange={(e) => setC({ ...c, phone: e.target.value })} /></div>
           <div className="space-y-2 sm:col-span-2"><Label>Address</Label><Textarea value={c.address ?? ""} onChange={(e) => setC({ ...c, address: e.target.value })} /></div>
