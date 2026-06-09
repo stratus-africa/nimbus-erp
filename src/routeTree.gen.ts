@@ -31,6 +31,7 @@ import { Route as AuthenticatedSuppliersNewRouteImport } from './routes/_authent
 import { Route as AuthenticatedSuppliersSupplierIdRouteImport } from './routes/_authenticated/suppliers.$supplierId'
 import { Route as AuthenticatedQuotesNewRouteImport } from './routes/_authenticated/quotes_.new'
 import { Route as AuthenticatedItemsNewRouteImport } from './routes/_authenticated/items.new'
+import { Route as AuthenticatedItemsItemIdRouteImport } from './routes/_authenticated/items.$itemId'
 import { Route as AuthenticatedCustomersNewRouteImport } from './routes/_authenticated/customers.new'
 import { Route as AuthenticatedCustomersCustomerIdRouteImport } from './routes/_authenticated/customers.$customerId'
 import { Route as AuthenticatedSuppliersSupplierIdEditRouteImport } from './routes/_authenticated/suppliers.$supplierId_.edit'
@@ -152,6 +153,12 @@ const AuthenticatedItemsNewRoute = AuthenticatedItemsNewRouteImport.update({
   path: '/new',
   getParentRoute: () => AuthenticatedItemsRoute,
 } as any)
+const AuthenticatedItemsItemIdRoute =
+  AuthenticatedItemsItemIdRouteImport.update({
+    id: '/$itemId',
+    path: '/$itemId',
+    getParentRoute: () => AuthenticatedItemsRoute,
+  } as any)
 const AuthenticatedCustomersNewRoute =
   AuthenticatedCustomersNewRouteImport.update({
     id: '/customers/new',
@@ -195,6 +202,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof AuthenticatedSettingsRoute
   '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
   '/customers/new': typeof AuthenticatedCustomersNewRoute
+  '/items/$itemId': typeof AuthenticatedItemsItemIdRoute
   '/items/new': typeof AuthenticatedItemsNewRoute
   '/quotes/new': typeof AuthenticatedQuotesNewRoute
   '/suppliers/$supplierId': typeof AuthenticatedSuppliersSupplierIdRoute
@@ -222,6 +230,7 @@ export interface FileRoutesByTo {
   '/settings': typeof AuthenticatedSettingsRoute
   '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
   '/customers/new': typeof AuthenticatedCustomersNewRoute
+  '/items/$itemId': typeof AuthenticatedItemsItemIdRoute
   '/items/new': typeof AuthenticatedItemsNewRoute
   '/quotes/new': typeof AuthenticatedQuotesNewRoute
   '/suppliers/$supplierId': typeof AuthenticatedSuppliersSupplierIdRoute
@@ -251,6 +260,7 @@ export interface FileRoutesById {
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
   '/_authenticated/customers/new': typeof AuthenticatedCustomersNewRoute
+  '/_authenticated/items/$itemId': typeof AuthenticatedItemsItemIdRoute
   '/_authenticated/items/new': typeof AuthenticatedItemsNewRoute
   '/_authenticated/quotes_/new': typeof AuthenticatedQuotesNewRoute
   '/_authenticated/suppliers/$supplierId': typeof AuthenticatedSuppliersSupplierIdRoute
@@ -280,6 +290,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/customers/$customerId'
     | '/customers/new'
+    | '/items/$itemId'
     | '/items/new'
     | '/quotes/new'
     | '/suppliers/$supplierId'
@@ -307,6 +318,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/customers/$customerId'
     | '/customers/new'
+    | '/items/$itemId'
     | '/items/new'
     | '/quotes/new'
     | '/suppliers/$supplierId'
@@ -335,6 +347,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings'
     | '/_authenticated/customers/$customerId'
     | '/_authenticated/customers/new'
+    | '/_authenticated/items/$itemId'
     | '/_authenticated/items/new'
     | '/_authenticated/quotes_/new'
     | '/_authenticated/suppliers/$supplierId'
@@ -508,6 +521,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedItemsNewRouteImport
       parentRoute: typeof AuthenticatedItemsRoute
     }
+    '/_authenticated/items/$itemId': {
+      id: '/_authenticated/items/$itemId'
+      path: '/$itemId'
+      fullPath: '/items/$itemId'
+      preLoaderRoute: typeof AuthenticatedItemsItemIdRouteImport
+      parentRoute: typeof AuthenticatedItemsRoute
+    }
     '/_authenticated/customers/new': {
       id: '/_authenticated/customers/new'
       path: '/customers/new'
@@ -540,10 +560,12 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedItemsRouteChildren {
+  AuthenticatedItemsItemIdRoute: typeof AuthenticatedItemsItemIdRoute
   AuthenticatedItemsNewRoute: typeof AuthenticatedItemsNewRoute
 }
 
 const AuthenticatedItemsRouteChildren: AuthenticatedItemsRouteChildren = {
+  AuthenticatedItemsItemIdRoute: AuthenticatedItemsItemIdRoute,
   AuthenticatedItemsNewRoute: AuthenticatedItemsNewRoute,
 }
 
@@ -613,3 +635,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
