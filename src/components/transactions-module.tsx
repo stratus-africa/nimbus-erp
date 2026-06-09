@@ -145,7 +145,7 @@ export function TransactionsModule({ config, filter, onClearFilter }: { config: 
   );
 }
 
-function TxDialog({
+export function TxDialog({
   open, onOpenChange, initial, config, tenantId, currency, onSaved,
 }: {
   open: boolean; onOpenChange: (v: boolean) => void; initial: any; config: DocConfig; tenantId: string; currency: string; onSaved: () => void;
