@@ -294,7 +294,6 @@ function CustomerDetailsPage() {
                                 <div className="text-sm text-primary">{customer.email}</div>
                               )}
                               <div className="mt-2 flex gap-3 text-xs">
-                                <button className="text-primary hover:underline">Invite to Portal</button>
                                 <button className="text-primary hover:underline">Send Email</button>
                               </div>
                             </div>
@@ -313,7 +312,7 @@ function CustomerDetailsPage() {
                         <KV label="Default Currency" value={currency} />
                         <KV label="VAT Treatment" value={customer.vat_number ? "VAT Registered" : "Not Registered"} link />
                         <KV label="PIN" value={customer.pin_number ?? "—"} link />
-                        <KV label="Portal Status" value={<span className="text-amber-600">• Disabled</span>} link />
+                        
                         <KV label="Customer Language" value="English" />
                       </Section>
 
