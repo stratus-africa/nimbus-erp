@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "@/hooks/use-profile";
@@ -112,7 +112,8 @@ function CustomersPage() {
     setSelected(next);
   };
 
-  const openNew = () => { setEditing({ name: "" }); setDialogOpen(true); };
+  const navigate = useNavigate();
+  const openNew = () => navigate({ to: "/customers/new" });
   const openEdit = (c: Customer) => { setEditing(c); setDialogOpen(true); };
 
   const filterLabel = FILTERS.find((f) => f.key === filter)?.label ?? "Active Customers";
