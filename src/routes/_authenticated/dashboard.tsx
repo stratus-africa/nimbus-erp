@@ -203,17 +203,14 @@ function Dashboard() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold">
-            Welcome back
-            {profile?.profile?.full_name ? `, ${profile.profile.full_name.split(" ")[0]}` : ""}
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Here's how {profile?.currentTenant?.name ?? "your workspace"} is doing.
-          </p>
-        </div>
-        <DateRangeFilter preset={preset} from={from} to={to} onChange={setPreset} />
+      <div>
+        <h1 className="text-2xl font-semibold">
+          Welcome back
+          {profile?.profile?.full_name ? `, ${profile.profile.full_name.split(" ")[0]}` : ""}
+        </h1>
+        <p className="text-sm text-muted-foreground">
+          Here's how {profile?.currentTenant?.name ?? "your workspace"} is doing.
+        </p>
       </div>
 
       {/* Receivables & Payables */}
