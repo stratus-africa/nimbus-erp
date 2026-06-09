@@ -1,25 +1,29 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Sparkles } from "lucide-react";
+import { ArrowLeft, ArrowRight, Box, CheckCircle2, Eye, EyeOff, Lock, Mail } from "lucide-react";
 
 export const Route = createFileRoute("/auth")({
-  head: () => ({ meta: [{ title: "Sign in — Nimbus ERP" }] }),
-  component: AuthPage,
+  head: () => ({ meta: [{ title: "Sign in — StratusPOS" }] }),
+  component: SignInPage,
 });
 
-function AuthPage() {
+const FEATURES = [
+  "Dedicated workspace & database",
+  "POS, inventory, purchases & sales",
+  "Multi-warehouse & barcode support",
+  "Ready in under 60 seconds",
+];
+
+function SignInPage() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [fullName, setFullName] = useState("");
+  const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -38,105 +42,111 @@ function AuthPage() {
     navigate({ to: "/dashboard" });
   };
 
-  const onSignUp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: { full_name: fullName },
-        emailRedirectTo: window.location.origin,
-      },
-    });
-    setLoading(false);
-    if (error) return toast.error(error.message);
-    toast.success("Account created — let's set up your workspace");
-    navigate({ to: "/dashboard" });
-  };
-
-  const onGoogle = async () => {
-    const res = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
-    if (res.error) toast.error(res.error.message);
-  };
-
   return (
-    <div className="grid min-h-screen md:grid-cols-2">
-      <div className="hidden flex-col justify-between bg-gradient-to-br from-primary to-info p-12 text-primary-foreground md:flex">
-        <div className="flex items-center gap-2 font-semibold">
-          <div className="grid h-8 w-8 place-items-center rounded-lg bg-white/15">
-            <Sparkles className="h-4 w-4" />
+    <div className="grid min-h-screen lg:grid-cols-[1.4fr_1fr]">
+      {/* Left brand panel */}
+      <div className="relative hidden flex-col justify-center overflow-hidden bg-gradient-to-br from-emerald-400 via-emerald-500 to-teal-600 px-16 py-20 text-white lg:flex">
+        <div className="pointer-events-none absolute -left-24 top-24 h-72 w-72 rounded-full bg-white/10 blur-3xl" />
+        <div className="pointer-events-none absolute bottom-10 right-10 h-40 w-40 rounded-full bg-white/10 blur-2xl" />
+        <div className="relative max-w-xl">
+          <div className="mb-10 grid h-14 w-14 place-items-center rounded-2xl bg-white/15 backdrop-blur">
+            <Box className="h-7 w-7" />
           </div>
-          Nimbus ERP
-        </div>
-        <div>
-          <h2 className="text-4xl font-bold leading-tight">Run your business with confidence.</h2>
-          <p className="mt-4 max-w-md text-white/80">
-            A modern multi-tenant ERP for invoicing, purchasing, inventory, and accounting —
-            all in one delightful workspace.
+          <h1 className="text-5xl font-bold leading-tight tracking-tight">
+            Welcome back to<br />StratusPOS
+          </h1>
+          <p className="mt-6 max-w-md text-white/85">
+            Sign in to manage your inventory, sales and team — all from one workspace.
           </p>
+          <div className="my-8 h-px bg-white/25" />
+          <ul className="space-y-4">
+            {FEATURES.map((f) => (
+              <li key={f} className="flex items-center gap-3 text-white/95">
+                <CheckCircle2 className="h-5 w-5 shrink-0" />
+                <span>{f}</span>
+              </li>
+            ))}
+          </ul>
         </div>
-        <p className="text-sm text-white/70">© {new Date().getFullYear()} Nimbus</p>
       </div>
 
-      <div className="flex items-center justify-center p-6">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle>Welcome</CardTitle>
-            <CardDescription>Sign in or create your workspace.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Tabs defaultValue="signin">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="signin">Sign in</TabsTrigger>
-                <TabsTrigger value="signup">Sign up</TabsTrigger>
-              </TabsList>
-              <TabsContent value="signin">
-                <form onSubmit={onSignIn} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="si-email">Email</Label>
-                    <Input id="si-email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="si-pass">Password</Label>
-                    <Input id="si-pass" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
-                  </div>
-                  <Button type="submit" className="w-full" disabled={loading}>
-                    {loading ? "Signing in…" : "Sign in"}
-                  </Button>
-                </form>
-              </TabsContent>
-              <TabsContent value="signup">
-                <form onSubmit={onSignUp} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="su-name">Full name</Label>
-                    <Input id="su-name" required value={fullName} onChange={(e) => setFullName(e.target.value)} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="su-email">Email</Label>
-                    <Input id="su-email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="su-pass">Password</Label>
-                    <Input id="su-pass" type="password" required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} />
-                  </div>
-                  <Button type="submit" className="w-full" disabled={loading}>
-                    {loading ? "Creating account…" : "Create account"}
-                  </Button>
-                </form>
-              </TabsContent>
-            </Tabs>
+      {/* Right form panel */}
+      <div className="flex flex-col bg-background px-6 py-10 sm:px-12 lg:px-16">
+        <div className="mx-auto w-full max-w-md flex-1">
+          <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
+            <ArrowLeft className="h-4 w-4" /> Back
+          </Link>
 
-            <div className="my-4 flex items-center gap-2">
-              <div className="h-px flex-1 bg-border" />
-              <span className="text-xs text-muted-foreground">OR</span>
-              <div className="h-px flex-1 bg-border" />
-            </div>
-            <Button variant="outline" className="w-full" onClick={onGoogle}>
-              Continue with Google
-            </Button>
-          </CardContent>
-        </Card>
+          <div className="mt-24">
+            <h2 className="text-3xl font-bold tracking-tight">Sign in to your workspace</h2>
+            <p className="mt-2 text-muted-foreground">Enter your email and password below.</p>
+
+            <form onSubmit={onSignIn} className="mt-8 space-y-5">
+              <div className="space-y-2">
+                <Label htmlFor="email">Email address</Label>
+                <div className="relative">
+                  <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    id="email"
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="you@company.com"
+                    className="h-11 pl-9"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="password">Password</Label>
+                  <button type="button" className="text-sm font-medium text-emerald-600 hover:text-emerald-700">
+                    Forgot password?
+                  </button>
+                </div>
+                <div className="relative">
+                  <Lock className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    id="password"
+                    type={showPass ? "text" : "password"}
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Your password"
+                    className="h-11 px-9"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPass((s) => !s)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    aria-label="Toggle password visibility"
+                  >
+                    {showPass ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+              </div>
+
+              <Button
+                type="submit"
+                disabled={loading}
+                className="h-11 w-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white hover:opacity-95"
+              >
+                {loading ? "Signing in…" : (<>Sign in <ArrowRight className="ml-1 h-4 w-4" /></>)}
+              </Button>
+            </form>
+
+            <p className="mt-6 text-center text-sm text-muted-foreground">
+              Don't have an account?{" "}
+              <Link to="/signup" className="font-semibold text-emerald-600 hover:text-emerald-700">
+                Create workspace
+              </Link>
+            </p>
+          </div>
+        </div>
+        <p className="mt-10 text-center text-xs text-muted-foreground">
+          © {new Date().getFullYear()} StratusPOS. All rights reserved.
+        </p>
       </div>
     </div>
   );
