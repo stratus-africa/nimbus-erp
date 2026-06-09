@@ -243,7 +243,7 @@ function CustomerDetailsPage() {
               <div className="flex items-center justify-between gap-3 border-b bg-card px-6 py-3.5">
                 <h1 className="truncate text-xl font-semibold">{customer.name}</h1>
                 <div className="flex items-center gap-2">
-                  <Button variant="outline" size="sm" className="h-8">Edit</Button>
+                  <Button variant="outline" size="sm" className="h-8" onClick={() => navigate({ to: "/customers/$customerId/edit", params: { customerId } })}>Edit</Button>
                   <Button variant="outline" size="icon" className="h-8 w-8"><Paperclip className="h-4 w-4" /></Button>
                   <Button size="sm" className="h-8 gap-1 bg-emerald-600 hover:bg-emerald-700 text-white">
                     New Transaction <ChevronDown className="h-3.5 w-3.5" />
