@@ -106,7 +106,7 @@ function ItemsPage() {
     onError: (e: any) => toast.error(e.message),
   });
 
-  const openNew = () => { setEditing({ name: "", item_type: "inventory" }); setDialogOpen(true); };
+  const openNew = () => navigate({ to: "/items/new" });
   const openEdit = (i: Item) => { setEditing(i); setDialogOpen(true); };
 
   const filterLabel = FILTERS.find((f) => f.key === filter)?.label ?? "All Items";
