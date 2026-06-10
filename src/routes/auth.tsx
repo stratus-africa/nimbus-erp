@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { ArrowLeft, ArrowRight, Box, CheckCircle2, Eye, EyeOff, Lock, Mail } from "lucide-react";
 
 export const Route = createFileRoute("/auth")({
-  head: () => ({ meta: [{ title: "Sign in — StratusPOS" }] }),
+  head: () => ({ meta: [{ title: "Sign in — NimbusERP" }] }),
   component: SignInPage,
 });
 
@@ -45,7 +45,7 @@ function SignInPage() {
   return (
     <div className="grid min-h-screen lg:grid-cols-[1.4fr_1fr]">
       {/* Left brand panel */}
-      <div className="relative hidden flex-col justify-center overflow-hidden bg-gradient-to-br from-emerald-400 via-emerald-500 to-teal-600 px-16 py-20 text-white lg:flex">
+      <div className="relative hidden flex-col justify-center overflow-hidden bg-gradient-to-br from-blue-400 via-blue-500 to-indigo-600 px-16 py-20 text-white lg:flex">
         <div className="pointer-events-none absolute -left-24 top-24 h-72 w-72 rounded-full bg-white/10 blur-3xl" />
         <div className="pointer-events-none absolute bottom-10 right-10 h-40 w-40 rounded-full bg-white/10 blur-2xl" />
         <div className="relative max-w-xl">
@@ -53,7 +53,7 @@ function SignInPage() {
             <Box className="h-7 w-7" />
           </div>
           <h1 className="text-5xl font-bold leading-tight tracking-tight">
-            Welcome back to<br />StratusPOS
+            Welcome back to<br />NimbusERP
           </h1>
           <p className="mt-6 max-w-md text-white/85">
             Sign in to manage your inventory, sales and team — all from one workspace.
@@ -101,7 +101,7 @@ function SignInPage() {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="password">Password</Label>
-                  <button type="button" className="text-sm font-medium text-emerald-600 hover:text-emerald-700">
+                  <button type="button" className="text-sm font-medium text-blue-600 hover:text-blue-700">
                     Forgot password?
                   </button>
                 </div>
@@ -130,7 +130,7 @@ function SignInPage() {
               <Button
                 type="submit"
                 disabled={loading}
-                className="h-11 w-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white hover:opacity-95"
+                className="h-11 w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:opacity-95"
               >
                 {loading ? "Signing in…" : (<>Sign in <ArrowRight className="ml-1 h-4 w-4" /></>)}
               </Button>
@@ -138,14 +138,14 @@ function SignInPage() {
 
             <p className="mt-6 text-center text-sm text-muted-foreground">
               Don't have an account?{" "}
-              <Link to="/signup" className="font-semibold text-emerald-600 hover:text-emerald-700">
+              <Link to="/signup" className="font-semibold text-blue-600 hover:text-blue-700">
                 Create workspace
               </Link>
             </p>
           </div>
         </div>
         <p className="mt-10 text-center text-xs text-muted-foreground">
-          © {new Date().getFullYear()} StratusPOS. All rights reserved.
+          © {new Date().getFullYear()} NimbusERP. All rights reserved.
         </p>
       </div>
     </div>
