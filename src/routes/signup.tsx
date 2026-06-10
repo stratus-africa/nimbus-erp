@@ -26,7 +26,7 @@ import {
 } from "lucide-react";
 
 export const Route = createFileRoute("/signup")({
-  head: () => ({ meta: [{ title: "Create workspace — StratusPOS" }] }),
+  head: () => ({ meta: [{ title: "Create workspace — NimbusERP" }] }),
   component: SignUpPage,
 });
 
@@ -69,14 +69,14 @@ function SignUpPage() {
     });
     setLoading(false);
     if (error) return toast.error(error.message);
-    toast.success("Workspace created — welcome to StratusPOS");
+    toast.success("Workspace created — welcome to NimbusERP");
     navigate({ to: "/dashboard" });
   };
 
   return (
     <div className="grid min-h-screen lg:grid-cols-[1.4fr_1fr]">
       {/* Left brand panel */}
-      <div className="relative hidden flex-col justify-center overflow-hidden bg-gradient-to-br from-emerald-400 via-emerald-500 to-teal-600 px-16 py-20 text-white lg:flex">
+      <div className="relative hidden flex-col justify-center overflow-hidden bg-gradient-to-br from-blue-400 via-blue-500 to-indigo-600 px-16 py-20 text-white lg:flex">
         <div className="pointer-events-none absolute -left-10 bottom-20 h-32 w-32 rounded-2xl bg-white/10 blur-2xl" />
         <div className="pointer-events-none absolute right-20 top-1/2 h-48 w-48 rounded-full bg-white/15 blur-3xl" />
         <div className="pointer-events-none absolute left-24 bottom-32 h-24 w-24 rounded-xl bg-white/10" />
@@ -106,10 +106,10 @@ function SignUpPage() {
       <div className="flex flex-col bg-background px-6 py-10 sm:px-12 lg:px-12">
         <div className="mx-auto w-full max-w-md flex-1">
           <div className="mb-6 flex items-center gap-3">
-            <div className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white">
+            <div className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white">
               <Zap className="h-5 w-5" />
             </div>
-            <span className="text-lg font-bold tracking-tight">StratusPOS</span>
+            <span className="text-lg font-bold tracking-tight">NimbusERP</span>
           </div>
 
           <h2 className="text-3xl font-bold tracking-tight">Create your workspace</h2>
@@ -133,7 +133,7 @@ function SignUpPage() {
                   value={company}
                   onChange={(e) => setCompany(e.target.value)}
                   placeholder="Acme Inc."
-                  className="h-11 pl-9 focus-visible:ring-emerald-500"
+                  className="h-11 pl-9 focus-visible:ring-blue-500"
                 />
               </div>
             </div>
@@ -213,7 +213,7 @@ function SignUpPage() {
             <Button
               type="submit"
               disabled={loading}
-              className="h-11 w-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white hover:opacity-95"
+              className="h-11 w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:opacity-95"
             >
               {loading ? "Creating workspace…" : (<>Create workspace <ArrowRight className="ml-1 h-4 w-4" /></>)}
             </Button>
@@ -221,7 +221,7 @@ function SignUpPage() {
 
           <p className="mt-4 text-center text-sm text-muted-foreground">
             Already have an account?{" "}
-            <Link to="/auth" className="font-semibold text-emerald-600 hover:text-emerald-700">
+            <Link to="/auth" className="font-semibold text-blue-600 hover:text-blue-700">
               Sign in
             </Link>
           </p>
@@ -234,7 +234,7 @@ function SignUpPage() {
           </Link>
         </div>
         <p className="mt-8 text-center text-xs text-muted-foreground">
-          © {new Date().getFullYear()} StratusPOS. All rights reserved.
+          © {new Date().getFullYear()} NimbusERP. All rights reserved.
         </p>
       </div>
     </div>

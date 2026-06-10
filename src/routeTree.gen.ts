@@ -30,6 +30,7 @@ import { Route as AuthenticatedCustomersIndexRouteImport } from './routes/_authe
 import { Route as AuthenticatedSuppliersNewRouteImport } from './routes/_authenticated/suppliers.new'
 import { Route as AuthenticatedSuppliersSupplierIdRouteImport } from './routes/_authenticated/suppliers.$supplierId'
 import { Route as AuthenticatedQuotesNewRouteImport } from './routes/_authenticated/quotes_.new'
+import { Route as AuthenticatedQuotesQuoteIdRouteImport } from './routes/_authenticated/quotes_.$quoteId'
 import { Route as AuthenticatedItemsNewRouteImport } from './routes/_authenticated/items.new'
 import { Route as AuthenticatedItemsItemIdRouteImport } from './routes/_authenticated/items.$itemId'
 import { Route as AuthenticatedCustomersNewRouteImport } from './routes/_authenticated/customers.new'
@@ -148,6 +149,12 @@ const AuthenticatedQuotesNewRoute = AuthenticatedQuotesNewRouteImport.update({
   path: '/quotes/new',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedQuotesQuoteIdRoute =
+  AuthenticatedQuotesQuoteIdRouteImport.update({
+    id: '/quotes_/$quoteId',
+    path: '/quotes/$quoteId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedItemsNewRoute = AuthenticatedItemsNewRouteImport.update({
   id: '/new',
   path: '/new',
@@ -204,6 +211,7 @@ export interface FileRoutesByFullPath {
   '/customers/new': typeof AuthenticatedCustomersNewRoute
   '/items/$itemId': typeof AuthenticatedItemsItemIdRoute
   '/items/new': typeof AuthenticatedItemsNewRoute
+  '/quotes/$quoteId': typeof AuthenticatedQuotesQuoteIdRoute
   '/quotes/new': typeof AuthenticatedQuotesNewRoute
   '/suppliers/$supplierId': typeof AuthenticatedSuppliersSupplierIdRoute
   '/suppliers/new': typeof AuthenticatedSuppliersNewRoute
@@ -232,6 +240,7 @@ export interface FileRoutesByTo {
   '/customers/new': typeof AuthenticatedCustomersNewRoute
   '/items/$itemId': typeof AuthenticatedItemsItemIdRoute
   '/items/new': typeof AuthenticatedItemsNewRoute
+  '/quotes/$quoteId': typeof AuthenticatedQuotesQuoteIdRoute
   '/quotes/new': typeof AuthenticatedQuotesNewRoute
   '/suppliers/$supplierId': typeof AuthenticatedSuppliersSupplierIdRoute
   '/suppliers/new': typeof AuthenticatedSuppliersNewRoute
@@ -262,6 +271,7 @@ export interface FileRoutesById {
   '/_authenticated/customers/new': typeof AuthenticatedCustomersNewRoute
   '/_authenticated/items/$itemId': typeof AuthenticatedItemsItemIdRoute
   '/_authenticated/items/new': typeof AuthenticatedItemsNewRoute
+  '/_authenticated/quotes_/$quoteId': typeof AuthenticatedQuotesQuoteIdRoute
   '/_authenticated/quotes_/new': typeof AuthenticatedQuotesNewRoute
   '/_authenticated/suppliers/$supplierId': typeof AuthenticatedSuppliersSupplierIdRoute
   '/_authenticated/suppliers/new': typeof AuthenticatedSuppliersNewRoute
@@ -292,6 +302,7 @@ export interface FileRouteTypes {
     | '/customers/new'
     | '/items/$itemId'
     | '/items/new'
+    | '/quotes/$quoteId'
     | '/quotes/new'
     | '/suppliers/$supplierId'
     | '/suppliers/new'
@@ -320,6 +331,7 @@ export interface FileRouteTypes {
     | '/customers/new'
     | '/items/$itemId'
     | '/items/new'
+    | '/quotes/$quoteId'
     | '/quotes/new'
     | '/suppliers/$supplierId'
     | '/suppliers/new'
@@ -349,6 +361,7 @@ export interface FileRouteTypes {
     | '/_authenticated/customers/new'
     | '/_authenticated/items/$itemId'
     | '/_authenticated/items/new'
+    | '/_authenticated/quotes_/$quoteId'
     | '/_authenticated/quotes_/new'
     | '/_authenticated/suppliers/$supplierId'
     | '/_authenticated/suppliers/new'
@@ -514,6 +527,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedQuotesNewRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/quotes_/$quoteId': {
+      id: '/_authenticated/quotes_/$quoteId'
+      path: '/quotes/$quoteId'
+      fullPath: '/quotes/$quoteId'
+      preLoaderRoute: typeof AuthenticatedQuotesQuoteIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/items/new': {
       id: '/_authenticated/items/new'
       path: '/new'
@@ -587,6 +607,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedCustomersCustomerIdRoute: typeof AuthenticatedCustomersCustomerIdRoute
   AuthenticatedCustomersNewRoute: typeof AuthenticatedCustomersNewRoute
+  AuthenticatedQuotesQuoteIdRoute: typeof AuthenticatedQuotesQuoteIdRoute
   AuthenticatedQuotesNewRoute: typeof AuthenticatedQuotesNewRoute
   AuthenticatedSuppliersSupplierIdRoute: typeof AuthenticatedSuppliersSupplierIdRoute
   AuthenticatedSuppliersNewRoute: typeof AuthenticatedSuppliersNewRoute
@@ -612,6 +633,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedCustomersCustomerIdRoute: AuthenticatedCustomersCustomerIdRoute,
   AuthenticatedCustomersNewRoute: AuthenticatedCustomersNewRoute,
+  AuthenticatedQuotesQuoteIdRoute: AuthenticatedQuotesQuoteIdRoute,
   AuthenticatedQuotesNewRoute: AuthenticatedQuotesNewRoute,
   AuthenticatedSuppliersSupplierIdRoute: AuthenticatedSuppliersSupplierIdRoute,
   AuthenticatedSuppliersNewRoute: AuthenticatedSuppliersNewRoute,

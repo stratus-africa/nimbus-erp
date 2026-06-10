@@ -140,8 +140,7 @@ function QuotesPage() {
   };
 
   const openRow = (r: any) => {
-    setEditing(r);
-    setDialogOpen(true);
+    navigate({ to: "/quotes/$quoteId", params: { quoteId: r.id } });
   };
 
   return (
