@@ -60,16 +60,17 @@ function ItemViewPage() {
     enabled: !!item && !!tenantId,
     queryKey: ["item-transactions", itemId, tenantId],
     queryFn: async () => {
+      const tid = tenantId!;
       const [inv, po, adj] = await Promise.all([
         supabase.from("invoice_lines")
           .select("id, qty, unit_price, line_total, invoices!inner(id, invoice_number, invoice_date, status, tenant_id, customers(name))")
-          .eq("item_id", itemId).eq("invoices.tenant_id", tenantId),
+          .eq("item_id", itemId).eq("invoices.tenant_id", tid),
         supabase.from("purchase_order_lines")
           .select("id, qty, unit_price, line_total, purchase_orders!inner(id, po_number, order_date, status, tenant_id, suppliers(name))")
-          .eq("item_id", itemId).eq("purchase_orders.tenant_id", tenantId),
+          .eq("item_id", itemId).eq("purchase_orders.tenant_id", tid),
         supabase.from("inventory_adjustment_lines")
           .select("id, qty_before, qty_after, variance, inventory_adjustments!inner(id, adjustment_number, adjustment_date, adjustment_type, reason, tenant_id, created_by)")
-          .eq("item_id", itemId).eq("inventory_adjustments.tenant_id", tenantId),
+          .eq("item_id", itemId).eq("inventory_adjustments.tenant_id", tid),
       ]);
       if (inv.error) throw inv.error;
       if (po.error) throw po.error;
