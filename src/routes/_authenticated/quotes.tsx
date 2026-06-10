@@ -140,9 +140,13 @@ function QuotesPage() {
   };
 
   const openRow = (r: any) => {
-    setEditing(r);
-    setDialogOpen(true);
+    navigate({ to: "/quotes/$quoteId", params: { quoteId: r.id } });
   };
+  // keep editor available for future inline edits
+  void setEditing;
+  void setDialogOpen;
+  void editing;
+  void dialogOpen;
 
   return (
     <div className="flex h-full flex-col bg-background">
