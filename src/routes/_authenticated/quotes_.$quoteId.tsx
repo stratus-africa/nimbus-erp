@@ -23,6 +23,9 @@ import {
   Clock,
   UserCircle2,
   FilePlus2,
+  Plus,
+  Search,
+  ChevronDown,
 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/quotes_/$quoteId")({
