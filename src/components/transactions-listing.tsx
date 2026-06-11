@@ -337,7 +337,32 @@ export function TransactionsListing({
                     <td className="px-3 py-3 align-middle text-right tabular-nums">
                       {formatCurrency(Number(r.total ?? 0), currency)}
                     </td>
-                    <td className="px-3 py-3 align-middle text-right" />
+                    <td className="px-3 py-3 align-middle text-right">
+                      {(config.kind === "invoice" || config.kind === "bill") &&
+                        Number(r.balance_due ?? 0) > 0 &&
+                        r.status !== "draft" &&
+                        r.status !== "cancelled" && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const isInv = config.kind === "invoice";
+                              navigate({
+                                to: isInv ? "/payments-received/new" : "/payments-made/new",
+                                search: {
+                                  partyId: isInv ? r.customer_id : r.supplier_id,
+                                  docId: r.id,
+                                  amount: Number(r.balance_due ?? 0),
+                                },
+                              });
+                            }}
+                            className="invisible inline-flex h-7 items-center gap-1 rounded border border-emerald-200 bg-emerald-50 px-2 text-xs font-medium text-emerald-700 hover:bg-emerald-100 group-hover:visible"
+                            title="Record Payment"
+                          >
+                            <Wallet className="h-3.5 w-3.5" /> Pay
+                          </button>
+                        )}
+                    </td>
+
                   </tr>
                 );
               })
