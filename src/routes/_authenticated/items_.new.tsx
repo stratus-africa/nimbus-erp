@@ -195,7 +195,7 @@ export function ItemFormPage({ itemId, initial }: { itemId?: string; initial?: P
       </div>
 
       <div className="flex items-center justify-between border-b px-6 py-4">
-        <h1 className="text-xl font-semibold">New Item</h1>
+        <h1 className="text-xl font-semibold">{isEdit ? "Edit Item" : "New Item"}</h1>
         <Link to="/items" className="text-muted-foreground hover:text-foreground">
           <X className="h-5 w-5" />
         </Link>
