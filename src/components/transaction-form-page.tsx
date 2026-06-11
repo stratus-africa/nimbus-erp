@@ -101,7 +101,6 @@ export function TransactionFormPage({
       setStatus(initial.status ?? config.statuses[0].value);
       setNotes(initial.notes ?? "");
       setTerms(initial.terms ?? "");
-      setReference(initial.reference ?? "");
       supabase
         .from(config.linesTable)
         .select("*")
