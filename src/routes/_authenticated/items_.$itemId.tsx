@@ -463,6 +463,8 @@ function ItemViewPage() {
           qc.invalidateQueries({ queryKey: ["items"] });
         }}
       />
+     </div>
+      </div>
     </div>
   );
 }
