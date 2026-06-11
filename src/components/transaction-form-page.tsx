@@ -281,14 +281,6 @@ export function TransactionFormPage({
           </div>
 
           <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-[180px_1fr_180px_1fr] sm:items-center">
-            <Label>Reference / Order #</Label>
-            <Input
-              value={reference}
-              onChange={(e) => setReference(e.target.value)}
-              className="max-w-md"
-              placeholder="Optional"
-            />
-
             <Label className="text-rose-600">Date *</Label>
             <Input
               type="date"
