@@ -369,7 +369,7 @@ function InvoiceDetailPage() {
             size="sm"
             className="h-8 gap-1.5 text-emerald-700 hover:bg-emerald-50 hover:text-emerald-800"
             disabled={!canRecordPayment}
-            onClick={() => navigate({ to: "/payments-received/new" })}
+            onClick={() => navigate({ to: "/payments-received/new", search: { partyId: invoice.customer_id, docId: invoice.id, amount: balanceDue } })}
           >
             <Wallet className="h-4 w-4" /> Record Payment
           </Button>
@@ -416,7 +416,7 @@ function InvoiceDetailPage() {
                   Payment is overdue. Send a reminder or{" "}
                   <button
                     className="font-semibold text-rose-700 hover:underline"
-                    onClick={() => navigate({ to: "/payments-received/new" })}
+                    onClick={() => navigate({ to: "/payments-received/new", search: { partyId: invoice.customer_id, docId: invoice.id, amount: balanceDue } })}
                   >
                     record payment
                   </button>
@@ -425,7 +425,7 @@ function InvoiceDetailPage() {
                 <Button
                   size="sm"
                   className="ml-auto h-8 bg-emerald-600 text-white hover:bg-emerald-700"
-                  onClick={() => navigate({ to: "/payments-received/new" })}
+                  onClick={() => navigate({ to: "/payments-received/new", search: { partyId: invoice.customer_id, docId: invoice.id, amount: balanceDue } })}
                 >
                   Record Payment
                 </Button>
