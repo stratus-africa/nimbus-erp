@@ -430,7 +430,7 @@ export function ItemFormPage({ itemId, initial }: { itemId?: string; initial?: P
             disabled={isSubmitting || save.isPending}
             className="bg-emerald-600 hover:bg-emerald-700 text-white"
           >
-            {save.isPending ? "Saving…" : "Save"}
+            {save.isPending ? "Saving…" : isEdit ? "Update" : "Save"}
           </Button>
           <Button type="button" variant="outline" onClick={onCancel}>Cancel</Button>
         </div>
