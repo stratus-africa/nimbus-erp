@@ -17,7 +17,7 @@ export const invoiceConfig: DocConfig = {
   fkLinesField: "invoice_id",
   statuses: [
     { value: "draft", label: "Draft" },
-    { value: "open", label: "Open" },
+    { value: "sent", label: "Sent" },
     { value: "partially_paid", label: "Partially Paid" },
     { value: "paid", label: "Paid" },
     { value: "overdue", label: "Overdue" },

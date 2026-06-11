@@ -162,7 +162,7 @@ export function TransactionFormPage({
       let docId = initial?.id as string | undefined;
       const finalStatus = sendAfter
         ? config.kind === "invoice"
-          ? "open"
+          ? "sent"
           : "sent"
         : status;
       const docPayload: any = {

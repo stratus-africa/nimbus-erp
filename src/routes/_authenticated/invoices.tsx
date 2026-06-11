@@ -16,7 +16,7 @@ function InvoicesPage() {
       onNew={() => navigate({ to: "/invoices/new" })}
       onRowClick={(row) =>
         navigate({
-          to: "/invoices/$invoiceId/edit",
+          to: "/invoices/$invoiceId",
           params: { invoiceId: row.id },
         })
       }
