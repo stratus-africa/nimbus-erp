@@ -31,6 +31,7 @@ import { Route as AuthenticatedSuppliersIndexRouteImport } from './routes/_authe
 import { Route as AuthenticatedCustomersIndexRouteImport } from './routes/_authenticated/customers.index'
 import { Route as AuthenticatedSuppliersNewRouteImport } from './routes/_authenticated/suppliers.new'
 import { Route as AuthenticatedSuppliersSupplierIdRouteImport } from './routes/_authenticated/suppliers.$supplierId'
+import { Route as AuthenticatedSettingsQuotesRouteImport } from './routes/_authenticated/settings.quotes'
 import { Route as AuthenticatedQuotesNewRouteImport } from './routes/_authenticated/quotes_.new'
 import { Route as AuthenticatedQuotesQuoteIdRouteImport } from './routes/_authenticated/quotes_.$quoteId'
 import { Route as AuthenticatedPaymentsReceivedNewRouteImport } from './routes/_authenticated/payments-received_.new'
@@ -164,6 +165,12 @@ const AuthenticatedSuppliersSupplierIdRoute =
     path: '/suppliers/$supplierId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedSettingsQuotesRoute =
+  AuthenticatedSettingsQuotesRouteImport.update({
+    id: '/quotes',
+    path: '/quotes',
+    getParentRoute: () => AuthenticatedSettingsRoute,
+  } as any)
 const AuthenticatedQuotesNewRoute = AuthenticatedQuotesNewRouteImport.update({
   id: '/quotes_/new',
   path: '/quotes/new',
@@ -264,7 +271,7 @@ export interface FileRoutesByFullPath {
   '/purchase-orders': typeof AuthenticatedPurchaseOrdersRoute
   '/quotes': typeof AuthenticatedQuotesRoute
   '/reports': typeof AuthenticatedReportsRoute
-  '/settings': typeof AuthenticatedSettingsRoute
+  '/settings': typeof AuthenticatedSettingsRouteWithChildren
   '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
   '/customers/new': typeof AuthenticatedCustomersNewRoute
   '/invoices/$invoiceId': typeof AuthenticatedInvoicesInvoiceIdRouteWithChildren
@@ -275,6 +282,7 @@ export interface FileRoutesByFullPath {
   '/payments-received/new': typeof AuthenticatedPaymentsReceivedNewRoute
   '/quotes/$quoteId': typeof AuthenticatedQuotesQuoteIdRoute
   '/quotes/new': typeof AuthenticatedQuotesNewRoute
+  '/settings/quotes': typeof AuthenticatedSettingsQuotesRoute
   '/suppliers/$supplierId': typeof AuthenticatedSuppliersSupplierIdRoute
   '/suppliers/new': typeof AuthenticatedSuppliersNewRoute
   '/customers/': typeof AuthenticatedCustomersIndexRoute
@@ -301,7 +309,7 @@ export interface FileRoutesByTo {
   '/purchase-orders': typeof AuthenticatedPurchaseOrdersRoute
   '/quotes': typeof AuthenticatedQuotesRoute
   '/reports': typeof AuthenticatedReportsRoute
-  '/settings': typeof AuthenticatedSettingsRoute
+  '/settings': typeof AuthenticatedSettingsRouteWithChildren
   '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
   '/customers/new': typeof AuthenticatedCustomersNewRoute
   '/invoices/$invoiceId': typeof AuthenticatedInvoicesInvoiceIdRouteWithChildren
@@ -312,6 +320,7 @@ export interface FileRoutesByTo {
   '/payments-received/new': typeof AuthenticatedPaymentsReceivedNewRoute
   '/quotes/$quoteId': typeof AuthenticatedQuotesQuoteIdRoute
   '/quotes/new': typeof AuthenticatedQuotesNewRoute
+  '/settings/quotes': typeof AuthenticatedSettingsQuotesRoute
   '/suppliers/$supplierId': typeof AuthenticatedSuppliersSupplierIdRoute
   '/suppliers/new': typeof AuthenticatedSuppliersNewRoute
   '/customers': typeof AuthenticatedCustomersIndexRoute
@@ -340,7 +349,7 @@ export interface FileRoutesById {
   '/_authenticated/purchase-orders': typeof AuthenticatedPurchaseOrdersRoute
   '/_authenticated/quotes': typeof AuthenticatedQuotesRoute
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
-  '/_authenticated/settings': typeof AuthenticatedSettingsRoute
+  '/_authenticated/settings': typeof AuthenticatedSettingsRouteWithChildren
   '/_authenticated/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
   '/_authenticated/customers/new': typeof AuthenticatedCustomersNewRoute
   '/_authenticated/invoices_/$invoiceId': typeof AuthenticatedInvoicesInvoiceIdRouteWithChildren
@@ -351,6 +360,7 @@ export interface FileRoutesById {
   '/_authenticated/payments-received_/new': typeof AuthenticatedPaymentsReceivedNewRoute
   '/_authenticated/quotes_/$quoteId': typeof AuthenticatedQuotesQuoteIdRoute
   '/_authenticated/quotes_/new': typeof AuthenticatedQuotesNewRoute
+  '/_authenticated/settings/quotes': typeof AuthenticatedSettingsQuotesRoute
   '/_authenticated/suppliers/$supplierId': typeof AuthenticatedSuppliersSupplierIdRoute
   '/_authenticated/suppliers/new': typeof AuthenticatedSuppliersNewRoute
   '/_authenticated/customers/': typeof AuthenticatedCustomersIndexRoute
@@ -390,6 +400,7 @@ export interface FileRouteTypes {
     | '/payments-received/new'
     | '/quotes/$quoteId'
     | '/quotes/new'
+    | '/settings/quotes'
     | '/suppliers/$supplierId'
     | '/suppliers/new'
     | '/customers/'
@@ -427,6 +438,7 @@ export interface FileRouteTypes {
     | '/payments-received/new'
     | '/quotes/$quoteId'
     | '/quotes/new'
+    | '/settings/quotes'
     | '/suppliers/$supplierId'
     | '/suppliers/new'
     | '/customers'
@@ -465,6 +477,7 @@ export interface FileRouteTypes {
     | '/_authenticated/payments-received_/new'
     | '/_authenticated/quotes_/$quoteId'
     | '/_authenticated/quotes_/new'
+    | '/_authenticated/settings/quotes'
     | '/_authenticated/suppliers/$supplierId'
     | '/_authenticated/suppliers/new'
     | '/_authenticated/customers/'
@@ -638,6 +651,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSuppliersSupplierIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/settings/quotes': {
+      id: '/_authenticated/settings/quotes'
+      path: '/quotes'
+      fullPath: '/settings/quotes'
+      preLoaderRoute: typeof AuthenticatedSettingsQuotesRouteImport
+      parentRoute: typeof AuthenticatedSettingsRoute
+    }
     '/_authenticated/quotes_/new': {
       id: '/_authenticated/quotes_/new'
       path: '/quotes/new'
@@ -739,6 +759,19 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedSettingsRouteChildren {
+  AuthenticatedSettingsQuotesRoute: typeof AuthenticatedSettingsQuotesRoute
+}
+
+const AuthenticatedSettingsRouteChildren: AuthenticatedSettingsRouteChildren = {
+  AuthenticatedSettingsQuotesRoute: AuthenticatedSettingsQuotesRoute,
+}
+
+const AuthenticatedSettingsRouteWithChildren =
+  AuthenticatedSettingsRoute._addFileChildren(
+    AuthenticatedSettingsRouteChildren,
+  )
+
 interface AuthenticatedInvoicesInvoiceIdRouteChildren {
   AuthenticatedInvoicesInvoiceIdEditRoute: typeof AuthenticatedInvoicesInvoiceIdEditRoute
 }
@@ -782,7 +815,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedPurchaseOrdersRoute: typeof AuthenticatedPurchaseOrdersRoute
   AuthenticatedQuotesRoute: typeof AuthenticatedQuotesRoute
   AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
-  AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
+  AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRouteWithChildren
   AuthenticatedCustomersCustomerIdRoute: typeof AuthenticatedCustomersCustomerIdRoute
   AuthenticatedCustomersNewRoute: typeof AuthenticatedCustomersNewRoute
   AuthenticatedInvoicesInvoiceIdRoute: typeof AuthenticatedInvoicesInvoiceIdRouteWithChildren
@@ -816,7 +849,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedPurchaseOrdersRoute: AuthenticatedPurchaseOrdersRoute,
   AuthenticatedQuotesRoute: AuthenticatedQuotesRoute,
   AuthenticatedReportsRoute: AuthenticatedReportsRoute,
-  AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
+  AuthenticatedSettingsRoute: AuthenticatedSettingsRouteWithChildren,
   AuthenticatedCustomersCustomerIdRoute: AuthenticatedCustomersCustomerIdRoute,
   AuthenticatedCustomersNewRoute: AuthenticatedCustomersNewRoute,
   AuthenticatedInvoicesInvoiceIdRoute:
@@ -850,13 +883,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

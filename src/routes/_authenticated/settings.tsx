@@ -98,7 +98,7 @@ const SECTIONS: Section[] = [
       [{
         title: "Sales", icon: ShoppingCart, tone: "sky",
         items: [
-          { label: "Quotes", to: "/quotes" },
+          { label: "Quotes", to: "/settings/quotes" },
           { label: "Invoices", to: "/invoices" },
           { label: "Recurring Invoices" },
           { label: "Sales Receipts" },
