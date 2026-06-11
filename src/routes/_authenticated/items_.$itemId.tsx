@@ -441,15 +441,6 @@ function ItemViewPage() {
         </TabsContent>
       </Tabs>
 
-      <EditItemDialog
-        open={editOpen}
-        onOpenChange={setEditOpen}
-        item={item}
-        onSaved={() => {
-          qc.invalidateQueries({ queryKey: ["item", itemId] });
-          qc.invalidateQueries({ queryKey: ["items"] });
-        }}
-      />
      </div>
       </div>
     </div>
