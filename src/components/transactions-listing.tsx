@@ -22,7 +22,9 @@ import {
   Search,
   SlidersHorizontal,
   Paperclip,
+  Wallet,
 } from "lucide-react";
+
 
 const STATUS_STYLES: Record<string, string> = {
   draft: "text-muted-foreground",
