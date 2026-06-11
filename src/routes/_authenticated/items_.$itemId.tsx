@@ -17,7 +17,7 @@ import { z } from "zod";
 import { useState } from "react";
 import {
   ArrowLeft, Pencil, X, ImageIcon, Package, RotateCcw, MoreHorizontal,
-  ChevronRight, AlertTriangle, FileText, ShoppingCart, ArrowLeftRight, Activity, Plus, Pencil as PencilIcon,
+  ChevronRight, AlertTriangle, FileText, ShoppingCart, ArrowLeftRight, Activity, Plus, Pencil as PencilIcon, Search,
 } from "lucide-react";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator,
