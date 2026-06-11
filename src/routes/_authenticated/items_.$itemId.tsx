@@ -230,7 +230,10 @@ function ItemViewPage() {
   timeline.sort((a, b) => new Date(b.ts).getTime() - new Date(a.ts).getTime());
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full bg-background">
+      {Sidebar}
+      <div className="flex min-w-0 flex-1 flex-col">
+       <div className="flex h-full flex-col">
       <div className="flex items-center justify-between border-b bg-background px-6 py-3">
         <div className="flex items-center gap-3 min-w-0">
           <Link to="/items" className="text-muted-foreground hover:text-foreground">
