@@ -521,6 +521,7 @@ function QuoteDetailPage() {
           )}
         </div>
       </div>
+      </div>
     </div>
   );
 }
