@@ -61,6 +61,7 @@ const NAV_GROUPS = [
       { title: "Customers", url: "/customers", icon: Users },
       { title: "Quotes", url: "/quotes", icon: FileText },
       { title: "Invoices", url: "/invoices", icon: ReceiptText },
+      { title: "Payments Received", url: "/payments-received", icon: ReceiptText },
     ],
   },
   {
@@ -69,6 +70,7 @@ const NAV_GROUPS = [
       { title: "Suppliers", url: "/suppliers", icon: Truck },
       { title: "Purchase Orders", url: "/purchase-orders", icon: ShoppingCart },
       { title: "Bills", url: "/bills", icon: FileCheck },
+      { title: "Payments Made", url: "/payments-made", icon: FileCheck },
     ],
   },
   {
