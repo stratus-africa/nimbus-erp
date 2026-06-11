@@ -6,14 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { formatCurrency } from "@/lib/format";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { useState } from "react";
 import {
   ArrowLeft, Pencil, X, ImageIcon, Package, RotateCcw, MoreHorizontal,
@@ -29,14 +24,6 @@ export const Route = createFileRoute("/_authenticated/items_/$itemId")({
   component: ItemViewPage,
 });
 
-const editSchema = z.object({
-  name: z.string().trim().min(1, "Name is required").max(200),
-  sku: z.string().trim().max(64).optional().or(z.literal("")),
-  unit: z.string().trim().min(1, "Unit is required").max(32),
-  reorder_level: z.coerce.number().min(0, "Must be ≥ 0").max(9999999),
-});
-type EditValues = z.infer<typeof editSchema>;
-
 function ItemViewPage() {
   const { itemId } = useParams({ from: "/_authenticated/items_/$itemId" });
   const navigate = useNavigate();
@@ -44,7 +31,7 @@ function ItemViewPage() {
   const { data: profile } = useProfile();
   const tenantId = profile?.currentTenant?.id;
   const currency = profile?.currentTenant?.base_currency ?? "USD";
-  const [editOpen, setEditOpen] = useState(false);
+  
   const [sidebarSearch, setSidebarSearch] = useState("");
 
   const { data: allItems } = useQuery({
@@ -257,7 +244,7 @@ function ItemViewPage() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" className="gap-1" onClick={() => setEditOpen(true)}>
+          <Button variant="outline" size="sm" className="gap-1" onClick={() => navigate({ to: "/items/$itemId/edit", params: { itemId } })}>
             <Pencil className="h-3.5 w-3.5" /> Edit
           </Button>
           <Button size="sm" className="bg-primary" onClick={() => navigate({ to: "/inventory-adjustments" })}>Adjust Stock</Button>
@@ -454,15 +441,6 @@ function ItemViewPage() {
         </TabsContent>
       </Tabs>
 
-      <EditItemDialog
-        open={editOpen}
-        onOpenChange={setEditOpen}
-        item={item}
-        onSaved={() => {
-          qc.invalidateQueries({ queryKey: ["item", itemId] });
-          qc.invalidateQueries({ queryKey: ["items"] });
-        }}
-      />
      </div>
       </div>
     </div>
@@ -532,95 +510,6 @@ function TransactionsList({
   );
 }
 
-function EditItemDialog({
-  open, onOpenChange, item, onSaved,
-}: {
-  open: boolean; onOpenChange: (v: boolean) => void; item: any; onSaved: () => void;
-}) {
-  const form = useForm<EditValues>({
-    resolver: zodResolver(editSchema),
-    defaultValues: {
-      name: item.name ?? "",
-      sku: item.sku ?? "",
-      unit: item.unit ?? "unit",
-      reorder_level: Number(item.reorder_level ?? 0),
-    },
-    values: {
-      name: item.name ?? "",
-      sku: item.sku ?? "",
-      unit: item.unit ?? "unit",
-      reorder_level: Number(item.reorder_level ?? 0),
-    },
-  });
-
-  const save = useMutation({
-    mutationFn: async (v: EditValues) => {
-      // SKU uniqueness within tenant (excluding this item)
-      if (v.sku && v.sku.trim()) {
-        const { data: dup, error: dupErr } = await supabase
-          .from("items").select("id").eq("tenant_id", item.tenant_id)
-          .eq("sku", v.sku.trim()).neq("id", item.id).is("deleted_at", null).maybeSingle();
-        if (dupErr) throw dupErr;
-        if (dup) throw new Error("SKU already in use");
-      }
-      const { error } = await supabase.from("items").update({
-        name: v.name.trim(),
-        sku: v.sku?.trim() || null,
-        unit: v.unit.trim(),
-        reorder_level: v.reorder_level,
-      }).eq("id", item.id);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      toast.success("Item saved");
-      onOpenChange(false);
-      onSaved();
-    },
-    onError: (e: any) => toast.error(e.message),
-  });
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
-        <DialogHeader><DialogTitle>Edit item</DialogTitle></DialogHeader>
-        <form
-          id="edit-item-form"
-          onSubmit={form.handleSubmit((v) => save.mutate(v))}
-          className="space-y-4"
-        >
-          <div className="space-y-1.5">
-            <Label htmlFor="name">Name</Label>
-            <Input id="name" {...form.register("name")} />
-            {form.formState.errors.name && <p className="text-xs text-destructive">{form.formState.errors.name.message}</p>}
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="sku">SKU</Label>
-            <Input id="sku" {...form.register("sku")} />
-            {form.formState.errors.sku && <p className="text-xs text-destructive">{form.formState.errors.sku.message}</p>}
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label htmlFor="unit">Unit</Label>
-              <Input id="unit" {...form.register("unit")} />
-              {form.formState.errors.unit && <p className="text-xs text-destructive">{form.formState.errors.unit.message}</p>}
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="reorder">Reorder point</Label>
-              <Input id="reorder" type="number" step="0.01" min="0" {...form.register("reorder_level")} />
-              {form.formState.errors.reorder_level && <p className="text-xs text-destructive">{form.formState.errors.reorder_level.message}</p>}
-            </div>
-          </div>
-        </form>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={save.isPending}>Cancel</Button>
-          <Button type="submit" form="edit-item-form" disabled={save.isPending}>
-            {save.isPending ? "Saving…" : "Save changes"}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
 
 function EmptyState({ icon: Icon, title, description }: { icon: any; title: string; description: string }) {
   return (

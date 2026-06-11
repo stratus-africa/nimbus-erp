@@ -1,18 +1,13 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "@/hooks/use-profile";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
-import { toast } from "sonner";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { ChevronDown, Plus, MoreHorizontal, SlidersHorizontal, Search, RefreshCw, ImageIcon } from "lucide-react";
 import { formatCurrency } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -21,18 +16,6 @@ export const Route = createFileRoute("/_authenticated/items")({
   head: () => ({ meta: [{ title: "Items — Nimbus ERP" }] }),
   component: ItemsPage,
 });
-
-type Item = {
-  id?: string;
-  sku?: string | null;
-  name: string;
-  description?: string | null;
-  item_type: "inventory" | "service" | "non_inventory";
-  unit?: string | null;
-  selling_price?: number | null;
-  cost_price?: number | null;
-  reorder_level?: number | null;
-};
 
 type FilterKey = "all" | "active" | "inactive" | "inventory" | "service" | "low";
 const FILTERS: { key: FilterKey; label: string }[] = [
@@ -54,8 +37,6 @@ function ItemsPage() {
   const [filter, setFilter] = useState<FilterKey>("all");
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [editing, setEditing] = useState<Item | null>(null);
 
   const { data: rows, isLoading } = useQuery({
     enabled: !!tenantId,
@@ -90,24 +71,7 @@ function ItemsPage() {
     setSelected(next);
   };
 
-  const upsert = useMutation({
-    mutationFn: async (i: Item) => {
-      const payload: any = { ...i, tenant_id: tenantId! };
-      const { error } = i.id
-        ? await supabase.from("items").update(payload).eq("id", i.id)
-        : await supabase.from("items").insert(payload);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["items"] });
-      toast.success("Saved");
-      setDialogOpen(false);
-    },
-    onError: (e: any) => toast.error(e.message),
-  });
-
   const openNew = () => navigate({ to: "/items/new" });
-  const openEdit = (i: Item) => { setEditing(i); setDialogOpen(true); };
 
   const filterLabel = FILTERS.find((f) => f.key === filter)?.label ?? "All Items";
 
@@ -245,49 +209,7 @@ function ItemsPage() {
         </Table>
       </div>
 
-      <ItemDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        initial={editing}
-        onSubmit={(i) => upsert.mutate(i)}
-        saving={upsert.isPending}
-      />
     </div>
   );
 }
 
-function ItemDialog({ open, onOpenChange, initial, onSubmit, saving }: { open: boolean; onOpenChange: (v: boolean) => void; initial: Item | null; onSubmit: (i: Item) => void; saving: boolean }) {
-  const [i, setI] = useState<Item>({ name: "", item_type: "inventory" });
-  useEffect(() => { setI(initial ?? { name: "", item_type: "inventory" }); }, [initial, open]);
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
-        <DialogHeader><DialogTitle>{i.id ? "Edit item" : "New item"}</DialogTitle></DialogHeader>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-2 sm:col-span-2"><Label>Name *</Label><Input value={i.name} onChange={(e) => setI({ ...i, name: e.target.value })} /></div>
-          <div className="space-y-2"><Label>SKU</Label><Input value={i.sku ?? ""} onChange={(e) => setI({ ...i, sku: e.target.value })} /></div>
-          <div className="space-y-2">
-            <Label>Type</Label>
-            <Select value={i.item_type} onValueChange={(v: any) => setI({ ...i, item_type: v })}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="inventory">Inventory</SelectItem>
-                <SelectItem value="service">Service</SelectItem>
-                <SelectItem value="non_inventory">Non-inventory</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2"><Label>Usage Unit</Label><Input value={i.unit ?? ""} onChange={(e) => setI({ ...i, unit: e.target.value })} placeholder="pcs, hrs, kg…" /></div>
-          <div className="space-y-2"><Label>Rate (Selling)</Label><Input type="number" step="0.01" value={i.selling_price ?? ""} onChange={(e) => setI({ ...i, selling_price: parseFloat(e.target.value) || 0 })} /></div>
-          <div className="space-y-2"><Label>Purchase Rate (Cost)</Label><Input type="number" step="0.01" value={i.cost_price ?? ""} onChange={(e) => setI({ ...i, cost_price: parseFloat(e.target.value) || 0 })} /></div>
-          <div className="space-y-2"><Label>Reorder Level</Label><Input type="number" step="0.01" value={i.reorder_level ?? ""} onChange={(e) => setI({ ...i, reorder_level: parseFloat(e.target.value) || 0 })} /></div>
-          <div className="space-y-2 sm:col-span-2"><Label>Description</Label><Textarea value={i.description ?? ""} onChange={(e) => setI({ ...i, description: e.target.value })} /></div>
-        </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button disabled={!i.name || saving} onClick={() => onSubmit(i)}>{saving ? "Saving…" : "Save"}</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
