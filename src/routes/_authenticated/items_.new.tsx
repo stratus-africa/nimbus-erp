@@ -14,7 +14,7 @@ import { z } from "zod";
 import { ImageIcon, RefreshCw, Search, X, HelpCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export const Route = createFileRoute("/_authenticated/items/new")({
+export const Route = createFileRoute("/_authenticated/items_/new")({
   head: () => ({ meta: [{ title: "New Item — Nimbus ERP" }] }),
   component: NewItemPage,
 });

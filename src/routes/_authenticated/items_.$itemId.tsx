@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { format, formatDistanceToNow } from "date-fns";
 
-export const Route = createFileRoute("/_authenticated/items/$itemId")({
+export const Route = createFileRoute("/_authenticated/items_/$itemId")({
   head: () => ({ meta: [{ title: "Item — Nimbus ERP" }] }),
   component: ItemViewPage,
 });
