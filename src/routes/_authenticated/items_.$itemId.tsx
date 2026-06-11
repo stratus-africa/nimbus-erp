@@ -176,19 +176,27 @@ function ItemViewPage() {
 
   if (isLoading) {
     return (
-      <div className="space-y-4 p-6">
-        <Skeleton className="h-8 w-64" />
-        <Skeleton className="h-64 w-full" />
+      <div className="flex h-full bg-background">
+        {Sidebar}
+        <div className="flex-1 space-y-4 p-6">
+          <Skeleton className="h-8 w-64" />
+          <Skeleton className="h-64 w-full" />
+        </div>
       </div>
     );
   }
 
   if (!item) {
     return (
-      <div className="grid place-items-center p-16 text-center">
-        <Package className="mb-3 h-10 w-10 text-muted-foreground" />
-        <p className="text-lg font-semibold">Item not found</p>
-        <Link to="/items" className="mt-3 text-sm text-primary hover:underline">Back to items</Link>
+      <div className="flex h-full bg-background">
+        {Sidebar}
+        <div className="grid flex-1 place-items-center p-16 text-center">
+          <div>
+            <Package className="mx-auto mb-3 h-10 w-10 text-muted-foreground" />
+            <p className="text-lg font-semibold">Item not found</p>
+            <Link to="/items" className="mt-3 inline-block text-sm text-primary hover:underline">Back to items</Link>
+          </div>
+        </div>
       </div>
     );
   }
