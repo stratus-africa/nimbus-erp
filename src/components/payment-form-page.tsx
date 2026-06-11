@@ -55,7 +55,7 @@ export function PaymentFormPage({ config }: { config: PaymentsModuleConfig }) {
     queryKey: [config.docTable, "open", partyId],
     queryFn: async () => {
       const partyField = config.docTable === "invoices" ? "customer_id" : "supplier_id";
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from(config.docTable)
         .select(`id, ${config.docNumberField}, total, amount_paid, balance_due, status`)
         .eq("tenant_id", tenantId!)
@@ -64,7 +64,7 @@ export function PaymentFormPage({ config }: { config: PaymentsModuleConfig }) {
         .gt("balance_due", 0)
         .order("created_at", { ascending: false });
       if (error) throw error;
-      return data ?? [];
+      return (data ?? []) as any[];
     },
   });
 
