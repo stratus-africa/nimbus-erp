@@ -60,7 +60,8 @@ export function TransactionFormPage({
   const [status, setStatus] = useState(config.statuses[0].value);
   const [notes, setNotes] = useState("");
   const [terms, setTerms] = useState("");
-  const [reference, setReference] = useState("");
+  const [reference, _setReference] = useState("");
+  void reference; void _setReference;
   const [lines, setLines] = useState<Line[]>([
     { description: "", quantity: 1, rate: 0, tax_rate: 0, line_total: 0, position: 0 },
   ]);
