@@ -16,7 +16,7 @@ import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/items_/new")({
   head: () => ({ meta: [{ title: "New Item — Nimbus ERP" }] }),
-  component: NewItemPage,
+  component: () => <ItemFormPage />,
 });
 
 const schema = z
