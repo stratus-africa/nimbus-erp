@@ -252,8 +252,105 @@ function QuoteDetailPage() {
   const canApprove = status === "draft" || status === "sent";
   const canConvert = (status === "accepted" || status === "sent" || status === "draft") && !convertedInvoice;
 
+  const filteredQuotes = (allQuotes ?? []).filter((q: any) => {
+    if (!sidebarSearch) return true;
+    const s = sidebarSearch.toLowerCase();
+    return (
+      q.quote_number?.toLowerCase().includes(s) ||
+      q.customers?.name?.toLowerCase().includes(s)
+    );
+  });
+
   return (
-    <div className="flex h-full flex-col bg-background">
+    <div className="flex h-full bg-background">
+      {/* Left sidebar: all quotes */}
+      <aside className="hidden w-[320px] shrink-0 flex-col border-r bg-card md:flex">
+        <div className="border-b px-3 py-2">
+          <div className="relative">
+            <Search className="absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+            <input
+              value={sidebarSearch}
+              onChange={(e) => setSidebarSearch(e.target.value)}
+              placeholder="Search in Quotes ( / )"
+              className="h-8 w-full rounded-md border bg-background pl-7 pr-2 text-xs focus:outline-none focus:ring-1 focus:ring-ring"
+            />
+          </div>
+        </div>
+        <div className="flex items-center justify-between border-b px-3 py-2">
+          <button className="inline-flex items-center gap-1 text-sm font-semibold">
+            All Quotes <ChevronDown className="h-3.5 w-3.5" />
+          </button>
+          <div className="flex items-center gap-1">
+            <Button
+              size="icon"
+              className="h-7 w-7 bg-emerald-500 text-white hover:bg-emerald-600"
+              onClick={() => navigate({ to: "/quotes/new" })}
+              aria-label="New quote"
+            >
+              <Plus className="h-4 w-4" />
+            </Button>
+            <Button variant="ghost" size="icon" className="h-7 w-7">
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+        <div className="flex-1 overflow-y-auto">
+          {filteredQuotes.map((q: any) => {
+            const isActive = q.id === quoteId;
+            const qStatus = (q.status ?? "draft") as string;
+            const qLabel = qStatus === "converted" ? "INVOICED" : qStatus.toUpperCase();
+            const statusColor =
+              qStatus === "draft"
+                ? "text-muted-foreground"
+                : qStatus === "sent"
+                  ? "text-blue-600"
+                  : qStatus === "accepted"
+                    ? "text-emerald-600"
+                    : qStatus === "converted"
+                      ? "text-emerald-600"
+                      : qStatus === "rejected"
+                        ? "text-rose-600"
+                        : "text-muted-foreground";
+            return (
+              <button
+                key={q.id}
+                onClick={() =>
+                  navigate({ to: "/quotes/$quoteId", params: { quoteId: q.id } })
+                }
+                className={`w-full border-b px-3 py-2.5 text-left transition-colors hover:bg-muted/50 ${
+                  isActive ? "border-l-2 border-l-blue-600 bg-blue-50/60" : ""
+                }`}
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-sm font-medium">
+                      {q.customers?.name ?? "—"}
+                    </div>
+                    <div className="mt-0.5 text-xs text-muted-foreground">
+                      {q.quote_number} · {formatDate(q.quote_date)}
+                    </div>
+                  </div>
+                  <div className="shrink-0 text-right text-sm font-medium tabular-nums">
+                    {formatCurrency(Number(q.total ?? 0), currency)}
+                  </div>
+                </div>
+                <div className={`mt-1 text-[10px] font-semibold tracking-wide ${statusColor}`}>
+                  {qLabel}
+                </div>
+              </button>
+            );
+          })}
+          {filteredQuotes.length === 0 && (
+            <div className="p-6 text-center text-xs text-muted-foreground">
+              No quotes found.
+            </div>
+          )}
+        </div>
+      </aside>
+
+      {/* Main pane */}
+      <div className="flex min-w-0 flex-1 flex-col">
+
       {/* Header */}
       <div className="border-b bg-card px-6 py-4">
         <div className="flex items-start justify-between gap-4">
