@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "@tanstack/react-router";
+import { useNavigate, useSearch } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "@/hooks/use-profile";
@@ -13,6 +13,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { formatCurrency, formatDate } from "@/lib/format";
 import { toast } from "sonner";
 import { X, RefreshCcw, Search, Calendar, Settings as SettingsIcon } from "lucide-react";
@@ -22,16 +32,34 @@ import { cn } from "@/lib/utils";
 const METHODS = ["Cash", "Bank Transfer", "Card", "MPESA", "Cheque", "Other"];
 const DEPOSIT_ACCOUNTS = ["MPESA", "Bank Account", "Cash", "Petty Cash"];
 
+// Maps Deposit-To selection -> Chart of Accounts code
+const DEPOSIT_CODE: Record<string, string> = {
+  MPESA: "1020",
+  "Bank Account": "1010",
+  Cash: "1000",
+  "Petty Cash": "1030",
+};
+
 export function PaymentFormPage({ config }: { config: PaymentsModuleConfig }) {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const { data: profile } = useProfile();
   const tenantId = profile?.currentTenant?.id;
   const currency = profile?.currentTenant?.base_currency ?? "KES";
+  const isReceived = config.kind === "received";
 
-  const [partyId, setPartyId] = useState<string>("");
+  // Prefill from query string (?partyId=...&docId=...&amount=...)
+  const search = useSearch({ strict: false }) as {
+    partyId?: string;
+    docId?: string;
+    amount?: number;
+  };
+
+  const [partyId, setPartyId] = useState<string>(search.partyId ?? "");
   const [location, setLocation] = useState<string>("Head Office");
-  const [amount, setAmount] = useState<string>("");
+  const [amount, setAmount] = useState<string>(
+    search.amount != null ? String(search.amount) : "",
+  );
   const [bankCharges, setBankCharges] = useState<string>("");
   const [date, setDate] = useState<string>(new Date().toISOString().slice(0, 10));
   const [paymentNo, setPaymentNo] = useState<string>("");
@@ -39,10 +67,10 @@ export function PaymentFormPage({ config }: { config: PaymentsModuleConfig }) {
   const [depositTo, setDepositTo] = useState<string>("MPESA");
   const [reference, setReference] = useState("");
   const [allocations, setAllocations] = useState<Record<string, string>>({});
+  const [prefilledDocId, setPrefilledDocId] = useState<string | undefined>(search.docId);
+  const [excessConfirm, setExcessConfirm] = useState<null | { asDraft: boolean }>(null);
 
-  const isReceived = config.kind === "received";
-
-  // Fetch a draft payment number
+  // Draft payment number
   const { data: nextNumber } = useQuery({
     enabled: !!tenantId,
     queryKey: ["next_payment_no", config.table, tenantId],
@@ -93,9 +121,22 @@ export function PaymentFormPage({ config }: { config: PaymentsModuleConfig }) {
     },
   });
 
+  // Reset allocations only when party actually changes (not on first prefill)
   useEffect(() => {
     setAllocations({});
   }, [partyId]);
+
+  // When prefilled doc loads, set its allocation to amount or balance_due
+  useEffect(() => {
+    if (!prefilledDocId || !openDocs) return;
+    const doc = openDocs.find((d: any) => d.id === prefilledDocId);
+    if (!doc) return;
+    const due = Number(doc.balance_due ?? 0);
+    const prefAmt = search.amount != null ? Number(search.amount) : due;
+    const apply = Math.min(due, prefAmt);
+    setAllocations((prev) => ({ ...prev, [prefilledDocId]: apply.toFixed(2) }));
+    setPrefilledDocId(undefined);
+  }, [prefilledDocId, openDocs, search.amount]);
 
   const amountReceived = Number(amount) || 0;
   const amountUsed = useMemo(
@@ -109,23 +150,95 @@ export function PaymentFormPage({ config }: { config: PaymentsModuleConfig }) {
     [parties, partyId],
   );
 
+  // Validation: any per-row over-allocation?
+  const overAllocations = useMemo(() => {
+    const list = openDocs ?? [];
+    return list
+      .map((d: any) => {
+        const val = Number(allocations[d.id] ?? 0);
+        const due = Number(d.balance_due ?? 0);
+        return val > due + 0.001
+          ? { id: d.id, number: d[config.docNumberField], val, due }
+          : null;
+      })
+      .filter(Boolean) as { id: string; number: string; val: number; due: number }[];
+  }, [allocations, openDocs, config.docNumberField]);
+
+  // Per-row clamp on change
+  const setAlloc = (id: string, v: string, max: number) => {
+    let val = v;
+    const n = Number(v);
+    if (Number.isFinite(n) && n > max) {
+      val = max.toFixed(2);
+      toast.warning(
+        `Cannot apply more than the balance due (${formatCurrency(max, currency)})`,
+      );
+    }
+    setAllocations((prev) => ({ ...prev, [id]: val }));
+  };
+
+  const clearAllocations = () => setAllocations({});
+
+  // Find or create a CoA account by code
+  const getOrCreateAccount = async (
+    code: string,
+    name: string,
+    type: "asset" | "liability" | "income" | "expense" | "equity",
+  ): Promise<string> => {
+    const { data: found } = await supabase
+      .from("chart_of_accounts")
+      .select("id")
+      .eq("tenant_id", tenantId!)
+      .eq("code", code)
+      .maybeSingle();
+    if (found?.id) return found.id;
+    const { data: ins, error } = await supabase
+      .from("chart_of_accounts")
+      .insert({ tenant_id: tenantId!, code, name, account_type: type })
+      .select("id")
+      .single();
+    if (error) throw error;
+    return ins!.id;
+  };
+
   const save = useMutation({
-    mutationFn: async (asDraft: boolean) => {
+    mutationFn: async (opts: { asDraft: boolean; confirmedExcess?: boolean }) => {
+      const { asDraft } = opts;
       if (!tenantId) throw new Error("No tenant");
       if (!partyId) throw new Error(`Select a ${config.partyLabel.toLowerCase()}`);
       if (!(amountReceived > 0)) throw new Error("Amount must be greater than 0");
+      if (overAllocations.length > 0) {
+        throw new Error(
+          `Allocation exceeds balance due on ${overAllocations.map((o) => o.number).join(", ")}`,
+        );
+      }
+      if (amountUsed > amountReceived + 0.001)
+        throw new Error("Allocated amount exceeds amount received");
 
       const entries = Object.entries(allocations)
         .map(([id, v]) => [id, Number(v) || 0] as const)
         .filter(([, v]) => v > 0);
 
-      if (!asDraft && entries.length === 0)
+      if (!asDraft && entries.length === 0 && amountExcess <= 0)
         throw new Error("Allocate the payment to at least one " + (isReceived ? "invoice" : "bill"));
-      if (amountUsed > amountReceived + 0.001)
-        throw new Error("Allocated amount exceeds amount received");
+
+      // Excess confirmation gate
+      if (!asDraft && amountExcess > 0.001 && !opts.confirmedExcess) {
+        setExcessConfirm({ asDraft });
+        return { aborted: true as const };
+      }
 
       const { data: u } = await supabase.auth.getUser();
       const uid = u.user?.id;
+      const { data: actorProfile } = uid
+        ? await supabase
+            .from("profiles")
+            .select("full_name, email")
+            .eq("user_id", uid)
+            .maybeSingle()
+        : { data: null as any };
+      const actorName =
+        actorProfile?.full_name ?? actorProfile?.email ?? "System";
 
       const noteHeader =
         `Payment #${paymentNo}` +
@@ -134,21 +247,30 @@ export function PaymentFormPage({ config }: { config: PaymentsModuleConfig }) {
         (bankCharges ? ` • Bank charges: ${bankCharges}` : "") +
         (asDraft ? " • DRAFT" : "");
 
+      const paymentIds: string[] = [];
+      const appliedDocs: { id: string; number: string; amount: number }[] = [];
+
       for (const [docId, amt] of entries) {
-        const { error: pe } = await supabase.from(config.table).insert({
-          tenant_id: tenantId,
-          [config.docFk]: docId,
-          payment_date: date,
-          amount: amt,
-          method: method.toLowerCase().replace(/\s+/g, "_"),
-          reference: reference || null,
-          notes: noteHeader,
-          created_by: uid ?? null,
-        } as any);
+        const doc = openDocs!.find((d: any) => d.id === docId)!;
+        const { data: insPay, error: pe } = await supabase
+          .from(config.table)
+          .insert({
+            tenant_id: tenantId,
+            [config.docFk]: docId,
+            payment_date: date,
+            amount: amt,
+            method: method.toLowerCase().replace(/\s+/g, "_"),
+            reference: reference || null,
+            notes: noteHeader,
+            created_by: uid ?? null,
+          } as any)
+          .select("id")
+          .single();
         if (pe) throw pe;
+        paymentIds.push(insPay!.id);
+        appliedDocs.push({ id: docId, number: doc[config.docNumberField], amount: amt });
 
         if (!asDraft) {
-          const doc = openDocs!.find((d: any) => d.id === docId)!;
           const newPaid = Number(doc.amount_paid ?? 0) + amt;
           const newBalance = Number(doc.total ?? 0) - newPaid;
           const newStatus = newBalance <= 0.001 ? "paid" : "partially_paid";
@@ -163,22 +285,196 @@ export function PaymentFormPage({ config }: { config: PaymentsModuleConfig }) {
           if (ue) throw ue;
         }
       }
+
+      let journalId: string | null = null;
+      let creditId: string | null = null;
+
+      // Post journal & excess credit only when finalising
+      if (!asDraft) {
+        // Resolve accounts
+        const depCode = DEPOSIT_CODE[depositTo] ?? "1000";
+        const depositAcct = await getOrCreateAccount(
+          depCode,
+          depositTo,
+          "asset",
+        );
+        const contraCode = isReceived ? "1200" : "2000";
+        const contraName = isReceived ? "Accounts Receivable" : "Accounts Payable";
+        const contraType: "asset" | "liability" = isReceived ? "asset" : "liability";
+        const contraAcct = await getOrCreateAccount(contraCode, contraName, contraType);
+
+        let advAcct: string | null = null;
+        if (amountExcess > 0.001) {
+          if (isReceived) {
+            advAcct = await getOrCreateAccount("2150", "Customer Advances", "liability");
+          } else {
+            advAcct = await getOrCreateAccount("1450", "Supplier Advances", "asset");
+          }
+        }
+
+        // Journal entry number
+        const { data: jnum } = await supabase.rpc("next_doc_number", {
+          _tenant: tenantId,
+          _doc_type: "journal",
+        });
+        const entryNumber = (jnum as any) ?? `JE-${Date.now()}`;
+
+        const totalAllocated = entries.reduce((s, [, v]) => s + v, 0);
+        const description = `${isReceived ? "Payment received" : "Payment made"} #${paymentNo} — ${partyName}`;
+
+        const { data: je, error: jeErr } = await supabase
+          .from("journal_entries")
+          .insert({
+            tenant_id: tenantId,
+            entry_number: entryNumber,
+            entry_date: date,
+            reference: reference || paymentNo,
+            description,
+            total_debit: amountReceived,
+            total_credit: amountReceived,
+            source_type: config.table,
+            source_id: paymentIds[0] ?? null,
+            created_by: uid ?? null,
+          })
+          .select("id")
+          .single();
+        if (jeErr) throw jeErr;
+        journalId = je!.id;
+
+        // Lines
+        const lines: any[] = [];
+        if (isReceived) {
+          // Dr Deposit (amountReceived), Cr AR (totalAllocated), Cr CustAdvances (excess)
+          lines.push({
+            entry_id: journalId,
+            account_id: depositAcct,
+            description: `Receipt to ${depositTo}`,
+            debit: amountReceived,
+            credit: 0,
+            position: 0,
+          });
+          if (totalAllocated > 0)
+            lines.push({
+              entry_id: journalId,
+              account_id: contraAcct,
+              description: "AR settled",
+              debit: 0,
+              credit: totalAllocated,
+              position: 1,
+            });
+          if (amountExcess > 0 && advAcct)
+            lines.push({
+              entry_id: journalId,
+              account_id: advAcct,
+              description: "Customer advance (overpayment)",
+              debit: 0,
+              credit: amountExcess,
+              position: 2,
+            });
+        } else {
+          // Dr AP (allocated), Dr SupplierAdvances (excess), Cr Deposit (amountReceived)
+          if (totalAllocated > 0)
+            lines.push({
+              entry_id: journalId,
+              account_id: contraAcct,
+              description: "AP settled",
+              debit: totalAllocated,
+              credit: 0,
+              position: 0,
+            });
+          if (amountExcess > 0 && advAcct)
+            lines.push({
+              entry_id: journalId,
+              account_id: advAcct,
+              description: "Supplier advance (prepayment)",
+              debit: amountExcess,
+              credit: 0,
+              position: 1,
+            });
+          lines.push({
+            entry_id: journalId,
+            account_id: depositAcct,
+            description: `Paid from ${depositTo}`,
+            debit: 0,
+            credit: amountReceived,
+            position: 2,
+          });
+        }
+        const { error: lineErr } = await supabase.from("journal_lines").insert(lines);
+        if (lineErr) throw lineErr;
+
+        // Excess → credits
+        if (amountExcess > 0.001) {
+          const creditTable = isReceived ? "customer_credits" : "supplier_credits";
+          const partyFk = isReceived ? "customer_id" : "supplier_id";
+          const { data: credIns, error: cErr } = await (supabase as any)
+            .from(creditTable)
+            .insert({
+              tenant_id: tenantId,
+              [partyFk]: partyId,
+              source: "overpayment",
+              issue_date: date,
+              currency,
+              amount: amountExcess,
+              balance: amountExcess,
+              reference: paymentNo,
+              memo: `Excess from payment #${paymentNo}`,
+              created_by: uid ?? null,
+            })
+            .select("id")
+            .single();
+          if (cErr) throw cErr;
+          creditId = credIns!.id;
+        }
+      }
+
+      // Audit log
+      await supabase.from("audit_logs").insert({
+        tenant_id: tenantId,
+        actor_id: uid ?? null,
+        actor_name: actorName,
+        entity_type: config.table,
+        entity_id: paymentIds[0] ?? null,
+        action: asDraft ? "payment_draft" : "payment_posted",
+        summary: `${actorName} ${asDraft ? "drafted" : "recorded"} ${isReceived ? "payment received" : "payment made"} #${paymentNo} of ${formatCurrency(amountReceived, currency)} from ${partyName}`,
+        details: {
+          payment_no: paymentNo,
+          kind: config.kind,
+          party_id: partyId,
+          party_name: partyName,
+          amount: amountReceived,
+          allocated: amountUsed,
+          excess: amountExcess,
+          method,
+          deposit_to: depositTo,
+          location,
+          bank_charges: Number(bankCharges) || 0,
+          reference: reference || null,
+          date,
+          applied: appliedDocs,
+          payment_ids: paymentIds,
+          journal_entry_id: journalId,
+          credit_id: creditId,
+          status: asDraft ? "draft" : "posted",
+        },
+      });
+
+      return { aborted: false as const, asDraft };
     },
-    onSuccess: (_d, asDraft) => {
-      toast.success(asDraft ? "Payment saved as draft" : "Payment recorded");
+    onSuccess: (res) => {
+      if (!res || (res as any).aborted) return;
+      const asDraft = (res as any).asDraft;
+      toast.success(asDraft ? "Payment saved as draft" : "Payment recorded & posted to ledger");
       qc.invalidateQueries({ queryKey: [config.table] });
       qc.invalidateQueries({ queryKey: [config.docTable] });
+      qc.invalidateQueries({ queryKey: ["audit_logs"] });
+      qc.invalidateQueries({ queryKey: ["journal_entries"] });
       navigate({ to: isReceived ? "/payments-received" : "/payments-made" });
     },
     onError: (e: any) => toast.error(e.message ?? "Failed to record payment"),
   });
 
   const backTo = isReceived ? "/payments-received" : "/payments-made";
-
-  const setAlloc = (id: string, v: string) =>
-    setAllocations((prev) => ({ ...prev, [id]: v }));
-
-  const clearAllocations = () => setAllocations({});
 
   return (
     <div className="-m-6 flex h-full flex-col bg-background">
@@ -214,7 +510,7 @@ export function PaymentFormPage({ config }: { config: PaymentsModuleConfig }) {
       </div>
 
       <div className="flex-1 overflow-auto">
-        {/* Customer/Vendor highlighted strip */}
+        {/* Party strip */}
         <div className="bg-muted/40 px-6 py-5 border-b">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-[180px_1fr_auto] sm:items-center">
             <Label className="text-rose-600">{config.partyLabel} Name*</Label>
@@ -378,8 +674,9 @@ export function PaymentFormPage({ config }: { config: PaymentsModuleConfig }) {
                     (openDocs ?? []).map((d: any) => {
                       const due = Number(d.balance_due ?? 0);
                       const val = allocations[d.id] ?? "";
+                      const over = Number(val) > due + 0.001;
                       return (
-                        <tr key={d.id} className="border-b last:border-b-0">
+                        <tr key={d.id} className={cn("border-b last:border-b-0", over && "bg-rose-50")}>
                           <td className="px-3 py-2 align-middle whitespace-nowrap">
                             {formatDate(d.issue_date ?? d.created_at)}
                           </td>
@@ -401,9 +698,12 @@ export function PaymentFormPage({ config }: { config: PaymentsModuleConfig }) {
                               type="number"
                               step="0.01"
                               value={val}
-                              onChange={(e) => setAlloc(d.id, e.target.value)}
+                              onChange={(e) => setAlloc(d.id, e.target.value, due)}
                               max={due}
-                              className="h-8 ml-auto w-32 text-right"
+                              className={cn(
+                                "h-8 ml-auto w-32 text-right",
+                                over && "border-rose-500 focus-visible:ring-rose-500",
+                              )}
                               placeholder="0.00"
                             />
                           </td>
@@ -442,7 +742,7 @@ export function PaymentFormPage({ config }: { config: PaymentsModuleConfig }) {
                 <Row label="Amount used for Payments :" value={formatCurrency(amountUsed, currency)} />
                 <Row label="Amount Refunded :" value={formatCurrency(0, currency)} />
                 <Row
-                  label="Amount in Excess:"
+                  label={amountExcess > 0 ? "Excess → will be saved as credit:" : "Amount in Excess:"}
                   value={`${currency} ${amountExcess.toFixed(2)}`}
                   highlight={amountExcess > 0}
                 />
@@ -457,13 +757,13 @@ export function PaymentFormPage({ config }: { config: PaymentsModuleConfig }) {
         <Button
           variant="outline"
           disabled={save.isPending}
-          onClick={() => save.mutate(true)}
+          onClick={() => save.mutate({ asDraft: true })}
         >
           Save as Draft
         </Button>
         <Button
-          disabled={save.isPending}
-          onClick={() => save.mutate(false)}
+          disabled={save.isPending || overAllocations.length > 0}
+          onClick={() => save.mutate({ asDraft: false })}
           className="bg-emerald-600 hover:bg-emerald-700"
         >
           {save.isPending ? "Saving…" : "Save as Paid"}
@@ -472,6 +772,36 @@ export function PaymentFormPage({ config }: { config: PaymentsModuleConfig }) {
           Cancel
         </Button>
       </div>
+
+      {/* Excess confirmation dialog */}
+      <AlertDialog
+        open={!!excessConfirm}
+        onOpenChange={(open) => !open && setExcessConfirm(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Save excess as a credit?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {formatCurrency(amountExcess, currency)} is unallocated. This will be
+              recorded as an {isReceived ? "open customer credit" : "open supplier prepayment"}{" "}
+              for <span className="font-medium">{partyName}</span> and posted to the
+              ledger.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                const opts = excessConfirm!;
+                setExcessConfirm(null);
+                save.mutate({ asDraft: opts.asDraft, confirmedExcess: true });
+              }}
+            >
+              Confirm & Post
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
