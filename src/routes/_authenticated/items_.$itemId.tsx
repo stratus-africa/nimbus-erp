@@ -45,6 +45,73 @@ function ItemViewPage() {
   const tenantId = profile?.currentTenant?.id;
   const currency = profile?.currentTenant?.base_currency ?? "USD";
   const [editOpen, setEditOpen] = useState(false);
+  const [sidebarSearch, setSidebarSearch] = useState("");
+
+  const { data: allItems } = useQuery({
+    enabled: !!tenantId,
+    queryKey: ["items-sidebar", tenantId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("items").select("id, name, sku, item_type, stock_on_hand, reorder_level, unit, is_active")
+        .eq("tenant_id", tenantId!).is("deleted_at", null)
+        .order("name", { ascending: true }).limit(500);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  const filteredSidebar = (allItems ?? []).filter((it: any) => {
+    const q = sidebarSearch.trim().toLowerCase();
+    if (!q) return true;
+    return [it.name, it.sku].some((v) => v && String(v).toLowerCase().includes(q));
+  });
+
+  const Sidebar = (
+    <aside className="hidden w-[300px] shrink-0 flex-col border-r bg-card md:flex">
+      <div className="flex items-center gap-2 border-b px-3 py-2.5">
+        <div className="relative flex-1">
+          <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            value={sidebarSearch}
+            onChange={(e) => setSidebarSearch(e.target.value)}
+            placeholder="Search items"
+            className="h-8 pl-8 text-sm"
+          />
+        </div>
+        <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => navigate({ to: "/items/new" })} title="New item">
+          <Plus className="h-4 w-4" />
+        </Button>
+      </div>
+      <div className="flex items-center justify-between border-b px-3 py-2 text-xs font-medium text-muted-foreground">
+        <span>All Items</span>
+        <span>{filteredSidebar.length}</span>
+      </div>
+      <div className="flex-1 overflow-auto">
+        {filteredSidebar.length === 0 ? (
+          <p className="p-4 text-xs text-muted-foreground">No items.</p>
+        ) : filteredSidebar.map((it: any) => {
+          const active = it.id === itemId;
+          const low = it.item_type === "inventory" && Number(it.reorder_level ?? 0) > 0 && Number(it.stock_on_hand ?? 0) <= Number(it.reorder_level ?? 0);
+          return (
+            <button
+              key={it.id}
+              onClick={() => navigate({ to: "/items/$itemId", params: { itemId: it.id } })}
+              className={`flex w-full flex-col gap-0.5 border-b px-3 py-2.5 text-left text-sm transition hover:bg-muted/60 ${active ? "border-l-2 border-l-primary bg-primary/5" : ""}`}
+            >
+              <div className="flex items-center justify-between gap-2">
+                <span className="truncate font-medium">{it.name}</span>
+                {low && <Badge variant="destructive" className="h-4 px-1 text-[10px]">Low</Badge>}
+              </div>
+              <div className="flex items-center justify-between gap-2 text-[11px] text-muted-foreground">
+                <span className="truncate">{it.sku || "—"}</span>
+                <span className="tabular-nums">{it.item_type === "inventory" ? `${Number(it.stock_on_hand ?? 0)} ${it.unit ?? ""}` : it.item_type}</span>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+    </aside>
+  );
 
   const { data: item, isLoading } = useQuery({
     queryKey: ["item", itemId],
