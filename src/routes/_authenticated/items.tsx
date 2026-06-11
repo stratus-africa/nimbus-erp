@@ -213,38 +213,3 @@ function ItemsPage() {
   );
 }
 
-function ItemDialog({ open, onOpenChange, initial, onSubmit, saving }: { open: boolean; onOpenChange: (v: boolean) => void; initial: Item | null; onSubmit: (i: Item) => void; saving: boolean }) {
-  const [i, setI] = useState<Item>({ name: "", item_type: "inventory" });
-  useEffect(() => { setI(initial ?? { name: "", item_type: "inventory" }); }, [initial, open]);
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
-        <DialogHeader><DialogTitle>{i.id ? "Edit item" : "New item"}</DialogTitle></DialogHeader>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-2 sm:col-span-2"><Label>Name *</Label><Input value={i.name} onChange={(e) => setI({ ...i, name: e.target.value })} /></div>
-          <div className="space-y-2"><Label>SKU</Label><Input value={i.sku ?? ""} onChange={(e) => setI({ ...i, sku: e.target.value })} /></div>
-          <div className="space-y-2">
-            <Label>Type</Label>
-            <Select value={i.item_type} onValueChange={(v: any) => setI({ ...i, item_type: v })}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="inventory">Inventory</SelectItem>
-                <SelectItem value="service">Service</SelectItem>
-                <SelectItem value="non_inventory">Non-inventory</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2"><Label>Usage Unit</Label><Input value={i.unit ?? ""} onChange={(e) => setI({ ...i, unit: e.target.value })} placeholder="pcs, hrs, kg…" /></div>
-          <div className="space-y-2"><Label>Rate (Selling)</Label><Input type="number" step="0.01" value={i.selling_price ?? ""} onChange={(e) => setI({ ...i, selling_price: parseFloat(e.target.value) || 0 })} /></div>
-          <div className="space-y-2"><Label>Purchase Rate (Cost)</Label><Input type="number" step="0.01" value={i.cost_price ?? ""} onChange={(e) => setI({ ...i, cost_price: parseFloat(e.target.value) || 0 })} /></div>
-          <div className="space-y-2"><Label>Reorder Level</Label><Input type="number" step="0.01" value={i.reorder_level ?? ""} onChange={(e) => setI({ ...i, reorder_level: parseFloat(e.target.value) || 0 })} /></div>
-          <div className="space-y-2 sm:col-span-2"><Label>Description</Label><Textarea value={i.description ?? ""} onChange={(e) => setI({ ...i, description: e.target.value })} /></div>
-        </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button disabled={!i.name || saving} onClick={() => onSubmit(i)}>{saving ? "Saving…" : "Save"}</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
