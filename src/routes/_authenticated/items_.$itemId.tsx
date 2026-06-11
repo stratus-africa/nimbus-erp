@@ -38,7 +38,7 @@ const editSchema = z.object({
 type EditValues = z.infer<typeof editSchema>;
 
 function ItemViewPage() {
-  const { itemId } = useParams({ from: "/_authenticated/items/$itemId" });
+  const { itemId } = useParams({ from: "/_authenticated/items_/$itemId" });
   const navigate = useNavigate();
   const qc = useQueryClient();
   const { data: profile } = useProfile();
