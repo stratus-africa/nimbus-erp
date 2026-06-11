@@ -1,18 +1,13 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "@/hooks/use-profile";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
-import { toast } from "sonner";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { ChevronDown, Plus, MoreHorizontal, SlidersHorizontal, Search, RefreshCw, ImageIcon } from "lucide-react";
 import { formatCurrency } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -21,18 +16,6 @@ export const Route = createFileRoute("/_authenticated/items")({
   head: () => ({ meta: [{ title: "Items — Nimbus ERP" }] }),
   component: ItemsPage,
 });
-
-type Item = {
-  id?: string;
-  sku?: string | null;
-  name: string;
-  description?: string | null;
-  item_type: "inventory" | "service" | "non_inventory";
-  unit?: string | null;
-  selling_price?: number | null;
-  cost_price?: number | null;
-  reorder_level?: number | null;
-};
 
 type FilterKey = "all" | "active" | "inactive" | "inventory" | "service" | "low";
 const FILTERS: { key: FilterKey; label: string }[] = [
@@ -54,8 +37,6 @@ function ItemsPage() {
   const [filter, setFilter] = useState<FilterKey>("all");
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [editing, setEditing] = useState<Item | null>(null);
 
   const { data: rows, isLoading } = useQuery({
     enabled: !!tenantId,
@@ -90,24 +71,7 @@ function ItemsPage() {
     setSelected(next);
   };
 
-  const upsert = useMutation({
-    mutationFn: async (i: Item) => {
-      const payload: any = { ...i, tenant_id: tenantId! };
-      const { error } = i.id
-        ? await supabase.from("items").update(payload).eq("id", i.id)
-        : await supabase.from("items").insert(payload);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["items"] });
-      toast.success("Saved");
-      setDialogOpen(false);
-    },
-    onError: (e: any) => toast.error(e.message),
-  });
-
   const openNew = () => navigate({ to: "/items/new" });
-  const openEdit = (i: Item) => { setEditing(i); setDialogOpen(true); };
 
   const filterLabel = FILTERS.find((f) => f.key === filter)?.label ?? "All Items";
 
