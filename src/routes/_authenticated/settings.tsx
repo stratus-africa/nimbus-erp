@@ -3,18 +3,8 @@ import { useProfile } from "@/hooks/use-profile";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
-  Search,
-  X,
-  Building2,
-  Users,
-  Settings as SettingsIcon,
-  Palette,
-  Receipt,
-  Boxes,
-  ShoppingCart,
-  ShoppingBag,
-  LayoutGrid,
-  CreditCard,
+  Search, X, Building2, Users, Settings as SettingsIcon, Palette,
+  Receipt, Boxes, ShoppingCart, ShoppingBag, LayoutGrid, CreditCard,
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
@@ -37,139 +27,110 @@ const SECTIONS: Section[] = [
   {
     title: "Organization Settings",
     columns: [
-      [
-        {
-          title: "Organization",
-          icon: Building2,
-          tone: "emerald",
-          items: [
-            { label: "Profile" },
-            { label: "Branding" },
-            { label: "Custom Domain" },
-            { label: "Locations" },
-            { label: "Manage Subscription" },
-          ],
-        },
-      ],
-      [
-        {
-          title: "Users & Roles",
-          icon: Users,
-          tone: "rose",
-          items: [{ label: "Users", to: "/admin" }, { label: "Roles" }, { label: "User Preferences" }],
-        },
-      ],
-      [
-        {
-          title: "Setup & Configurations",
-          icon: SettingsIcon,
-          tone: "amber",
-          items: [
-            { label: "General" },
-            { label: "Currencies" },
-            { label: "Payment Terms", badge: "NEW" },
-            { label: "Opening Balances" },
-            { label: "Reminders" },
-            { label: "Customer Portal" },
-            { label: "Vendor Portal" },
-          ],
-        },
-      ],
-      [
-        {
-          title: "Customization",
-          icon: Palette,
-          tone: "violet",
-          items: [
-            { label: "Transaction Number Series" },
-            { label: "PDF Templates" },
-            { label: "Email Notifications" },
-            { label: "Reporting Tags" },
-          ],
-        },
-      ],
-      [
-        {
-          title: "Taxes & Compliance",
-          icon: Receipt,
-          tone: "sky",
-          items: [{ label: "VAT" }, { label: "Withholding Tax" }, { label: "e-Invoicing" }],
-        },
-      ],
+      [{
+        title: "Organization", icon: Building2, tone: "emerald",
+        items: [
+          { label: "Profile" },
+          { label: "Branding" },
+          { label: "Custom Domain" },
+          { label: "Locations" },
+          { label: "AI Integration" },
+          { label: "Manage Subscription" },
+        ],
+      }],
+      [{
+        title: "Users & Roles", icon: Users, tone: "rose",
+        items: [
+          { label: "Users", to: "/admin" },
+          { label: "Roles" },
+          { label: "User Preferences" },
+        ],
+      }],
+      [{
+        title: "Setup & Configurations", icon: SettingsIcon, tone: "amber",
+        items: [
+          { label: "General" },
+          { label: "Currencies" },
+          { label: "Payment Terms", badge: "NEW" },
+          { label: "Opening Balances" },
+          { label: "Reminders" },
+          { label: "Customer Portal" },
+          { label: "Vendor Portal" },
+        ],
+      }],
+      [{
+        title: "Customization", icon: Palette, tone: "violet",
+        items: [
+          { label: "Transaction Number Series" },
+          { label: "PDF Templates" },
+          { label: "Email Notifications" },
+          { label: "Reporting Tags" },
+          { label: "Web Tabs" },
+          { label: "WhatsApp Templates" },
+        ],
+      }],
+      [{
+        title: "Taxes & Compliance", icon: Receipt, tone: "sky",
+        items: [
+          { label: "VAT" },
+          { label: "Withholding Tax" },
+          { label: "e-Invoicing" },
+        ],
+      }],
     ],
   },
   {
     title: "Module Settings",
     columns: [
-      [
-        {
-          title: "General",
-          icon: LayoutGrid,
-          tone: "emerald",
-          items: [
-            { label: "Customers and Vendors", to: "/customers" },
-            { label: "Items", to: "/items" },
-            { label: "Accountant" },
-            { label: "Tasks" },
-          ],
-        },
-      ],
-      [
-        {
-          title: "Inventory",
-          icon: Boxes,
-          tone: "rose",
-          items: [{ label: "Inventory Adjustments", to: "/inventory-adjustments" }],
-        },
-      ],
-      [
-        {
-          title: "Sales",
-          icon: ShoppingCart,
-          tone: "sky",
-          items: [
-            { label: "Quotes", to: "/settings/quotes" },
-            { label: "Invoices", to: "/invoices" },
-            { label: "Recurring Invoices" },
-            { label: "Sales Receipts" },
-            { label: "Payments Received" },
-            { label: "Credit Notes" },
-            { label: "Delivery Notes" },
-          ],
-        },
-      ],
-      [
-        {
-          title: "Purchases",
-          icon: ShoppingBag,
-          tone: "amber",
-          items: [
-            { label: "Expenses" },
-            { label: "Bills", to: "/bills" },
-            { label: "Payments Made" },
-            { label: "Vendor Credits" },
-          ],
-        },
-      ],
-      [
-        {
-          title: "Online Payments",
-          icon: CreditCard,
-          tone: "amber",
-          items: [{ label: "Payment Gateways" }],
-        },
-      ],
+      [{
+        title: "General", icon: LayoutGrid, tone: "emerald",
+        items: [
+          { label: "Customers and Vendors", to: "/customers" },
+          { label: "Items", to: "/items" },
+          { label: "Accountant" },
+          { label: "Tasks" },
+        ],
+      }],
+      [{
+        title: "Inventory", icon: Boxes, tone: "rose",
+        items: [{ label: "Inventory Adjustments", to: "/inventory-adjustments" }],
+      }],
+      [{
+        title: "Sales", icon: ShoppingCart, tone: "sky",
+        items: [
+          { label: "Quotes", to: "/settings/quotes" },
+          { label: "Invoices", to: "/invoices" },
+          { label: "Recurring Invoices" },
+          { label: "Sales Receipts" },
+          { label: "Payments Received" },
+          { label: "Credit Notes" },
+          { label: "Delivery Notes" },
+        ],
+      }],
+      [{
+        title: "Purchases", icon: ShoppingBag, tone: "amber",
+        items: [
+          { label: "Expenses" },
+          { label: "Bills", to: "/bills" },
+          { label: "Payments Made" },
+          { label: "Vendor Credits" },
+        ],
+      }],
+      [{
+        title: "Online Payments", icon: CreditCard, tone: "amber",
+        items: [{ label: "Payment Gateways" }],
+      }],
     ],
   },
 ];
 
 const TONE: Record<Group["tone"], { bg: string; fg: string }> = {
   emerald: { bg: "bg-emerald-50 dark:bg-emerald-950/40", fg: "text-emerald-600 dark:text-emerald-400" },
-  rose: { bg: "bg-rose-50 dark:bg-rose-950/40", fg: "text-rose-600 dark:text-rose-400" },
-  amber: { bg: "bg-amber-50 dark:bg-amber-950/40", fg: "text-amber-600 dark:text-amber-400" },
-  violet: { bg: "bg-violet-50 dark:bg-violet-950/40", fg: "text-violet-600 dark:text-violet-400" },
-  sky: { bg: "bg-sky-50 dark:bg-sky-950/40", fg: "text-sky-600 dark:text-sky-400" },
-  indigo: { bg: "bg-indigo-50 dark:bg-indigo-950/40", fg: "text-indigo-600 dark:text-indigo-400" },
+  rose:    { bg: "bg-rose-50 dark:bg-rose-950/40",       fg: "text-rose-600 dark:text-rose-400" },
+  amber:   { bg: "bg-amber-50 dark:bg-amber-950/40",     fg: "text-amber-600 dark:text-amber-400" },
+  violet:  { bg: "bg-violet-50 dark:bg-violet-950/40",   fg: "text-violet-600 dark:text-violet-400" },
+  sky:     { bg: "bg-sky-50 dark:bg-sky-950/40",         fg: "text-sky-600 dark:text-sky-400" },
+  indigo:  { bg: "bg-indigo-50 dark:bg-indigo-950/40",   fg: "text-indigo-600 dark:text-indigo-400" },
 };
 
 function SettingsPage() {
@@ -182,13 +143,11 @@ function SettingsPage() {
     if (!q) return SECTIONS;
     return SECTIONS.map((s) => ({
       ...s,
-      columns: s.columns
-        .map((col) =>
-          col
-            .map((g) => ({ ...g, items: g.items.filter((i) => i.label.toLowerCase().includes(q)) }))
-            .filter((g) => g.items.length),
-        )
-        .filter((col) => col.length),
+      columns: s.columns.map((col) =>
+        col
+          .map((g) => ({ ...g, items: g.items.filter((i) => i.label.toLowerCase().includes(q)) }))
+          .filter((g) => g.items.length),
+      ).filter((col) => col.length),
     })).filter((s) => s.columns.length);
   }, [query]);
 
@@ -216,7 +175,12 @@ function SettingsPage() {
             />
           </div>
         </div>
-        <Button variant="outline" size="sm" className="h-9 gap-2" onClick={() => navigate({ to: "/dashboard" })}>
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-9 gap-2"
+          onClick={() => navigate({ to: "/dashboard" })}
+        >
           Close Settings <X className="h-4 w-4" />
         </Button>
       </div>
@@ -286,9 +250,5 @@ function SettingsLink({ item }: { item: Item }) {
       </Link>
     );
   }
-  return (
-    <button type="button" className="block py-0.5 text-left w-full">
-      {content}
-    </button>
-  );
+  return <button type="button" className="block py-0.5 text-left w-full">{content}</button>;
 }
