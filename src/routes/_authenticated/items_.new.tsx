@@ -119,16 +119,15 @@ export function ItemFormPage({ itemId, initial }: { itemId?: string; initial?: P
   const save = useMutation({
     mutationFn: async (v: FormValues) => {
       if (!tenantId) throw new Error("No tenant selected");
-      const { data: u } = await supabase.auth.getUser();
-      const uid = u.user?.id;
-      if (!uid) throw new Error("Not authenticated");
 
       // SKU uniqueness within tenant
       const sku = v.sku?.trim() || null;
       if (sku) {
-        const { data: existing, error: skuErr } = await supabase
+        let q = supabase
           .from("items").select("id")
           .eq("tenant_id", tenantId).eq("sku", sku).is("deleted_at", null).limit(1);
+        if (isEdit && itemId) q = q.neq("id", itemId);
+        const { data: existing, error: skuErr } = await q;
         if (skuErr) throw skuErr;
         if (existing && existing.length > 0) {
           throw new Error(`SKU "${sku}" already exists`);
@@ -139,8 +138,6 @@ export function ItemFormPage({ itemId, initial }: { itemId?: string; initial?: P
         v.type === "service" ? "service" : v.track_inventory ? "inventory" : "non_inventory";
 
       const payload = {
-        tenant_id: tenantId,
-        created_by: uid,
         name: v.name.trim(),
         sku,
         unit: v.unit.trim(),
@@ -148,16 +145,23 @@ export function ItemFormPage({ itemId, initial }: { itemId?: string; initial?: P
         selling_price: v.sellable ? v.selling_price : 0,
         cost_price: v.purchasable ? v.cost_price : 0,
         reorder_level: v.reorder_level || 0,
-        is_active: true,
         description:
           [v.sales_desc?.trim(), v.purchase_desc?.trim()].filter(Boolean).join("\n---\n") || null,
       };
 
-      const { error } = await supabase.from("items").insert(payload);
-      if (error) throw error;
+      if (isEdit && itemId) {
+        const { error } = await supabase.from("items").update(payload).eq("id", itemId);
+        if (error) throw error;
+      } else {
+        const { data: u } = await supabase.auth.getUser();
+        const uid = u.user?.id;
+        if (!uid) throw new Error("Not authenticated");
+        const { error } = await supabase.from("items").insert({ ...payload, tenant_id: tenantId, created_by: uid, is_active: true });
+        if (error) throw error;
+      }
     },
     onSuccess: () => {
-      toast.success("Item created");
+      toast.success(isEdit ? "Item updated" : "Item created");
       navigate({ to: "/items" });
     },
     onError: (e: any) => toast.error(e.message ?? "Failed to save item"),
