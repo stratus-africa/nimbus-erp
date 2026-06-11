@@ -61,7 +61,8 @@ const schema = z
 
 type FormValues = z.infer<typeof schema>;
 
-function NewItemPage() {
+export function ItemFormPage({ itemId, initial }: { itemId?: string; initial?: Partial<FormValues> } = {}) {
+  const isEdit = !!itemId;
   const { data: profile } = useProfile();
   const tenantId = profile?.currentTenant?.id;
   const currency = profile?.currentTenant?.base_currency ?? "KES";
