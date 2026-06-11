@@ -209,13 +209,6 @@ function ItemsPage() {
         </Table>
       </div>
 
-      <ItemDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        initial={editing}
-        onSubmit={(i) => upsert.mutate(i)}
-        saving={upsert.isPending}
-      />
     </div>
   );
 }
