@@ -34,6 +34,7 @@ import { Route as AuthenticatedSuppliersSupplierIdRouteImport } from './routes/_
 import { Route as AuthenticatedSettingsQuotesRouteImport } from './routes/_authenticated/settings.quotes'
 import { Route as AuthenticatedQuotesNewRouteImport } from './routes/_authenticated/quotes_.new'
 import { Route as AuthenticatedQuotesQuoteIdRouteImport } from './routes/_authenticated/quotes_.$quoteId'
+import { Route as AuthenticatedPurchaseOrdersNewRouteImport } from './routes/_authenticated/purchase-orders_.new'
 import { Route as AuthenticatedPaymentsReceivedNewRouteImport } from './routes/_authenticated/payments-received_.new'
 import { Route as AuthenticatedPaymentsMadeNewRouteImport } from './routes/_authenticated/payments-made_.new'
 import { Route as AuthenticatedItemsNewRouteImport } from './routes/_authenticated/items_.new'
@@ -183,6 +184,12 @@ const AuthenticatedQuotesQuoteIdRoute =
     path: '/quotes/$quoteId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedPurchaseOrdersNewRoute =
+  AuthenticatedPurchaseOrdersNewRouteImport.update({
+    id: '/purchase-orders_/new',
+    path: '/purchase-orders/new',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedPaymentsReceivedNewRoute =
   AuthenticatedPaymentsReceivedNewRouteImport.update({
     id: '/payments-received_/new',
@@ -287,6 +294,7 @@ export interface FileRoutesByFullPath {
   '/items/new': typeof AuthenticatedItemsNewRoute
   '/payments-made/new': typeof AuthenticatedPaymentsMadeNewRoute
   '/payments-received/new': typeof AuthenticatedPaymentsReceivedNewRoute
+  '/purchase-orders/new': typeof AuthenticatedPurchaseOrdersNewRoute
   '/quotes/$quoteId': typeof AuthenticatedQuotesQuoteIdRoute
   '/quotes/new': typeof AuthenticatedQuotesNewRoute
   '/settings/quotes': typeof AuthenticatedSettingsQuotesRoute
@@ -326,6 +334,7 @@ export interface FileRoutesByTo {
   '/items/new': typeof AuthenticatedItemsNewRoute
   '/payments-made/new': typeof AuthenticatedPaymentsMadeNewRoute
   '/payments-received/new': typeof AuthenticatedPaymentsReceivedNewRoute
+  '/purchase-orders/new': typeof AuthenticatedPurchaseOrdersNewRoute
   '/quotes/$quoteId': typeof AuthenticatedQuotesQuoteIdRoute
   '/quotes/new': typeof AuthenticatedQuotesNewRoute
   '/settings/quotes': typeof AuthenticatedSettingsQuotesRoute
@@ -367,6 +376,7 @@ export interface FileRoutesById {
   '/_authenticated/items_/new': typeof AuthenticatedItemsNewRoute
   '/_authenticated/payments-made_/new': typeof AuthenticatedPaymentsMadeNewRoute
   '/_authenticated/payments-received_/new': typeof AuthenticatedPaymentsReceivedNewRoute
+  '/_authenticated/purchase-orders_/new': typeof AuthenticatedPurchaseOrdersNewRoute
   '/_authenticated/quotes_/$quoteId': typeof AuthenticatedQuotesQuoteIdRoute
   '/_authenticated/quotes_/new': typeof AuthenticatedQuotesNewRoute
   '/_authenticated/settings/quotes': typeof AuthenticatedSettingsQuotesRoute
@@ -408,6 +418,7 @@ export interface FileRouteTypes {
     | '/items/new'
     | '/payments-made/new'
     | '/payments-received/new'
+    | '/purchase-orders/new'
     | '/quotes/$quoteId'
     | '/quotes/new'
     | '/settings/quotes'
@@ -447,6 +458,7 @@ export interface FileRouteTypes {
     | '/items/new'
     | '/payments-made/new'
     | '/payments-received/new'
+    | '/purchase-orders/new'
     | '/quotes/$quoteId'
     | '/quotes/new'
     | '/settings/quotes'
@@ -487,6 +499,7 @@ export interface FileRouteTypes {
     | '/_authenticated/items_/new'
     | '/_authenticated/payments-made_/new'
     | '/_authenticated/payments-received_/new'
+    | '/_authenticated/purchase-orders_/new'
     | '/_authenticated/quotes_/$quoteId'
     | '/_authenticated/quotes_/new'
     | '/_authenticated/settings/quotes'
@@ -684,6 +697,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedQuotesQuoteIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/purchase-orders_/new': {
+      id: '/_authenticated/purchase-orders_/new'
+      path: '/purchase-orders/new'
+      fullPath: '/purchase-orders/new'
+      preLoaderRoute: typeof AuthenticatedPurchaseOrdersNewRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/payments-received_/new': {
       id: '/_authenticated/payments-received_/new'
       path: '/payments-received/new'
@@ -844,6 +864,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedItemsNewRoute: typeof AuthenticatedItemsNewRoute
   AuthenticatedPaymentsMadeNewRoute: typeof AuthenticatedPaymentsMadeNewRoute
   AuthenticatedPaymentsReceivedNewRoute: typeof AuthenticatedPaymentsReceivedNewRoute
+  AuthenticatedPurchaseOrdersNewRoute: typeof AuthenticatedPurchaseOrdersNewRoute
   AuthenticatedQuotesQuoteIdRoute: typeof AuthenticatedQuotesQuoteIdRoute
   AuthenticatedQuotesNewRoute: typeof AuthenticatedQuotesNewRoute
   AuthenticatedSuppliersSupplierIdRoute: typeof AuthenticatedSuppliersSupplierIdRoute
@@ -880,6 +901,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedItemsNewRoute: AuthenticatedItemsNewRoute,
   AuthenticatedPaymentsMadeNewRoute: AuthenticatedPaymentsMadeNewRoute,
   AuthenticatedPaymentsReceivedNewRoute: AuthenticatedPaymentsReceivedNewRoute,
+  AuthenticatedPurchaseOrdersNewRoute: AuthenticatedPurchaseOrdersNewRoute,
   AuthenticatedQuotesQuoteIdRoute: AuthenticatedQuotesQuoteIdRoute,
   AuthenticatedQuotesNewRoute: AuthenticatedQuotesNewRoute,
   AuthenticatedSuppliersSupplierIdRoute: AuthenticatedSuppliersSupplierIdRoute,
