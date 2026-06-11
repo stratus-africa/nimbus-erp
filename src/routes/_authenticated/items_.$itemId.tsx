@@ -244,7 +244,7 @@ function ItemViewPage() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" className="gap-1" onClick={() => setEditOpen(true)}>
+          <Button variant="outline" size="sm" className="gap-1" onClick={() => navigate({ to: "/items/$itemId/edit", params: { itemId } })}>
             <Pencil className="h-3.5 w-3.5" /> Edit
           </Button>
           <Button size="sm" className="bg-primary" onClick={() => navigate({ to: "/inventory-adjustments" })}>Adjust Stock</Button>
