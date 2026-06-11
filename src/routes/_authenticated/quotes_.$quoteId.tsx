@@ -43,6 +43,23 @@ function QuoteDetailPage() {
   const tenantId = profile?.currentTenant?.id;
   const currency = profile?.currentTenant?.base_currency ?? "KES";
   const [tab, setTab] = useState<"details" | "activity">("details");
+  const [sidebarSearch, setSidebarSearch] = useState("");
+
+  const { data: allQuotes } = useQuery({
+    enabled: !!tenantId,
+    queryKey: ["quotes-sidebar", tenantId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("quotes")
+        .select("id, quote_number, total, status, quote_date, customers(name)")
+        .eq("tenant_id", tenantId!)
+        .is("deleted_at", null)
+        .order("quote_date", { ascending: false })
+        .limit(200);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
 
   const { data: quote, isLoading } = useQuery({
     enabled: !!tenantId && !!quoteId,
