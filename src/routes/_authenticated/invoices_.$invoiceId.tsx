@@ -36,7 +36,7 @@ export const Route = createFileRoute("/_authenticated/invoices_/$invoiceId")({
 
 type InvoiceStatus =
   | "draft"
-  | "open"
+  | "sent"
   | "partially_paid"
   | "paid"
   | "overdue"
@@ -360,7 +360,7 @@ function InvoiceDetailPage() {
             size="sm"
             className="h-8 gap-1.5"
             disabled={!canSend || setStatus.isPending}
-            onClick={() => setStatus.mutate("open")}
+            onClick={() => setStatus.mutate("sent")}
           >
             <Send className="h-4 w-4" /> Mark as Sent
           </Button>
@@ -401,7 +401,7 @@ function InvoiceDetailPage() {
                     size="sm"
                     className="h-8 bg-blue-600 text-white hover:bg-blue-700"
                     disabled={setStatus.isPending}
-                    onClick={() => setStatus.mutate("open")}
+                    onClick={() => setStatus.mutate("sent")}
                   >
                     Mark As Sent
                   </Button>
