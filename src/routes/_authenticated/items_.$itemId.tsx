@@ -31,7 +31,7 @@ function ItemViewPage() {
   const { data: profile } = useProfile();
   const tenantId = profile?.currentTenant?.id;
   const currency = profile?.currentTenant?.base_currency ?? "USD";
-  const [editOpen, setEditOpen] = useState(false);
+  
   const [sidebarSearch, setSidebarSearch] = useState("");
 
   const { data: allItems } = useQuery({
