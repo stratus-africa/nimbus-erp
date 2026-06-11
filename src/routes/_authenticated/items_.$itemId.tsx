@@ -6,14 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { formatCurrency } from "@/lib/format";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { useState } from "react";
 import {
   ArrowLeft, Pencil, X, ImageIcon, Package, RotateCcw, MoreHorizontal,
@@ -28,14 +22,6 @@ export const Route = createFileRoute("/_authenticated/items_/$itemId")({
   head: () => ({ meta: [{ title: "Item — Nimbus ERP" }] }),
   component: ItemViewPage,
 });
-
-const editSchema = z.object({
-  name: z.string().trim().min(1, "Name is required").max(200),
-  sku: z.string().trim().max(64).optional().or(z.literal("")),
-  unit: z.string().trim().min(1, "Unit is required").max(32),
-  reorder_level: z.coerce.number().min(0, "Must be ≥ 0").max(9999999),
-});
-type EditValues = z.infer<typeof editSchema>;
 
 function ItemViewPage() {
   const { itemId } = useParams({ from: "/_authenticated/items_/$itemId" });
