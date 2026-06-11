@@ -77,6 +77,7 @@ export function ItemFormPage({ itemId, initial }: { itemId?: string; initial?: P
       sales_account: "", purchase_account: "", sales_vat: "", purchase_vat: "",
       sales_desc: "", purchase_desc: "", preferred_vendor: "",
       track_inventory: true, inventory_account: "", valuation: "fifo", reorder_level: 0,
+      ...(initial ?? {}),
     },
   });
   const { register, handleSubmit, control, watch, formState: { errors, isDirty, isSubmitting } } = form;
