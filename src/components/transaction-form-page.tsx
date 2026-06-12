@@ -82,16 +82,27 @@ export function TransactionFormPage({
   });
 
   const isCustomerDoc = config.partyTable === "customers";
-  const enforcesCredit = isCustomerDoc && config.kind === "invoice";
+  const enforcesCredit =
+    isCustomerDoc && (config.kind === "invoice" || config.kind === "quote" || config.kind === "sales_order");
   const { settings: cvSettings } = useCVSettings();
+  const includeSOs = !!cvSettings?.includeSalesOrdersInCreditLimit;
 
   const { data: customerCredit } = useQuery({
     enabled: enforcesCredit && !!partyId && !!cvSettings?.customerCreditLimitEnabled,
-    queryKey: ["customer-credit-exposure", tenantId, partyId, !!cvSettings?.includeSalesOrdersInCreditLimit, initial?.id ?? null],
+    queryKey: [
+      "customer-credit-exposure",
+      tenantId,
+      partyId,
+      includeSOs,
+      initial?.id ?? null,
+      config.kind,
+    ],
     queryFn: async () => {
       const { data: c } = await supabase
         .from("customers").select("credit_limit, name").eq("id", partyId).maybeSingle();
       const limit = Number((c as any)?.credit_limit ?? 0);
+
+      // Open invoices (always part of exposure)
       let openInvoices = 0;
       {
         let q = (supabase as any).from("invoices").select("balance_due, id")
@@ -101,11 +112,15 @@ export function TransactionFormPage({
         const { data } = await q;
         openInvoices = (data ?? []).reduce((s: number, r: any) => s + Number(r.balance_due ?? 0), 0);
       }
+
+      // Open sales orders (only when the tenant setting includes them)
       let openSOs = 0;
-      if (cvSettings?.includeSalesOrdersInCreditLimit) {
-        const { data } = await (supabase as any).from("sales_orders").select("total, status")
+      if (includeSOs) {
+        let q = (supabase as any).from("sales_orders").select("total, id")
           .eq("tenant_id", tenantId).eq("customer_id", partyId)
           .not("status", "in", "(cancelled,closed,draft)");
+        if (initial?.id && config.kind === "sales_order") q = q.neq("id", initial.id);
+        const { data } = await q;
         openSOs = (data ?? []).reduce((s: number, r: any) => s + Number(r.total ?? 0), 0);
       }
       return { limit, exposure: openInvoices + openSOs, name: (c as any)?.name ?? "" };
