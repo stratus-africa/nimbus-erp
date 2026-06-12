@@ -266,7 +266,7 @@ export function QuoteFormPage({
           <div className="grid h-6 w-6 place-items-center rounded border text-muted-foreground">
             <span className="text-[10px]">QT</span>
           </div>
-          <h1 className="text-lg font-semibold">New Quote</h1>
+          <h1 className="text-lg font-semibold">{isEdit ? `Edit Quote ${quoteNumber}` : "New Quote"}</h1>
         </div>
         <Link to="/quotes" className="text-rose-500 hover:text-rose-600" aria-label="Close">
           <X className="h-5 w-5" />
