@@ -64,6 +64,7 @@ const NAV_GROUPS = [
       { title: "Sales Orders", url: "/sales-orders", icon: FileText },
       { title: "Invoices", url: "/invoices", icon: ReceiptText },
       { title: "Payments Received", url: "/payments-received", icon: ReceiptText },
+      { title: "Credit Notes", url: "/credit-notes", icon: FileText },
     ],
   },
   {
@@ -73,23 +74,31 @@ const NAV_GROUPS = [
       { title: "Purchase Orders", url: "/purchase-orders", icon: ShoppingCart },
       { title: "Bills", url: "/bills", icon: FileCheck },
       { title: "Payments Made", url: "/payments-made", icon: FileCheck },
+      { title: "Supplier Credits", url: "/supplier-credits", icon: FileCheck },
     ],
   },
   {
     label: "Inventory",
     items: [
       { title: "Items", url: "/items", icon: Boxes },
-      { title: "Composite Items", url: "/composite-items", icon: Boxes },
-      { title: "Assembly Orders", url: "/assembly-orders", icon: ClipboardList },
+      { title: "Production", url: "/assembly-orders", icon: ClipboardList },
       { title: "Adjustments", url: "/inventory-adjustments", icon: ClipboardList },
+      { title: "Packages", url: "/packages", icon: Boxes },
+      { title: "Deliveries", url: "/deliveries", icon: Truck },
+      { title: "Transfer Orders", url: "/transfer-orders", icon: ClipboardList },
     ],
   },
   {
-    label: "Accounting",
+    label: "Banking",
+    items: [{ title: "Banking", url: "/banking", icon: Landmark }],
+  },
+  {
+    label: "Accountant",
     items: [
-      { title: "Banking", url: "/banking", icon: Landmark },
-      { title: "Chart of Accounts", url: "/chart-of-accounts", icon: BookOpen },
       { title: "Manual Journals", url: "/journals", icon: NotebookPen },
+      { title: "Tax Payments", url: "/tax-payments", icon: ReceiptText },
+      { title: "Chart of Accounts", url: "/chart-of-accounts", icon: BookOpen },
+      { title: "Fixed Assets", url: "/fixed-assets", icon: Landmark },
     ],
   },
   {
