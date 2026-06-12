@@ -28,6 +28,8 @@ import {
   CheckCircle2,
   CalendarIcon,
 } from "lucide-react";
+import { useCreditLimitCheck } from "@/hooks/use-credit-limit-check";
+import { applyCompositeExplosion } from "@/lib/composite-explode";
 
 export const Route = createFileRoute("/_authenticated/sales-orders_/new")({
   head: () => ({ meta: [{ title: "New Sales Order — Nimbus ERP" }] }),
