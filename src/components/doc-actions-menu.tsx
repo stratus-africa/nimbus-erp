@@ -30,20 +30,21 @@ export type DocActionsConfig = {
   fkLinesField?: string;
   numberField: string;
   numberingDocType?: string;
-  // Field names whose values should NOT be copied when cloning (status/payments/etc.)
   cloneOmitFields?: string[];
-  // Date field to reset to today on clone
   dateField?: string;
-  // Field on parent row that references linked source (e.g. source_quote_id) — cleared on clone
   sourceRefFields?: string[];
-  listRoute: string; // e.g. "/quotes"
-  detailRoute: string; // e.g. "/quotes/$quoteId"
-  detailParamKey: string; // e.g. "quoteId"
-  label: string; // e.g. "Quote"
-  // For payments without lines
+  listRoute: string;
+  detailRoute: string;
+  detailParamKey: string;
+  label: string;
   hasLines?: boolean;
-  // Use soft-delete via deleted_at
   softDelete?: boolean;
+  // Optional richer confirmation copy + bullet list of cascade impacts
+  deleteConfirm?: {
+    title?: string;
+    description?: string;
+    impacts?: string[];
+  };
 };
 
 export function DocActionsMenu({
