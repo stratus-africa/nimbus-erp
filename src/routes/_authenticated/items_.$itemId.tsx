@@ -423,13 +423,9 @@ function ItemViewPage() {
 
         {/* TRANSACTIONS */}
         <TabsContent value="transactions" className="flex-1 m-0 p-6 overflow-auto">
-          <TransactionsList
-            invoices={txData?.invoices ?? []}
-            pos={txData?.pos ?? []}
-            adjustments={txData?.adjustments ?? []}
-            currency={currency}
-          />
+          <TransactionsList data={txData} currency={currency} />
         </TabsContent>
+
 
         {/* ACTIVITY */}
         <TabsContent value="history" className="flex-1 m-0 p-6 overflow-auto">
