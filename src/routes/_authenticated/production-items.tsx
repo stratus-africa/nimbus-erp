@@ -11,7 +11,7 @@ import { Plus, Search, RefreshCw, Boxes } from "lucide-react";
 import { formatCurrency } from "@/lib/format";
 import { calculateCompositeAvailability } from "@/lib/composite-utils";
 
-export const Route = createFileRoute("/_authenticated/composite-items")({
+export const Route = createFileRoute("/_authenticated/production-items")({
   head: () => ({ meta: [{ title: "Production Items — Nimbus ERP" }] }),
   component: CompositeItemsPage,
 });
@@ -26,7 +26,7 @@ function CompositeItemsPage() {
 
   const { data: rows, isLoading } = useQuery({
     enabled: !!tenantId,
-    queryKey: ["composite-items", tenantId],
+    queryKey: ["production-items", tenantId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("composite_items")
@@ -53,7 +53,7 @@ function CompositeItemsPage() {
   return (
     <div className="-m-6">
       <div className="flex items-center gap-3 border-b bg-card px-6 py-2.5">
-        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => qc.invalidateQueries({ queryKey: ["composite-items"] })} title="Refresh">
+        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => qc.invalidateQueries({ queryKey: ["production-items"] })} title="Refresh">
           <RefreshCw className="h-4 w-4" />
         </Button>
         <div className="relative flex-1 max-w-xl">
@@ -67,7 +67,7 @@ function CompositeItemsPage() {
           <Boxes className="h-5 w-5 text-muted-foreground" />
           <h1 className="text-xl font-semibold">Production Items</h1>
         </div>
-        <Button onClick={() => navigate({ to: "/composite-items/new" })} className="h-9 gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white">
+        <Button onClick={() => navigate({ to: "/production-items/new" })} className="h-9 gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white">
           <Plus className="h-4 w-4" /> New Production Item
         </Button>
       </div>
@@ -99,7 +99,7 @@ function CompositeItemsPage() {
               return (
                 <TableRow key={c.id}>
                   <TableCell className="pl-6">
-                    <Link to="/composite-items/$id" params={{ id: c.id }} className="text-primary hover:underline">
+                    <Link to="/production-items/$id" params={{ id: c.id }} className="text-primary hover:underline">
                       {c.items?.name ?? "—"}
                     </Link>
                   </TableCell>

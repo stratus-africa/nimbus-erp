@@ -12,7 +12,7 @@ import { formatCurrency, formatDate } from "@/lib/format";
 import { calculateCompositeAvailability, calculateCompositeCost } from "@/lib/composite-utils";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/_authenticated/composite-items_/$id")({
+export const Route = createFileRoute("/_authenticated/production-items_/$id")({
   head: () => ({ meta: [{ title: "Production Item — Nimbus ERP" }] }),
   component: CompositeDetail,
 });
@@ -53,14 +53,14 @@ function CompositeDetail() {
     const { error } = await supabase.from("composite_items").delete().eq("id", id);
     if (error) return toast.error(error.message);
     toast.success("Deleted");
-    navigate({ to: "/composite-items" });
+    navigate({ to: "/production-items" });
   };
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" onClick={() => navigate({ to: "/composite-items" })}><ArrowLeft className="h-4 w-4" /></Button>
+          <Button variant="ghost" size="icon" onClick={() => navigate({ to: "/production-items" })}><ArrowLeft className="h-4 w-4" /></Button>
           <h1 className="text-xl font-semibold">{parent?.name}</h1>
           <Badge variant="outline" className="capitalize">{data.composite_type}</Badge>
           <Badge variant={data.status === "active" ? "default" : "secondary"} className="capitalize">{data.status}</Badge>
