@@ -35,6 +35,8 @@ type Txn = {
   withdrawal: number;
   from_account_id: string | null;
   from_account?: { code: string; name: string } | null;
+  source_type?: string | null;
+  source_id?: string | null;
 };
 
 function formatMoney(n: number, currency: string) {
