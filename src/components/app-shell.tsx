@@ -303,7 +303,13 @@ function TopBar() {
 
   return (
     <header className="sticky top-0 z-10 flex h-14 items-center gap-3 border-b bg-background px-4">
-      <SidebarTrigger />
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-50 focus:rounded-md focus:bg-background focus:px-3 focus:py-1.5 focus:text-sm focus:shadow focus:ring-2 focus:ring-ring"
+      >
+        Skip to main content
+      </a>
+      <SidebarTrigger aria-label="Toggle navigation sidebar" />
       <div className="flex-1" />
       {profile && profile.memberships.length > 0 && (
         <DropdownMenu>
