@@ -160,6 +160,16 @@ export function TransactionFormPage({
   );
   const total = subtotal + tax;
 
+  const creditLimit = Number(customerCredit?.limit ?? 0);
+  const existingDocAmount = enforcesCredit && initial?.id ? Number(initial?.balance_due ?? initial?.total ?? 0) : 0;
+  const projectedExposure = (customerCredit?.exposure ?? 0) - existingDocAmount + Number(total || 0);
+  const exceedsCredit =
+    !!cvSettings?.customerCreditLimitEnabled &&
+    enforcesCredit &&
+    creditLimit > 0 &&
+    projectedExposure > creditLimit;
+  const creditAction = cvSettings?.creditLimitExceededAction ?? "warn";
+
   const addLine = () =>
     setLines((ls) => [
       ...ls,
