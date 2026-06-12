@@ -28,7 +28,10 @@ import {
   X,
   CheckCircle2,
   CalendarIcon,
+  AlertTriangle,
 } from "lucide-react";
+import { useCreditLimitCheck } from "@/hooks/use-credit-limit-check";
+import { applyCompositeExplosion } from "@/lib/composite-explode";
 
 export const Route = createFileRoute("/_authenticated/quotes_/new")({
   head: () => ({ meta: [{ title: "New Quote — Nimbus ERP" }] }),
@@ -158,6 +161,14 @@ export function QuoteFormPage({
   );
   const total = subtotal + taxTotal;
 
+  const credit = useCreditLimitCheck({
+    tenantId,
+    customerId,
+    docKind: "quote",
+    docId: editId,
+    docTotal: total,
+  });
+
   const updateLine = (idx: number, patch: Partial<Line>) =>
     setLines((ls) => ls.map((l, i) => (i === idx ? { ...l, ...patch } : l)));
   const addLine = () =>
@@ -183,6 +194,18 @@ export function QuoteFormPage({
       if (!tenantId) throw new Error("No tenant");
       if (!customerId) throw new Error("Please select a customer");
       if (lines.length === 0) throw new Error("Add at least one line");
+
+      if (credit.enabled && credit.exceeds) {
+        const over = (credit.projectedExposure - credit.limit).toFixed(2);
+        if (credit.action === "restrict") {
+          throw new Error(`Credit limit exceeded by ${over} ${currency}. Cannot save this quote.`);
+        }
+        const ok = window.confirm(
+          `${credit.customerName || "Customer"} will exceed their credit limit of ${credit.limit.toFixed(2)} ${currency} by ${over} ${currency}. Continue?`,
+        );
+        if (!ok) throw new Error("Cancelled");
+      }
+
 
       let quoteId: string;
       const basePayload: any = {
@@ -232,6 +255,19 @@ export function QuoteFormPage({
       }));
       const { error: le } = await supabase.from("quote_lines").insert(lineRows);
       if (le) throw le;
+
+      // Auto-explode composite (kit) items into component reservations.
+      try {
+        await applyCompositeExplosion(
+          tenantId,
+          "quote",
+          quoteId,
+          lines.map((l) => ({ item_id: l.item_id, quantity: l.quantity })),
+        );
+      } catch (e: any) {
+        console.warn("Composite explosion failed", e?.message);
+      }
+
       return quoteId;
     },
     onSuccess: (id) => {

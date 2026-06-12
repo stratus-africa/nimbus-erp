@@ -26,6 +26,7 @@ import { formatCurrency } from "@/lib/format";
 import { toast } from "sonner";
 import { FileText, Plus, Settings, Trash2, X, AlertTriangle } from "lucide-react";
 import { useCVSettings } from "@/hooks/use-cv-settings";
+import { applyCompositeExplosion } from "@/lib/composite-explode";
 
 type Line = {
   id?: string;
@@ -84,14 +85,24 @@ export function TransactionFormPage({
   const isCustomerDoc = config.partyTable === "customers";
   const enforcesCredit = isCustomerDoc && config.kind === "invoice";
   const { settings: cvSettings } = useCVSettings();
+  const includeSOs = !!cvSettings?.includeSalesOrdersInCreditLimit;
 
   const { data: customerCredit } = useQuery({
     enabled: enforcesCredit && !!partyId && !!cvSettings?.customerCreditLimitEnabled,
-    queryKey: ["customer-credit-exposure", tenantId, partyId, !!cvSettings?.includeSalesOrdersInCreditLimit, initial?.id ?? null],
+    queryKey: [
+      "customer-credit-exposure",
+      tenantId,
+      partyId,
+      includeSOs,
+      initial?.id ?? null,
+      config.kind,
+    ],
     queryFn: async () => {
       const { data: c } = await supabase
         .from("customers").select("credit_limit, name").eq("id", partyId).maybeSingle();
       const limit = Number((c as any)?.credit_limit ?? 0);
+
+      // Open invoices (always count toward exposure)
       let openInvoices = 0;
       {
         let q = (supabase as any).from("invoices").select("balance_due, id")
@@ -101,9 +112,11 @@ export function TransactionFormPage({
         const { data } = await q;
         openInvoices = (data ?? []).reduce((s: number, r: any) => s + Number(r.balance_due ?? 0), 0);
       }
+
+      // Open sales orders (only when the tenant setting includes them)
       let openSOs = 0;
-      if (cvSettings?.includeSalesOrdersInCreditLimit) {
-        const { data } = await (supabase as any).from("sales_orders").select("total, status")
+      if (includeSOs) {
+        const { data } = await (supabase as any).from("sales_orders").select("total, id")
           .eq("tenant_id", tenantId).eq("customer_id", partyId)
           .not("status", "in", "(cancelled,closed,draft)");
         openSOs = (data ?? []).reduce((s: number, r: any) => s + Number(r.total ?? 0), 0);
@@ -271,6 +284,22 @@ export function TransactionFormPage({
         .from(config.linesTable)
         .insert(lineRows as any);
       if (le) throw le;
+
+      // Auto-explode any composite (kit) items into component reservations / deductions.
+      const k = config.kind as string;
+      if (docId && (k === "invoice" || k === "quote" || k === "sales_order")) {
+        try {
+          await applyCompositeExplosion(
+            tenantId,
+            k as "invoice" | "quote" | "sales_order",
+            docId,
+            lines.map((l) => ({ item_id: l.item_id ?? null, quantity: l.quantity })),
+          );
+        } catch (e: any) {
+          console.warn("Composite explosion failed", e?.message);
+        }
+      }
+
       toast.success(sendAfter ? "Saved and sent" : "Saved");
       navigate({ to: backTo });
     } catch (e: any) {

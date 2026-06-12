@@ -80,6 +80,7 @@ const NAV_GROUPS = [
     items: [
       { title: "Items", url: "/items", icon: Boxes },
       { title: "Composite Items", url: "/composite-items", icon: Boxes },
+      { title: "Assembly Orders", url: "/assembly-orders", icon: ClipboardList },
       { title: "Adjustments", url: "/inventory-adjustments", icon: ClipboardList },
     ],
   },

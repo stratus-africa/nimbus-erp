@@ -28,6 +28,8 @@ import {
   CheckCircle2,
   CalendarIcon,
 } from "lucide-react";
+import { useCreditLimitCheck } from "@/hooks/use-credit-limit-check";
+import { applyCompositeExplosion } from "@/lib/composite-explode";
 
 export const Route = createFileRoute("/_authenticated/sales-orders_/new")({
   head: () => ({ meta: [{ title: "New Sales Order — Nimbus ERP" }] }),
@@ -156,6 +158,14 @@ export function SalesOrderFormPage({
   );
   const total = subtotal + taxTotal;
 
+  const credit = useCreditLimitCheck({
+    tenantId,
+    customerId,
+    docKind: "sales_order",
+    docId: editId,
+    docTotal: total,
+  });
+
   const updateLine = (idx: number, patch: Partial<Line>) =>
     setLines((ls) => ls.map((l, i) => (i === idx ? { ...l, ...patch } : l)));
   const addLine = () =>
@@ -178,6 +188,18 @@ export function SalesOrderFormPage({
       if (!tenantId) throw new Error("No tenant");
       if (!customerId) throw new Error("Please select a customer");
       if (lines.length === 0) throw new Error("Add at least one line");
+
+      if (credit.enabled && credit.exceeds) {
+        const over = (credit.projectedExposure - credit.limit).toFixed(2);
+        if (credit.action === "restrict") {
+          throw new Error(`Credit limit exceeded by ${over} ${currency}. Cannot save this sales order.`);
+        }
+        const ok = window.confirm(
+          `${credit.customerName || "Customer"} will exceed their credit limit of ${credit.limit.toFixed(2)} ${currency} by ${over} ${currency}. Continue?`,
+        );
+        if (!ok) throw new Error("Cancelled");
+      }
+
 
       let soId: string;
       const basePayload: any = {
@@ -227,6 +249,19 @@ export function SalesOrderFormPage({
       }));
       const { error: le } = await (supabase as any).from("sales_order_lines").insert(lineRows);
       if (le) throw le;
+
+      // Reserve component stock for any composite (kit) line items.
+      try {
+        await applyCompositeExplosion(
+          tenantId,
+          "sales_order",
+          soId,
+          lines.map((l) => ({ item_id: l.item_id, quantity: l.quantity })),
+        );
+      } catch (e: any) {
+        console.warn("Composite explosion failed", e?.message);
+      }
+
       return soId;
     },
     onSuccess: (id) => {

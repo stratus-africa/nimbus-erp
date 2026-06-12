@@ -12,7 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useMemo, useState } from "react";
 import { Plus, Trash2, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
-import { calculateCompositeCost } from "@/lib/composite-utils";
+import { calculateCompositeCost, calculateCompositeAvailability } from "@/lib/composite-utils";
 
 export const Route = createFileRoute("/_authenticated/composite-items_/new")({
   head: () => ({ meta: [{ title: "New Composite Item — Nimbus ERP" }] }),
@@ -60,6 +60,17 @@ function NewCompositePage() {
 
   const totalCost = useMemo(() => calculateCompositeCost(lines), [lines]);
   const margin = Number(sellingPrice) - totalCost;
+  const availability = useMemo(() => {
+    const enriched = lines
+      .filter((l) => l.component_item_id && l.quantity > 0)
+      .map((l) => {
+        const it = items?.find((x: any) => x.id === l.component_item_id);
+        const stock = it?.item_type === "inventory" ? Number(it?.stock_on_hand ?? 0) : Infinity;
+        return { quantity: Number(l.quantity), stock_on_hand: stock };
+      });
+    if (!enriched.length) return 0;
+    return calculateCompositeAvailability(enriched);
+  }, [lines, items]);
 
   const save = async () => {
     if (!tenantId) return;
@@ -210,6 +221,7 @@ function NewCompositePage() {
         <div className="flex items-center justify-between border-t p-3">
           <Button variant="ghost" size="sm" onClick={() => setLines((ls) => [...ls, { component_item_id: "", quantity: 1, unit_cost: 0 }])} className="gap-2"><Plus className="h-4 w-4" /> Add component</Button>
           <div className="flex gap-6 text-sm">
+            <div><span className="text-muted-foreground">Available to build: </span><span className="tabular-nums font-medium">{isFinite(availability) ? availability : "—"}</span></div>
             <div><span className="text-muted-foreground">Total cost: </span><span className="tabular-nums font-medium">{totalCost.toFixed(2)}</span></div>
             <div><span className="text-muted-foreground">Margin: </span><span className={`tabular-nums font-medium ${margin >= 0 ? "text-emerald-600" : "text-rose-600"}`}>{margin.toFixed(2)}</span></div>
           </div>
