@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { AlertCircle, X } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { AlertCircle, Star, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -22,11 +23,13 @@ type Form = {
   zip_code: string;
   phone: string;
   email: string;
+  is_primary: boolean;
 };
 
 const EMPTY: Form = {
   name: "", branch: "", attention: "", street1: "", street2: "",
   city: "", country: "Kenya", state: "", zip_code: "", phone: "", email: "",
+  is_primary: false,
 };
 
 const COUNTRIES = ["Kenya", "Uganda", "Tanzania", "Rwanda", "Ethiopia", "Nigeria", "South Africa", "United States", "United Kingdom"];
@@ -67,6 +70,7 @@ export function LocationForm({ locationId }: { locationId?: string }) {
         zip_code: existing.zip_code ?? "",
         phone: existing.phone ?? "",
         email: existing.email ?? "",
+        is_primary: !!existing.is_primary,
       });
     }
   }, [existing]);
@@ -76,23 +80,38 @@ export function LocationForm({ locationId }: { locationId?: string }) {
       if (!form.name.trim()) throw new Error("Name is required");
       if (!form.country.trim()) throw new Error("Country is required");
       if (!tenantId) throw new Error("No tenant");
+      const { is_primary, ...rest } = form;
       const payload = {
-        ...form,
+        ...rest,
         tenant_id: tenantId,
         name: form.name.trim(),
       };
       if (isEdit) {
-        const { error } = await supabase.from("locations" as any).update(payload).eq("id", locationId!);
+        if (is_primary) {
+          await supabase.from("locations" as any)
+            .update({ is_primary: false })
+            .eq("tenant_id", tenantId)
+            .neq("id", locationId!);
+        }
+        const { error } = await supabase
+          .from("locations" as any)
+          .update({ ...payload, is_primary })
+          .eq("id", locationId!);
         if (error) throw error;
       } else {
-        // mark first ever location as primary
         const { count } = await supabase
           .from("locations" as any)
           .select("id", { count: "exact", head: true })
           .eq("tenant_id", tenantId);
+        const shouldBePrimary = is_primary || !count || count === 0;
+        if (shouldBePrimary && count && count > 0) {
+          await supabase.from("locations" as any)
+            .update({ is_primary: false })
+            .eq("tenant_id", tenantId);
+        }
         const { error } = await supabase.from("locations" as any).insert({
           ...payload,
-          is_primary: !count || count === 0,
+          is_primary: shouldBePrimary,
         });
         if (error) throw error;
       }
@@ -184,6 +203,22 @@ export function LocationForm({ locationId }: { locationId?: string }) {
             <Row label="Email">
               <Input type="email" value={form.email} onChange={(e) => update("email", e.target.value)} />
             </Row>
+            <div className="pt-3 border-t">
+              <label className="flex items-start gap-2 cursor-pointer">
+                <Checkbox
+                  checked={form.is_primary}
+                  onCheckedChange={(v) => update("is_primary", !!v)}
+                  className="mt-0.5"
+                />
+                <span className="text-sm flex items-center gap-1.5">
+                  <Star className={form.is_primary ? "h-4 w-4 fill-orange-500 text-orange-500" : "h-4 w-4 text-muted-foreground"} />
+                  Mark as the organization's Primary Warehouse / Location
+                </span>
+              </label>
+              <p className="ml-6 mt-1 text-xs text-muted-foreground">
+                The primary location is used as the default warehouse on sales orders, invoices, purchase orders, and inventory transactions.
+              </p>
+            </div>
 
             <div className="flex gap-2 pt-4 border-t">
               <Button
