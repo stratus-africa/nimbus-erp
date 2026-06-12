@@ -35,6 +35,8 @@ type Txn = {
   withdrawal: number;
   from_account_id: string | null;
   from_account?: { code: string; name: string } | null;
+  source_type?: string | null;
+  source_id?: string | null;
 };
 
 function formatMoney(n: number, currency: string) {
@@ -148,12 +150,36 @@ function BankAccountDetailPage() {
     mutationFn: async (id: string) => {
       const { error } = await supabase.from("bank_transactions" as any).delete().eq("id", id);
       if (error) throw error;
+      // After a row is removed, recompute the running balance from scratch.
+      await supabase.rpc("reconcile_bank_account_balance", { _account: accountId });
     },
     onSuccess: () => {
-      toast.success("Transaction deleted");
+      toast.success("Transaction deleted & balance reconciled");
       qc.invalidateQueries({ queryKey: ["bank_transactions", accountId] });
+      qc.invalidateQueries({ queryKey: ["bank_account", accountId] });
     },
     onError: (e: any) => toast.error(e.message),
+  });
+
+  const reconcile = useMutation({
+    mutationFn: async () => {
+      const { data, error } = await supabase.rpc("reconcile_bank_account_balance", { _account: accountId });
+      if (error) throw error;
+      return data as number;
+    },
+    onSuccess: (newBal) => {
+      const stored = Number(account?.current_balance ?? 0);
+      const diff = Number(newBal) - stored;
+      if (Math.abs(diff) < 0.005) {
+        toast.success("Balance is in sync");
+      } else {
+        toast.success(`Balance corrected by ${diff >= 0 ? "+" : ""}${diff.toFixed(2)}`);
+      }
+      qc.invalidateQueries({ queryKey: ["bank_account", accountId] });
+      qc.invalidateQueries({ queryKey: ["bank_transactions", accountId] });
+      qc.invalidateQueries({ queryKey: ["bank_accounts"] });
+    },
+    onError: (e: any) => toast.error(e.message ?? "Reconciliation failed"),
   });
 
   if (isLoading || !tenantId) {
@@ -200,6 +226,16 @@ function BankAccountDetailPage() {
         </div>
         <div className="flex items-center gap-2">
           <Button
+            variant="outline"
+            className="h-9 gap-2"
+            onClick={() => reconcile.mutate()}
+            disabled={reconcile.isPending}
+            title="Recompute the running balance from journal & bank transactions"
+          >
+            <RotateCcw className={cn("h-4 w-4", reconcile.isPending && "animate-spin")} />
+            {reconcile.isPending ? "Reconciling…" : "Reconcile balance"}
+          </Button>
+          <Button
             className="h-9 gap-2 bg-orange-500 hover:bg-orange-600 text-white"
             onClick={() => setAddOpen(true)}
           >
@@ -226,10 +262,16 @@ function BankAccountDetailPage() {
         )}>
           <Icon className="h-5 w-5" />
         </div>
-        <div>
+        <div className="flex-1">
           <div className="text-xs text-muted-foreground">Amount in Books</div>
           <div className="text-lg font-semibold tabular-nums">{formatMoney(bookBalance, currency)}</div>
         </div>
+        {Math.abs(Number(account.current_balance ?? 0) - bookBalance) > 0.005 && (
+          <div className="text-xs rounded-md border border-amber-300 bg-amber-50 text-amber-800 px-3 py-1.5 dark:bg-amber-950/30 dark:text-amber-200">
+            Stored balance ({formatMoney(Number(account.current_balance ?? 0), currency)})
+            doesn't match transactions. Click <span className="font-medium">Reconcile balance</span>.
+          </div>
+        )}
       </div>
 
       {/* Tabs */}
@@ -273,7 +315,27 @@ function BankAccountDetailPage() {
                     <div className="text-sm">{formatDate(t.txn_date)}</div>
                     <div className="text-sm">{t.reference ?? "—"}</div>
                     <div className="text-sm">
-                      <div>{t.description ?? "—"}</div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span>{t.description ?? "—"}</span>
+                        {t.source_type === "invoice_payments" && t.source_id && (
+                          <Link
+                            to="/payments-received/$paymentId"
+                            params={{ paymentId: t.source_id }}
+                            className="text-xs text-primary hover:underline"
+                          >
+                            View payment ›
+                          </Link>
+                        )}
+                        {t.source_type === "bill_payments" && t.source_id && (
+                          <Link
+                            to="/payments-made/$paymentId"
+                            params={{ paymentId: t.source_id }}
+                            className="text-xs text-primary hover:underline"
+                          >
+                            View payment ›
+                          </Link>
+                        )}
+                      </div>
                       {t.from_account && (
                         <div className="text-xs text-muted-foreground">
                           From Account: {t.from_account.name}
