@@ -224,8 +224,9 @@ function BankingPage() {
             {filtered.map((a) => (
               <div
                 key={a.id}
+                onClick={() => navigate({ to: "/banking/$accountId", params: { accountId: a.id } })}
                 className={cn(
-                  "grid grid-cols-[1.5fr_1fr_1fr_1fr_40px] items-center gap-3 px-5 py-3 hover:bg-muted/30",
+                  "grid grid-cols-[1.5fr_1fr_1fr_1fr_40px] items-center gap-3 px-5 py-3 hover:bg-muted/30 cursor-pointer",
                   !a.is_active && "opacity-60",
                 )}
               >
