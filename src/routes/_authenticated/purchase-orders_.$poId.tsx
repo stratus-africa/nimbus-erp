@@ -185,7 +185,7 @@ function PurchaseOrderDetailPage() {
     onError: (e: any) => toast.error(e.message ?? "Conversion failed"),
   });
 
-  if (isLoading) {
+  if (isLoading || !tenantId) {
     return <div className="p-10 text-center text-muted-foreground">Loading purchase order…</div>;
   }
   if (!po) {
