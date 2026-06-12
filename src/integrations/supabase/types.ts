@@ -153,6 +153,8 @@ export type Database = {
           from_account_id: string | null
           id: string
           reference: string | null
+          source_id: string | null
+          source_type: string | null
           status: string
           tenant_id: string
           txn_date: string
@@ -170,6 +172,8 @@ export type Database = {
           from_account_id?: string | null
           id?: string
           reference?: string | null
+          source_id?: string | null
+          source_type?: string | null
           status?: string
           tenant_id: string
           txn_date?: string
@@ -187,6 +191,8 @@ export type Database = {
           from_account_id?: string | null
           id?: string
           reference?: string | null
+          source_id?: string | null
+          source_type?: string | null
           status?: string
           tenant_id?: string
           txn_date?: string
@@ -2011,6 +2017,10 @@ export type Database = {
       provision_tenant: {
         Args: { _currency?: string; _name: string; _slug: string }
         Returns: string
+      }
+      reconcile_bank_account_balance: {
+        Args: { _account: string }
+        Returns: number
       }
       switch_tenant: { Args: { _tenant: string }; Returns: undefined }
     }
