@@ -79,7 +79,25 @@ function monthsBetween(from: string, to: string) {
       label: cur.toLocaleString("en-US", { month: "short" }) + " " + cur.getFullYear(),
     });
     cur.setMonth(cur.getMonth() + 1);
+}
+
+/** Returns the 12 months of the current financial year starting at fyStartMonth (1-12). */
+function fiscalYearMonths(fyStartMonth: number) {
+  const today = new Date();
+  const startMonthIdx = Math.max(1, Math.min(12, fyStartMonth || 1)) - 1;
+  // If today is before this calendar year's FY start, FY began last year.
+  const fyStartYear = today.getMonth() >= startMonthIdx ? today.getFullYear() : today.getFullYear() - 1;
+  const out: { year: number; month: number; label: string }[] = [];
+  for (let i = 0; i < 12; i++) {
+    const d = new Date(fyStartYear, startMonthIdx + i, 1);
+    out.push({
+      year: d.getFullYear(),
+      month: d.getMonth(),
+      label: d.toLocaleString("en-US", { month: "short" }),
+    });
   }
+  return out;
+}
   return out;
 }
 
