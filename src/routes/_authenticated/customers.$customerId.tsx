@@ -245,9 +245,20 @@ function CustomerDetailsPage() {
                 <div className="flex items-center gap-2">
                   <Button variant="outline" size="sm" className="h-8" onClick={() => navigate({ to: "/customers/$customerId/edit", params: { customerId } })}>Edit</Button>
                   <Button variant="outline" size="icon" className="h-8 w-8"><Paperclip className="h-4 w-4" /></Button>
-                  <Button size="sm" className="h-8 gap-1 bg-emerald-600 hover:bg-emerald-700 text-white">
-                    New Transaction <ChevronDown className="h-3.5 w-3.5" />
-                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button size="sm" className="h-8 gap-1 bg-emerald-600 hover:bg-emerald-700 text-white">
+                        New Transaction <ChevronDown className="h-3.5 w-3.5" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-56">
+                      <div className="px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Sales</div>
+                      <DropdownMenuItem onClick={() => navigate({ to: "/invoices/new" })}>Invoice</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => navigate({ to: "/payments-received/new" })}>Customer Payment</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => navigate({ to: "/quotes/new" })}>Quote</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => navigate({ to: "/sales-orders/new" })}>Sales Order</DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                   <Button variant="outline" size="sm" className="h-8 gap-1">
                     More <ChevronDown className="h-3.5 w-3.5" />
                   </Button>
