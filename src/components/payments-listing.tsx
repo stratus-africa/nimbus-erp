@@ -77,7 +77,7 @@ export function PaymentsListing({
           .gt("balance", 0)
           .is("deleted_at", null)
           .order("issue_date", { ascending: false });
-        if (partyId) q = q.eq(partyFk, partyId);
+        if (partyId) q = (q as any).eq(partyFk, partyId);
         const { data, error } = await q;
         if (error) throw error;
         return data ?? [];
