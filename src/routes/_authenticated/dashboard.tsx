@@ -79,6 +79,8 @@ function monthsBetween(from: string, to: string) {
       label: cur.toLocaleString("en-US", { month: "short" }) + " " + cur.getFullYear(),
     });
     cur.setMonth(cur.getMonth() + 1);
+  }
+  return out;
 }
 
 /** Returns the 12 months of the current financial year starting at fyStartMonth (1-12). */
@@ -96,8 +98,6 @@ function fiscalYearMonths(fyStartMonth: number) {
       label: d.toLocaleString("en-US", { month: "short" }),
     });
   }
-  return out;
-}
   return out;
 }
 
