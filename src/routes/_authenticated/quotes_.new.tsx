@@ -255,6 +255,19 @@ export function QuoteFormPage({
       }));
       const { error: le } = await supabase.from("quote_lines").insert(lineRows);
       if (le) throw le;
+
+      // Auto-explode composite (kit) items into component reservations.
+      try {
+        await applyCompositeExplosion(
+          tenantId,
+          "quote",
+          quoteId,
+          lines.map((l) => ({ item_id: l.item_id, quantity: l.quantity })),
+        );
+      } catch (e: any) {
+        console.warn("Composite explosion failed", e?.message);
+      }
+
       return quoteId;
     },
     onSuccess: (id) => {
