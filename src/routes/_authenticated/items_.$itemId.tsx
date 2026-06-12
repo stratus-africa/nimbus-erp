@@ -117,31 +117,31 @@ function ItemViewPage() {
       const tid = tenantId!;
       const [quote, so, inv, bill, po, adj] = await Promise.all([
         supabase.from("quote_lines")
-          .select("id, qty, unit_price, line_total, quotes!inner(id, quote_number, quote_date, status, tenant_id, customers(name))")
+          .select("id, quantity, rate, line_total, quotes!inner(id, quote_number, quote_date, status, tenant_id, customers(name))")
           .eq("item_id", itemId).eq("quotes.tenant_id", tid),
         supabase.from("sales_order_lines")
-          .select("id, qty, unit_price, line_total, sales_orders!inner(id, so_number, order_date, status, tenant_id, customers(name))")
+          .select("id, quantity, rate, line_total, sales_orders!inner(id, so_number, so_date, status, tenant_id, customers(name))")
           .eq("item_id", itemId).eq("sales_orders.tenant_id", tid),
         supabase.from("invoice_lines")
-          .select("id, qty, unit_price, line_total, invoices!inner(id, invoice_number, invoice_date, status, tenant_id, customers(name))")
+          .select("id, quantity, rate, line_total, invoices!inner(id, invoice_number, invoice_date, status, tenant_id, customers(name))")
           .eq("item_id", itemId).eq("invoices.tenant_id", tid),
         supabase.from("bill_lines")
-          .select("id, qty, unit_price, line_total, bills!inner(id, bill_number, bill_date, status, tenant_id, suppliers(name))")
+          .select("id, quantity, rate, line_total, bills!inner(id, bill_number, bill_date, status, tenant_id, suppliers(name))")
           .eq("item_id", itemId).eq("bills.tenant_id", tid),
         supabase.from("purchase_order_lines")
-          .select("id, qty, unit_price, line_total, purchase_orders!inner(id, po_number, order_date, status, tenant_id, suppliers(name))")
+          .select("id, quantity, rate, line_total, purchase_orders!inner(id, po_number, po_date, status, tenant_id, suppliers(name))")
           .eq("item_id", itemId).eq("purchase_orders.tenant_id", tid),
         supabase.from("inventory_adjustment_lines")
           .select("id, qty_before, qty_after, variance, inventory_adjustments!inner(id, adjustment_number, adjustment_date, adjustment_type, reason, tenant_id, created_by)")
           .eq("item_id", itemId).eq("inventory_adjustments.tenant_id", tid),
       ]);
       return {
-        quotes: quote.data ?? [],
-        salesOrders: so.data ?? [],
-        invoices: inv.data ?? [],
-        bills: bill.data ?? [],
-        pos: po.data ?? [],
-        adjustments: adj.data ?? [],
+        quotes: (quote.data as any[]) ?? [],
+        salesOrders: (so.data as any[]) ?? [],
+        invoices: (inv.data as any[]) ?? [],
+        bills: (bill.data as any[]) ?? [],
+        pos: (po.data as any[]) ?? [],
+        adjustments: (adj.data as any[]) ?? [],
       };
     },
   });
