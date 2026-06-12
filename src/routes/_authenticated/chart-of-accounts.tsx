@@ -165,7 +165,7 @@ function AccountDialog({ open, onOpenChange, initial, onSubmit, saving }: { open
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button disabled={!a.code || !a.name || saving} onClick={() => onSubmit(a)}>{saving ? "Saving…" : "Save"}</Button>
+          <Button disabled={!a.name || !a.account_subtype || saving} onClick={() => onSubmit(a)}>{saving ? "Saving…" : "Save"}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
