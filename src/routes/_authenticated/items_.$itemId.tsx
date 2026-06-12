@@ -109,16 +109,25 @@ function ItemViewPage() {
     },
   });
 
-  // Transactions: invoice lines, PO lines, adjustment lines for this item, tenant-scoped via RLS.
+  // Transactions: pulled from every document type that can reference an item.
   const { data: txData } = useQuery({
     enabled: !!item && !!tenantId,
     queryKey: ["item-transactions", itemId, tenantId],
     queryFn: async () => {
       const tid = tenantId!;
-      const [inv, po, adj] = await Promise.all([
+      const [quote, so, inv, bill, po, adj] = await Promise.all([
+        supabase.from("quote_lines")
+          .select("id, qty, unit_price, line_total, quotes!inner(id, quote_number, quote_date, status, tenant_id, customers(name))")
+          .eq("item_id", itemId).eq("quotes.tenant_id", tid),
+        supabase.from("sales_order_lines")
+          .select("id, qty, unit_price, line_total, sales_orders!inner(id, so_number, order_date, status, tenant_id, customers(name))")
+          .eq("item_id", itemId).eq("sales_orders.tenant_id", tid),
         supabase.from("invoice_lines")
           .select("id, qty, unit_price, line_total, invoices!inner(id, invoice_number, invoice_date, status, tenant_id, customers(name))")
           .eq("item_id", itemId).eq("invoices.tenant_id", tid),
+        supabase.from("bill_lines")
+          .select("id, qty, unit_price, line_total, bills!inner(id, bill_number, bill_date, status, tenant_id, suppliers(name))")
+          .eq("item_id", itemId).eq("bills.tenant_id", tid),
         supabase.from("purchase_order_lines")
           .select("id, qty, unit_price, line_total, purchase_orders!inner(id, po_number, order_date, status, tenant_id, suppliers(name))")
           .eq("item_id", itemId).eq("purchase_orders.tenant_id", tid),
@@ -126,12 +135,17 @@ function ItemViewPage() {
           .select("id, qty_before, qty_after, variance, inventory_adjustments!inner(id, adjustment_number, adjustment_date, adjustment_type, reason, tenant_id, created_by)")
           .eq("item_id", itemId).eq("inventory_adjustments.tenant_id", tid),
       ]);
-      if (inv.error) throw inv.error;
-      if (po.error) throw po.error;
-      if (adj.error) throw adj.error;
-      return { invoices: inv.data ?? [], pos: po.data ?? [], adjustments: adj.data ?? [] };
+      return {
+        quotes: quote.data ?? [],
+        salesOrders: so.data ?? [],
+        invoices: inv.data ?? [],
+        bills: bill.data ?? [],
+        pos: po.data ?? [],
+        adjustments: adj.data ?? [],
+      };
     },
   });
+
 
   // Actor names for the timeline.
   const actorIds = Array.from(new Set([item?.created_by, ...(txData?.adjustments ?? []).map((a: any) => a.inventory_adjustments?.created_by)].filter(Boolean))) as string[];
