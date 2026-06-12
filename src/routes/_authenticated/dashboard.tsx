@@ -272,6 +272,8 @@ function Dashboard() {
             </CardContent>
           </Card>
 
+          {/* Income & Expense + Top Expenses — side by side */}
+          <div className="grid gap-4 md:grid-cols-2">
           {/* Income & Expense */}
           <Card className="overflow-hidden">
             <CardHeader className="border-b bg-muted/30">
@@ -335,6 +337,7 @@ function Dashboard() {
               )}
             </CardContent>
           </Card>
+          </div>
         </div>
 
         {/* Right column: Recent Activity */}

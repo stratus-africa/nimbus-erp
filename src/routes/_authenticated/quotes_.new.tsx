@@ -32,7 +32,7 @@ import {
 
 export const Route = createFileRoute("/_authenticated/quotes_/new")({
   head: () => ({ meta: [{ title: "New Quote — Nimbus ERP" }] }),
-  component: NewQuotePage,
+  component: () => <QuoteFormPage />,
 });
 
 type Line = {
@@ -52,26 +52,32 @@ function todayIso() {
   return new Date().toISOString().slice(0, 10);
 }
 
-function NewQuotePage() {
+export function QuoteFormPage({
+  editId,
+  initial,
+}: { editId?: string; initial?: any } = {}) {
   const navigate = useNavigate();
   const { data: profile } = useProfile();
   const tenantId = profile?.currentTenant?.id;
   const currency = profile?.currentTenant?.base_currency ?? "KES";
   const qc = useQueryClient();
+  const isEdit = !!editId;
 
-  const [customerId, setCustomerId] = useState("");
+  const [customerId, setCustomerId] = useState(initial?.customer_id ?? "");
   const [location, setLocation] = useState("Head Office");
-  const [quoteNumber, setQuoteNumber] = useState("");
-  const [reference, setReference] = useState("");
-  const [quoteDate, setQuoteDate] = useState(todayIso());
-  const [expiryDate, setExpiryDate] = useState("");
+  const [quoteNumber, setQuoteNumber] = useState(initial?.quote_number ?? "");
+  const [reference, setReference] = useState(initial?.reference ?? "");
+  const [quoteDate, setQuoteDate] = useState(initial?.quote_date ?? todayIso());
+  const [expiryDate, setExpiryDate] = useState(initial?.expiry_date ?? "");
   const [salesperson, setSalesperson] = useState("");
   const [description, setDescription] = useState("");
-  const [notes, setNotes] = useState(DEFAULT_NOTES);
+  const [notes, setNotes] = useState(initial?.notes ?? DEFAULT_NOTES);
   const [terms, setTerms] = useState(DEFAULT_TERMS);
-  const [lines, setLines] = useState<Line[]>([
-    { item_id: null, description: "", quantity: 1, rate: 0, tax_rate: 0 },
-  ]);
+  const [lines, setLines] = useState<Line[]>(
+    initial?.lines?.length
+      ? initial.lines
+      : [{ item_id: null, description: "", quantity: 1, rate: 0, tax_rate: 0 }],
+  );
 
   const { data: customers } = useQuery({
     enabled: !!tenantId,
@@ -116,7 +122,7 @@ function NewQuotePage() {
 
   // Preview the next quote number (display-only; real number is fetched on save)
   const { data: previewNumber } = useQuery({
-    enabled: !!tenantId,
+    enabled: !!tenantId && !isEdit,
     queryKey: ["preview-quote-number", tenantId],
     queryFn: async () => {
       const { data } = await supabase
@@ -178,16 +184,10 @@ function NewQuotePage() {
       if (!customerId) throw new Error("Please select a customer");
       if (lines.length === 0) throw new Error("Add at least one line");
 
-      const { data: num, error: ne } = await supabase.rpc("next_doc_number", {
-        _tenant: tenantId,
-        _doc_type: "quote",
-      });
-      if (ne) throw ne;
-
-      const payload: any = {
+      let quoteId: string;
+      const basePayload: any = {
         tenant_id: tenantId,
         customer_id: customerId,
-        quote_number: num ?? quoteNumber,
         quote_date: quoteDate,
         expiry_date: expiryDate || null,
         status: sendAfter ? "sent" : "draft",
@@ -197,15 +197,31 @@ function NewQuotePage() {
         notes: [description, notes, terms].filter(Boolean).join("\n\n"),
       };
 
-      const { data: inserted, error } = await supabase
-        .from("quotes")
-        .insert(payload)
-        .select("id")
-        .single();
-      if (error) throw error;
+      if (isEdit && editId) {
+        const { error: ue } = await supabase
+          .from("quotes")
+          .update({ ...basePayload, quote_number: quoteNumber })
+          .eq("id", editId);
+        if (ue) throw ue;
+        await supabase.from("quote_lines").delete().eq("quote_id", editId);
+        quoteId = editId;
+      } else {
+        const { data: num, error: ne } = await supabase.rpc("next_doc_number", {
+          _tenant: tenantId,
+          _doc_type: "quote",
+        });
+        if (ne) throw ne;
+        const { data: inserted, error } = await supabase
+          .from("quotes")
+          .insert({ ...basePayload, quote_number: num ?? quoteNumber })
+          .select("id")
+          .single();
+        if (error) throw error;
+        quoteId = inserted.id;
+      }
 
       const lineRows = lines.map((l, i) => ({
-        quote_id: inserted.id,
+        quote_id: quoteId,
         item_id: l.item_id,
         description: l.description || null,
         quantity: l.quantity,
@@ -216,12 +232,13 @@ function NewQuotePage() {
       }));
       const { error: le } = await supabase.from("quote_lines").insert(lineRows);
       if (le) throw le;
-      return inserted.id;
+      return quoteId;
     },
-    onSuccess: () => {
-      toast.success("Quote saved");
+    onSuccess: (id) => {
+      toast.success(isEdit ? "Quote updated" : "Quote saved");
       qc.invalidateQueries({ queryKey: ["quotes-list"] });
-      navigate({ to: "/quotes" });
+      qc.invalidateQueries({ queryKey: ["quote", id] });
+      navigate(isEdit ? { to: "/quotes/$quoteId", params: { quoteId: id } } : { to: "/quotes" });
     },
     onError: (e: any) => toast.error(e.message ?? "Failed to save"),
   });
@@ -249,7 +266,7 @@ function NewQuotePage() {
           <div className="grid h-6 w-6 place-items-center rounded border text-muted-foreground">
             <span className="text-[10px]">QT</span>
           </div>
-          <h1 className="text-lg font-semibold">New Quote</h1>
+          <h1 className="text-lg font-semibold">{isEdit ? `Edit Quote ${quoteNumber}` : "New Quote"}</h1>
         </div>
         <Link to="/quotes" className="text-rose-500 hover:text-rose-600" aria-label="Close">
           <X className="h-5 w-5" />
