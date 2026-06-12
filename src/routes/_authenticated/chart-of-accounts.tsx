@@ -138,20 +138,30 @@ function AccountDialog({ open, onOpenChange, initial, onSubmit, saving }: { open
       <DialogContent className="sm:max-w-md">
         <DialogHeader><DialogTitle>{a.id ? "Edit account" : "New account"}</DialogTitle></DialogHeader>
         <div className="grid gap-4">
+          <div className="space-y-2">
+            <Label>Account Type *</Label>
+            <Select
+              value={a.account_subtype ?? ""}
+              onValueChange={(v: string) => setA({ ...a, account_subtype: v, account_type: findTypeForSubtype(v) })}
+            >
+              <SelectTrigger><SelectValue placeholder="Select account type" /></SelectTrigger>
+              <SelectContent className="max-h-80">
+                {SUBTYPES.map((g) => (
+                  <div key={g.type}>
+                    <div className="px-2 py-1 text-xs font-semibold text-muted-foreground">{g.label}</div>
+                    {g.subtypes.map((s) => (
+                      <SelectItem key={s} value={s}>{s}</SelectItem>
+                    ))}
+                  </div>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2"><Label>Code *</Label><Input value={a.code} onChange={(e) => setA({ ...a, code: e.target.value })} /></div>
-            <div className="space-y-2">
-              <Label>Type</Label>
-              <Select value={a.account_type} onValueChange={(v: any) => setA({ ...a, account_type: v })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {["asset", "liability", "equity", "income", "expense"].map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
+            <div className="space-y-2"><Label>Code</Label><Input value={a.code} onChange={(e) => setA({ ...a, code: e.target.value })} /></div>
+            <div className="space-y-2"><Label>Opening balance</Label><Input type="number" step="0.01" value={a.opening_balance ?? 0} onChange={(e) => setA({ ...a, opening_balance: parseFloat(e.target.value) || 0 })} /></div>
           </div>
           <div className="space-y-2"><Label>Name *</Label><Input value={a.name} onChange={(e) => setA({ ...a, name: e.target.value })} /></div>
-          <div className="space-y-2"><Label>Opening balance</Label><Input type="number" step="0.01" value={a.opening_balance ?? 0} onChange={(e) => setA({ ...a, opening_balance: parseFloat(e.target.value) || 0 })} /></div>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
