@@ -161,6 +161,14 @@ export function QuoteFormPage({
   );
   const total = subtotal + taxTotal;
 
+  const credit = useCreditLimitCheck({
+    tenantId,
+    customerId,
+    docKind: "quote",
+    docId: editId,
+    docTotal: total,
+  });
+
   const updateLine = (idx: number, patch: Partial<Line>) =>
     setLines((ls) => ls.map((l, i) => (i === idx ? { ...l, ...patch } : l)));
   const addLine = () =>
