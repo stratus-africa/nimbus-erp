@@ -221,6 +221,7 @@ function NewCompositePage() {
         <div className="flex items-center justify-between border-t p-3">
           <Button variant="ghost" size="sm" onClick={() => setLines((ls) => [...ls, { component_item_id: "", quantity: 1, unit_cost: 0 }])} className="gap-2"><Plus className="h-4 w-4" /> Add component</Button>
           <div className="flex gap-6 text-sm">
+            <div><span className="text-muted-foreground">Available to build: </span><span className="tabular-nums font-medium">{isFinite(availability) ? availability : "—"}</span></div>
             <div><span className="text-muted-foreground">Total cost: </span><span className="tabular-nums font-medium">{totalCost.toFixed(2)}</span></div>
             <div><span className="text-muted-foreground">Margin: </span><span className={`tabular-nums font-medium ${margin >= 0 ? "text-emerald-600" : "text-rose-600"}`}>{margin.toFixed(2)}</span></div>
           </div>
