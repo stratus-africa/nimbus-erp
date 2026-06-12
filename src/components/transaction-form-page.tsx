@@ -201,6 +201,18 @@ export function TransactionFormPage({
     if (!partyId)
       return toast.error(`Please select a ${config.partyLabel.toLowerCase()}`);
     if (lines.length === 0) return toast.error("Add at least one line");
+    if (exceedsCredit) {
+      const overBy = projectedExposure - creditLimit;
+      if (creditAction === "restrict") {
+        return toast.error(
+          `Credit limit exceeded by ${overBy.toFixed(2)} ${currency}. Cannot save this invoice.`,
+        );
+      }
+      const ok = window.confirm(
+        `${customerCredit?.name ?? "Customer"} will exceed their credit limit of ${creditLimit.toFixed(2)} ${currency} by ${overBy.toFixed(2)} ${currency}. Continue?`,
+      );
+      if (!ok) return;
+    }
     setSaving(true);
     try {
       let docId = initial?.id as string | undefined;
