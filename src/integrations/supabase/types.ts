@@ -986,6 +986,74 @@ export type Database = {
           },
         ]
       }
+      locations: {
+        Row: {
+          attention: string | null
+          branch: string | null
+          city: string | null
+          country: string | null
+          created_at: string
+          email: string | null
+          id: string
+          is_active: boolean
+          is_primary: boolean
+          name: string
+          phone: string | null
+          state: string | null
+          street1: string | null
+          street2: string | null
+          tenant_id: string
+          updated_at: string
+          zip_code: string | null
+        }
+        Insert: {
+          attention?: string | null
+          branch?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_active?: boolean
+          is_primary?: boolean
+          name: string
+          phone?: string | null
+          state?: string | null
+          street1?: string | null
+          street2?: string | null
+          tenant_id: string
+          updated_at?: string
+          zip_code?: string | null
+        }
+        Update: {
+          attention?: string | null
+          branch?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_active?: boolean
+          is_primary?: boolean
+          name?: string
+          phone?: string | null
+          state?: string | null
+          street1?: string | null
+          street2?: string | null
+          tenant_id?: string
+          updated_at?: string
+          zip_code?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "locations_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       numbering_series: {
         Row: {
           doc_type: string
