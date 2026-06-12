@@ -53,6 +53,7 @@ import { Route as AuthenticatedCustomersCustomerIdRouteImport } from './routes/_
 import { Route as AuthenticatedBillsNewRouteImport } from './routes/_authenticated/bills_.new'
 import { Route as AuthenticatedBillsBillIdRouteImport } from './routes/_authenticated/bills_.$billId'
 import { Route as AuthenticatedSuppliersSupplierIdEditRouteImport } from './routes/_authenticated/suppliers.$supplierId_.edit'
+import { Route as AuthenticatedSettingsLocationsNewRouteImport } from './routes/_authenticated/settings_.locations_.new'
 import { Route as AuthenticatedSalesOrdersSoIdEditRouteImport } from './routes/_authenticated/sales-orders_.$soId_.edit'
 import { Route as AuthenticatedQuotesQuoteIdEditRouteImport } from './routes/_authenticated/quotes_.$quoteId_.edit'
 import { Route as AuthenticatedItemsItemIdEditRouteImport } from './routes/_authenticated/items_.$itemId_.edit'
@@ -306,6 +307,12 @@ const AuthenticatedSuppliersSupplierIdEditRoute =
     path: '/suppliers/$supplierId/edit',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedSettingsLocationsNewRoute =
+  AuthenticatedSettingsLocationsNewRouteImport.update({
+    id: '/settings_/locations_/new',
+    path: '/settings/locations/new',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedSalesOrdersSoIdEditRoute =
   AuthenticatedSalesOrdersSoIdEditRouteImport.update({
     id: '/sales-orders_/$soId_/edit',
@@ -385,6 +392,7 @@ export interface FileRoutesByFullPath {
   '/items/$itemId/edit': typeof AuthenticatedItemsItemIdEditRoute
   '/quotes/$quoteId/edit': typeof AuthenticatedQuotesQuoteIdEditRoute
   '/sales-orders/$soId/edit': typeof AuthenticatedSalesOrdersSoIdEditRoute
+  '/settings/locations/new': typeof AuthenticatedSettingsLocationsNewRoute
   '/suppliers/$supplierId/edit': typeof AuthenticatedSuppliersSupplierIdEditRoute
 }
 export interface FileRoutesByTo {
@@ -435,6 +443,7 @@ export interface FileRoutesByTo {
   '/items/$itemId/edit': typeof AuthenticatedItemsItemIdEditRoute
   '/quotes/$quoteId/edit': typeof AuthenticatedQuotesQuoteIdEditRoute
   '/sales-orders/$soId/edit': typeof AuthenticatedSalesOrdersSoIdEditRoute
+  '/settings/locations/new': typeof AuthenticatedSettingsLocationsNewRoute
   '/suppliers/$supplierId/edit': typeof AuthenticatedSuppliersSupplierIdEditRoute
 }
 export interface FileRoutesById {
@@ -487,6 +496,7 @@ export interface FileRoutesById {
   '/_authenticated/items_/$itemId_/edit': typeof AuthenticatedItemsItemIdEditRoute
   '/_authenticated/quotes_/$quoteId_/edit': typeof AuthenticatedQuotesQuoteIdEditRoute
   '/_authenticated/sales-orders_/$soId_/edit': typeof AuthenticatedSalesOrdersSoIdEditRoute
+  '/_authenticated/settings_/locations_/new': typeof AuthenticatedSettingsLocationsNewRoute
   '/_authenticated/suppliers/$supplierId_/edit': typeof AuthenticatedSuppliersSupplierIdEditRoute
 }
 export interface FileRouteTypes {
@@ -539,6 +549,7 @@ export interface FileRouteTypes {
     | '/items/$itemId/edit'
     | '/quotes/$quoteId/edit'
     | '/sales-orders/$soId/edit'
+    | '/settings/locations/new'
     | '/suppliers/$supplierId/edit'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -589,6 +600,7 @@ export interface FileRouteTypes {
     | '/items/$itemId/edit'
     | '/quotes/$quoteId/edit'
     | '/sales-orders/$soId/edit'
+    | '/settings/locations/new'
     | '/suppliers/$supplierId/edit'
   id:
     | '__root__'
@@ -640,6 +652,7 @@ export interface FileRouteTypes {
     | '/_authenticated/items_/$itemId_/edit'
     | '/_authenticated/quotes_/$quoteId_/edit'
     | '/_authenticated/sales-orders_/$soId_/edit'
+    | '/_authenticated/settings_/locations_/new'
     | '/_authenticated/suppliers/$supplierId_/edit'
   fileRoutesById: FileRoutesById
 }
@@ -960,6 +973,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSuppliersSupplierIdEditRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/settings_/locations_/new': {
+      id: '/_authenticated/settings_/locations_/new'
+      path: '/settings/locations/new'
+      fullPath: '/settings/locations/new'
+      preLoaderRoute: typeof AuthenticatedSettingsLocationsNewRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/sales-orders_/$soId_/edit': {
       id: '/_authenticated/sales-orders_/$soId_/edit'
       path: '/sales-orders/$soId/edit'
@@ -1055,6 +1075,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedItemsItemIdEditRoute: typeof AuthenticatedItemsItemIdEditRoute
   AuthenticatedQuotesQuoteIdEditRoute: typeof AuthenticatedQuotesQuoteIdEditRoute
   AuthenticatedSalesOrdersSoIdEditRoute: typeof AuthenticatedSalesOrdersSoIdEditRoute
+  AuthenticatedSettingsLocationsNewRoute: typeof AuthenticatedSettingsLocationsNewRoute
   AuthenticatedSuppliersSupplierIdEditRoute: typeof AuthenticatedSuppliersSupplierIdEditRoute
 }
 
@@ -1107,6 +1128,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedItemsItemIdEditRoute: AuthenticatedItemsItemIdEditRoute,
   AuthenticatedQuotesQuoteIdEditRoute: AuthenticatedQuotesQuoteIdEditRoute,
   AuthenticatedSalesOrdersSoIdEditRoute: AuthenticatedSalesOrdersSoIdEditRoute,
+  AuthenticatedSettingsLocationsNewRoute:
+    AuthenticatedSettingsLocationsNewRoute,
   AuthenticatedSuppliersSupplierIdEditRoute:
     AuthenticatedSuppliersSupplierIdEditRoute,
 }
@@ -1123,3 +1146,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
