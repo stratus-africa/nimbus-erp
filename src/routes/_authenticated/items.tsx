@@ -1,5 +1,5 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "@/hooks/use-profile";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -7,17 +7,22 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useMemo, useState } from "react";
-import { ChevronDown, Plus, MoreHorizontal, SlidersHorizontal, Search, RefreshCw, ImageIcon } from "lucide-react";
+import { ChevronDown, Plus, MoreHorizontal, SlidersHorizontal, Search, RefreshCw, ImageIcon, Pencil, Archive, ArchiveRestore, Trash2 } from "lucide-react";
 import { formatCurrency } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/items")({
   head: () => ({ meta: [{ title: "Items — Nimbus ERP" }] }),
   component: ItemsPage,
 });
 
-type FilterKey = "all" | "active" | "inactive" | "inventory" | "service" | "low";
+type FilterKey = "all" | "active" | "inactive" | "inventory" | "service" | "low" | "archived";
 const FILTERS: { key: FilterKey; label: string }[] = [
   { key: "all", label: "All Items" },
   { key: "active", label: "Active Items" },
@@ -25,6 +30,7 @@ const FILTERS: { key: FilterKey; label: string }[] = [
   { key: "inventory", label: "Inventory Items" },
   { key: "service", label: "Service Items" },
   { key: "low", label: "Low Stock Items" },
+  { key: "archived", label: "Archived Items" },
 ];
 
 function ItemsPage() {
