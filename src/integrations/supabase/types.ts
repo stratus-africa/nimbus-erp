@@ -67,6 +67,8 @@ export type Database = {
           account_number: string | null
           account_type: Database["public"]["Enums"]["bank_account_type"]
           bank_name: string | null
+          branch: string | null
+          coa_account_id: string | null
           created_at: string
           currency: string
           current_balance: number
@@ -86,6 +88,8 @@ export type Database = {
           account_number?: string | null
           account_type?: Database["public"]["Enums"]["bank_account_type"]
           bank_name?: string | null
+          branch?: string | null
+          coa_account_id?: string | null
           created_at?: string
           currency?: string
           current_balance?: number
@@ -105,6 +109,8 @@ export type Database = {
           account_number?: string | null
           account_type?: Database["public"]["Enums"]["bank_account_type"]
           bank_name?: string | null
+          branch?: string | null
+          coa_account_id?: string | null
           created_at?: string
           currency?: string
           current_balance?: number
@@ -121,7 +127,90 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "bank_accounts_coa_account_id_fkey"
+            columns: ["coa_account_id"]
+            isOneToOne: false
+            referencedRelation: "chart_of_accounts"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "bank_accounts_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bank_transactions: {
+        Row: {
+          bank_account_id: string
+          branch: string | null
+          created_at: string
+          created_by: string | null
+          deposit: number
+          description: string | null
+          from_account_id: string | null
+          id: string
+          reference: string | null
+          status: string
+          tenant_id: string
+          txn_date: string
+          txn_type: string
+          updated_at: string
+          withdrawal: number
+        }
+        Insert: {
+          bank_account_id: string
+          branch?: string | null
+          created_at?: string
+          created_by?: string | null
+          deposit?: number
+          description?: string | null
+          from_account_id?: string | null
+          id?: string
+          reference?: string | null
+          status?: string
+          tenant_id: string
+          txn_date?: string
+          txn_type?: string
+          updated_at?: string
+          withdrawal?: number
+        }
+        Update: {
+          bank_account_id?: string
+          branch?: string | null
+          created_at?: string
+          created_by?: string | null
+          deposit?: number
+          description?: string | null
+          from_account_id?: string | null
+          id?: string
+          reference?: string | null
+          status?: string
+          tenant_id?: string
+          txn_date?: string
+          txn_type?: string
+          updated_at?: string
+          withdrawal?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bank_transactions_bank_account_id_fkey"
+            columns: ["bank_account_id"]
+            isOneToOne: false
+            referencedRelation: "bank_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bank_transactions_from_account_id_fkey"
+            columns: ["from_account_id"]
+            isOneToOne: false
+            referencedRelation: "chart_of_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bank_transactions_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
