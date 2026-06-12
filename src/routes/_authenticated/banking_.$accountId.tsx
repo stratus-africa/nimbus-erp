@@ -150,12 +150,36 @@ function BankAccountDetailPage() {
     mutationFn: async (id: string) => {
       const { error } = await supabase.from("bank_transactions" as any).delete().eq("id", id);
       if (error) throw error;
+      // After a row is removed, recompute the running balance from scratch.
+      await supabase.rpc("reconcile_bank_account_balance", { _account: accountId });
     },
     onSuccess: () => {
-      toast.success("Transaction deleted");
+      toast.success("Transaction deleted & balance reconciled");
       qc.invalidateQueries({ queryKey: ["bank_transactions", accountId] });
+      qc.invalidateQueries({ queryKey: ["bank_account", accountId] });
     },
     onError: (e: any) => toast.error(e.message),
+  });
+
+  const reconcile = useMutation({
+    mutationFn: async () => {
+      const { data, error } = await supabase.rpc("reconcile_bank_account_balance", { _account: accountId });
+      if (error) throw error;
+      return data as number;
+    },
+    onSuccess: (newBal) => {
+      const stored = Number(account?.current_balance ?? 0);
+      const diff = Number(newBal) - stored;
+      if (Math.abs(diff) < 0.005) {
+        toast.success("Balance is in sync");
+      } else {
+        toast.success(`Balance corrected by ${diff >= 0 ? "+" : ""}${diff.toFixed(2)}`);
+      }
+      qc.invalidateQueries({ queryKey: ["bank_account", accountId] });
+      qc.invalidateQueries({ queryKey: ["bank_transactions", accountId] });
+      qc.invalidateQueries({ queryKey: ["bank_accounts"] });
+    },
+    onError: (e: any) => toast.error(e.message ?? "Reconciliation failed"),
   });
 
   if (isLoading || !tenantId) {
