@@ -70,6 +70,7 @@ export function LocationForm({ locationId }: { locationId?: string }) {
         zip_code: existing.zip_code ?? "",
         phone: existing.phone ?? "",
         email: existing.email ?? "",
+        is_primary: !!existing.is_primary,
       });
     }
   }, [existing]);
