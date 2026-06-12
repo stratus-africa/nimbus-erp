@@ -125,7 +125,7 @@ function BillDetailPage() {
     onError: (e: any) => toast.error(e.message ?? "Failed to update bill"),
   });
 
-  if (isLoading) {
+  if (isLoading || !tenantId) {
     return <div className="p-10 text-center text-muted-foreground">Loading bill…</div>;
   }
   if (!bill) {
