@@ -420,6 +420,7 @@ export type Database = {
       }
       chart_of_accounts: {
         Row: {
+          account_subtype: string | null
           account_type: Database["public"]["Enums"]["account_type"]
           code: string
           created_at: string
@@ -433,6 +434,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          account_subtype?: string | null
           account_type: Database["public"]["Enums"]["account_type"]
           code: string
           created_at?: string
@@ -446,6 +448,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          account_subtype?: string | null
           account_type?: Database["public"]["Enums"]["account_type"]
           code?: string
           created_at?: string

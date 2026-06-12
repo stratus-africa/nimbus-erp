@@ -1,0 +1,1 @@
+ALTER TABLE public.chart_of_accounts ADD COLUMN IF NOT EXISTS account_subtype text;
