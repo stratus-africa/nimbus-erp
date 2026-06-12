@@ -1,106 +1,78 @@
-# Multi-Tenant SaaS ERP — v1 Plan
+# Settings → Items: Full Implementation
 
-A full Zoho Books clone is months of work. This v1 ships a **production-shaped foundation** with the core happy-paths working end-to-end, and scaffolds everything else so we can fill it in over follow-ups.
+## 1. Database (one migration)
 
-## What ships fully working in v1
+**`tenant_settings`** — tenant-scoped JSONB, one row per (tenant, namespace).
+- columns: `tenant_id`, `namespace text` (e.g. `'items'`), `settings jsonb`, timestamps
+- unique (tenant_id, namespace); RLS: tenant members read/write
 
-**Platform**
-- Lovable Cloud (Postgres + Auth + Storage)
-- Email/password auth + self-serve signup → creates a new tenant (organization), signup user becomes Company Admin
-- Super Admin role with separate `/admin` console: list tenants, suspend/activate, manage plans
-- Multi-tenant data isolation via `tenant_id` on every table + RLS using a `current_tenant()` security-definer function
-- Role-based permissions (Super Admin, Company Admin, Accountant, Sales, Purchasing, Inventory, Read-Only) stored in `user_roles`
-- App shell: collapsible left sidebar, sticky top nav, global search stub, tenant/company selector, profile menu, quick-create
+**Customization tables** — all scoped by `tenant_id` + `entity` (string; starts with `'items'`, designed to extend to invoices/bills later):
 
-**Sales (core flow working)**
-- Customers: full CRUD, list with search/filter/pagination, detail page, statement view
-- Invoices: CRUD, line items, auto tax calc, status workflow (Draft → Sent → Partially Paid → Paid → Overdue), record payments, PDF view
-- Quotes: CRUD, status workflow, convert to Invoice
+- `custom_fields` — `entity`, `field_key`, `label`, `data_type` (text/number/date/boolean/select), `options jsonb`, `required bool`, `default_value`, `position`, `is_active`
+- `validation_rules` — `entity`, `name`, `field_key`, `operator` (eq/neq/gt/lt/between/regex/required), `value jsonb`, `error_message`, `is_active`
+- `record_locks` — `entity`, `name`, `condition jsonb` (status/field-based), `lock_fields jsonb`, `roles_allowed app_role[]`, `is_active`
+- `custom_buttons` — `entity`, `label`, `placement` (detail/list), `action_type` (url/webhook/copy), `action_config jsonb`, `icon`, `position`, `is_active`
+- `related_lists` — `entity`, `label`, `related_entity`, `filter jsonb`, `columns jsonb`, `position`, `is_active`
 
-**Purchases (core flow working)**
-- Suppliers: full CRUD
-- Purchase Orders: CRUD, status workflow, convert to Bill
-- Bills: CRUD, record payments
+All include `created_at`/`updated_at`, `set_updated_at` trigger, GRANT to authenticated + service_role, RLS via `is_tenant_member`.
 
-**Inventory (core flow working)**
-- Items master: SKU, type (inventory/service), pricing, stock on hand, reorder level
-- Inventory Adjustments: increase/decrease/recount with reason and variance tracking
-- Stock automatically updates on invoice/bill posting
+**`items` extension** — add `archived_at timestamptz` (soft delete distinct from hard delete). Existing `is_active` stays for enable/disable.
 
-**Accounting (core flow working)**
-- Chart of Accounts: hierarchical, seeded with standard accounts per new tenant
-- Manual Journals: double-entry with balance validation
-- Auto-posting: invoices/bills/payments generate journal entries
+## 2. Settings persistence
 
-**Dashboard**
-- KPI cards (Sales, Purchases, Receivables, Payables, Inventory Value, Cash)
-- Revenue trend chart (Recharts)
-- Recent transactions, top customers, inventory alerts
+- `useItemsSettings()` hook: TanStack Query loads `tenant_settings` row for `namespace='items'`, falls back to defaults.
+- Save mutation upserts JSONB. All General-tab fields live in one JSONB blob.
+- Zod schema validates the blob on save with cross-field rules:
+  - If `inventoryTracking=false` → `valuationMethod` forced to `'none'`, locked in UI
+  - If any item with `track_inventory=true` exists → `valuationMethod` becomes read-only with explanation banner (queried alongside settings)
+  - Batch tracking sub-options disabled when `batchTracking=false`
+  - Reorder email required if `reorderNotify=true`
 
-**Reports (read-only v1)**
-- Trial Balance, Profit & Loss, Customer Aging, Inventory Valuation
-- Date filters, CSV export
+## 3. Items CRUD
 
-**Settings**
-- Company profile, fiscal year, base currency, tax rates
-- User management (invite by email, assign roles)
-- Numbering series per document type
+**`/items` (existing page)** — polish to a real CRUD table:
+- Search (name/SKU/barcode), filters (type, active/archived), sort
+- Row actions menu: Edit, Archive/Unarchive, Delete (red, confirm dialog)
+- "New Item" + "Edit Item" dialogs with zod validation
+- Honors settings: decimal precision, dimension/weight units, duplicate-name rule, HS code field visibility, batch/serial UI
 
-## What's scaffolded but marked "Coming soon" in v1
+**`/settings/items` — compact embedded manager** at the bottom of the General tab:
+- Mini items table (10 rows, search) with same row actions, links to full `/items`
 
-To keep this turn shippable, these get sidebar entries + placeholder pages with empty states. Each is a follow-up turn:
+## 4. Tabs (replace placeholders)
 
-- Credit Notes, Sales Orders → Packages → Shipments pipeline
-- Purchase Receives (GRN), Supplier Credits
-- Banking + Reconciliation screen
-- Recurring invoices/journals, approval workflows
-- Customer Portal
-- Excel export, advanced report filters, audit logs UI
-- Batch/serial tracking, multi-warehouse
+Each tab gets a working list + add/edit dialog backed by its table:
+- **Field Customization** — list custom_fields, drag-reorder, type picker, options editor for select
+- **Validation Rules** — pick field + operator + value + message
+- **Record Locking** — condition builder (e.g., `status = 'archived'` → lock everything), role allowlist
+- **Custom Buttons** — label + placement + action (URL template with {{sku}}, etc.)
+- **Related Lists** — pick related entity (invoices, bills, sales orders) + filter + visible columns
 
-## Database overview
+All tabs use a shared `<CrudTable />` + `<EntityDialog />` component built on shadcn Dialog + react-hook-form + zod.
 
-~25 tables. All transactional tables share: `id`, `tenant_id`, `created_by`, `created_at`, `updated_at`, `deleted_at` (soft delete).
+## 5. Files
 
-```text
-tenants, subscription_plans, tenant_subscriptions
-profiles, user_roles (with app_role enum + has_role security-definer)
-tenant_members (links users to tenants)
-customers, suppliers
-items, inventory_adjustments, inventory_adjustment_lines
-quotes, quote_lines
-invoices, invoice_lines, invoice_payments
-purchase_orders, purchase_order_lines
-bills, bill_lines, bill_payments
-chart_of_accounts, journal_entries, journal_lines
-tax_rates, numbering_series, company_settings
-```
+New:
+- `supabase/migrations/<ts>_items_settings_and_customization.sql`
+- `src/hooks/use-items-settings.ts`
+- `src/hooks/use-item-customization.ts` (one hook, switches by table)
+- `src/components/settings/items-general-tab.tsx`
+- `src/components/settings/items-customization-tab.tsx` (reused per tab)
+- `src/components/settings/items-mini-list.tsx`
+- `src/components/items/item-form-dialog.tsx`
 
-RLS pattern: every policy filters by `tenant_id = current_tenant()` AND role check via `has_role()`. Super Admin role bypasses tenant filter for the `/admin` console only.
+Edited:
+- `src/routes/_authenticated/settings_.items.tsx` (wire tabs to components, replace local state)
+- `src/routes/_authenticated/items.tsx` (CRUD polish, settings-driven inputs)
 
-## Tech specifics
+## Technical notes
 
-- TanStack Start (already scaffolded), TanStack Query for data, React Hook Form + Zod for forms
-- Server functions for all writes (auth-protected via `requireSupabaseAuth`); reads through Supabase client with RLS
-- Shadcn components customized via design tokens in `src/styles.css` — Modern SaaS palette (indigo primary, emerald success, slate neutrals, generous whitespace, refined typography)
-- Recharts for analytics, Sonner for toasts, Lucide icons
+- Settings load/save via `createServerFn` with `requireSupabaseAuth`; tenant resolved from `current_tenant()`.
+- Customization tabs use direct supabase client (browser) since RLS scopes by tenant — simpler than server fns for table-driven UIs.
+- Soft delete: archive sets `archived_at`; hard delete only allowed when no transactions reference the item (checked client-side from joins).
+- Cross-field zod refinements live in `src/lib/items-settings-schema.ts` to share between hook and UI.
 
-## Build order this turn
+## Out of scope
 
-1. Enable Lovable Cloud
-2. Migration: all tables + RLS + seed data (CoA template, default plans, super-admin role bootstrap)
-3. Auth flow + tenant provisioning trigger
-4. App shell (sidebar, topnav, layout)
-5. Dashboard
-6. Customers + Invoices + Quotes (sales core)
-7. Suppliers + POs + Bills (purchases core)
-8. Items + Adjustments
-9. CoA + Manual Journals + auto-posting
-10. Reports
-11. Settings + user management
-12. Super Admin console
-13. Placeholder pages for "coming soon" modules
-
-Realistically this is a very large turn. I'll work efficiently in parallel, but expect a follow-up message or two to polish edge cases (PDF rendering, advanced filters, etc.) once you see it running.
-
-Approve and I'll start with enabling Cloud and writing the migration.
+- Migrating existing hardcoded item fields to custom_fields engine (engine exists; runtime rendering on item forms is additive)
+- Per-warehouse stock prevention enforcement at write-time (UI option stored; enforcement is a follow-up)
