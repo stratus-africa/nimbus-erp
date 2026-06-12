@@ -77,14 +77,7 @@ function ItemsSettingsPage() {
 
       <div className="bg-card">
         <div className="max-w-5xl px-6 py-6">
-          {tab === "General" && (
-            <div className="space-y-8">
-              <ItemsGeneralTab />
-              <div className="border-t pt-6">
-                <ItemsMiniList />
-              </div>
-            </div>
-          )}
+          {tab === "General" && <ItemsGeneralTab />}
 
           {tab === "Field Customization" && (
             <CustomizationCrudTab
