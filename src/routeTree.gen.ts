@@ -33,6 +33,7 @@ import { Route as AuthenticatedSuppliersIndexRouteImport } from './routes/_authe
 import { Route as AuthenticatedCustomersIndexRouteImport } from './routes/_authenticated/customers.index'
 import { Route as AuthenticatedSuppliersNewRouteImport } from './routes/_authenticated/suppliers.new'
 import { Route as AuthenticatedSuppliersSupplierIdRouteImport } from './routes/_authenticated/suppliers.$supplierId'
+import { Route as AuthenticatedSettingsVatRouteImport } from './routes/_authenticated/settings_.vat'
 import { Route as AuthenticatedSettingsQuotesRouteImport } from './routes/_authenticated/settings_.quotes'
 import { Route as AuthenticatedSettingsLocationsRouteImport } from './routes/_authenticated/settings_.locations'
 import { Route as AuthenticatedSettingsItemsRouteImport } from './routes/_authenticated/settings_.items'
@@ -192,6 +193,12 @@ const AuthenticatedSuppliersSupplierIdRoute =
   AuthenticatedSuppliersSupplierIdRouteImport.update({
     id: '/suppliers/$supplierId',
     path: '/suppliers/$supplierId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedSettingsVatRoute =
+  AuthenticatedSettingsVatRouteImport.update({
+    id: '/settings_/vat',
+    path: '/settings/vat',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedSettingsQuotesRoute =
@@ -421,6 +428,7 @@ export interface FileRoutesByFullPath {
   '/settings/items': typeof AuthenticatedSettingsItemsRoute
   '/settings/locations': typeof AuthenticatedSettingsLocationsRoute
   '/settings/quotes': typeof AuthenticatedSettingsQuotesRoute
+  '/settings/vat': typeof AuthenticatedSettingsVatRoute
   '/suppliers/$supplierId': typeof AuthenticatedSuppliersSupplierIdRoute
   '/suppliers/new': typeof AuthenticatedSuppliersNewRoute
   '/customers/': typeof AuthenticatedCustomersIndexRoute
@@ -477,6 +485,7 @@ export interface FileRoutesByTo {
   '/settings/items': typeof AuthenticatedSettingsItemsRoute
   '/settings/locations': typeof AuthenticatedSettingsLocationsRoute
   '/settings/quotes': typeof AuthenticatedSettingsQuotesRoute
+  '/settings/vat': typeof AuthenticatedSettingsVatRoute
   '/suppliers/$supplierId': typeof AuthenticatedSuppliersSupplierIdRoute
   '/suppliers/new': typeof AuthenticatedSuppliersNewRoute
   '/customers': typeof AuthenticatedCustomersIndexRoute
@@ -535,6 +544,7 @@ export interface FileRoutesById {
   '/_authenticated/settings_/items': typeof AuthenticatedSettingsItemsRoute
   '/_authenticated/settings_/locations': typeof AuthenticatedSettingsLocationsRoute
   '/_authenticated/settings_/quotes': typeof AuthenticatedSettingsQuotesRoute
+  '/_authenticated/settings_/vat': typeof AuthenticatedSettingsVatRoute
   '/_authenticated/suppliers/$supplierId': typeof AuthenticatedSuppliersSupplierIdRoute
   '/_authenticated/suppliers/new': typeof AuthenticatedSuppliersNewRoute
   '/_authenticated/customers/': typeof AuthenticatedCustomersIndexRoute
@@ -593,6 +603,7 @@ export interface FileRouteTypes {
     | '/settings/items'
     | '/settings/locations'
     | '/settings/quotes'
+    | '/settings/vat'
     | '/suppliers/$supplierId'
     | '/suppliers/new'
     | '/customers/'
@@ -649,6 +660,7 @@ export interface FileRouteTypes {
     | '/settings/items'
     | '/settings/locations'
     | '/settings/quotes'
+    | '/settings/vat'
     | '/suppliers/$supplierId'
     | '/suppliers/new'
     | '/customers'
@@ -706,6 +718,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings_/items'
     | '/_authenticated/settings_/locations'
     | '/_authenticated/settings_/quotes'
+    | '/_authenticated/settings_/vat'
     | '/_authenticated/suppliers/$supplierId'
     | '/_authenticated/suppliers/new'
     | '/_authenticated/customers/'
@@ -895,6 +908,13 @@ declare module '@tanstack/react-router' {
       path: '/suppliers/$supplierId'
       fullPath: '/suppliers/$supplierId'
       preLoaderRoute: typeof AuthenticatedSuppliersSupplierIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/settings_/vat': {
+      id: '/_authenticated/settings_/vat'
+      path: '/settings/vat'
+      fullPath: '/settings/vat'
+      preLoaderRoute: typeof AuthenticatedSettingsVatRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/settings_/quotes': {
@@ -1157,6 +1177,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSettingsItemsRoute: typeof AuthenticatedSettingsItemsRoute
   AuthenticatedSettingsLocationsRoute: typeof AuthenticatedSettingsLocationsRoute
   AuthenticatedSettingsQuotesRoute: typeof AuthenticatedSettingsQuotesRoute
+  AuthenticatedSettingsVatRoute: typeof AuthenticatedSettingsVatRoute
   AuthenticatedSuppliersSupplierIdRoute: typeof AuthenticatedSuppliersSupplierIdRoute
   AuthenticatedSuppliersNewRoute: typeof AuthenticatedSuppliersNewRoute
   AuthenticatedCustomersIndexRoute: typeof AuthenticatedCustomersIndexRoute
@@ -1215,6 +1236,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSettingsItemsRoute: AuthenticatedSettingsItemsRoute,
   AuthenticatedSettingsLocationsRoute: AuthenticatedSettingsLocationsRoute,
   AuthenticatedSettingsQuotesRoute: AuthenticatedSettingsQuotesRoute,
+  AuthenticatedSettingsVatRoute: AuthenticatedSettingsVatRoute,
   AuthenticatedSuppliersSupplierIdRoute: AuthenticatedSuppliersSupplierIdRoute,
   AuthenticatedSuppliersNewRoute: AuthenticatedSuppliersNewRoute,
   AuthenticatedCustomersIndexRoute: AuthenticatedCustomersIndexRoute,
