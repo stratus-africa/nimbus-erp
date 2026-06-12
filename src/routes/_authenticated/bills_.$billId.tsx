@@ -50,7 +50,7 @@ function BillDetailPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("bills")
-        .select("*, suppliers(id, name, billing_address)")
+        .select("*, suppliers(id, name, address)")
         .eq("id", billId)
         .eq("tenant_id", tenantId!)
         .maybeSingle();
@@ -142,7 +142,7 @@ function BillDetailPage() {
   const status = (bill.status ?? "draft") as string;
   const statusLabel = status.charAt(0).toUpperCase() + status.slice(1).replace("_", " ");
   const supplierName = (bill.suppliers as any)?.name ?? "—";
-  const billing = (bill.suppliers as any)?.billing_address ?? "—";
+  const billing = (bill.suppliers as any)?.address ?? "—";
   const actorName = createdByProfile?.full_name ?? createdByProfile?.email ?? "System";
   const balanceDue = Number(bill.balance_due ?? totals.grandTotal);
   const amountPaid = Number(bill.amount_paid ?? 0);
