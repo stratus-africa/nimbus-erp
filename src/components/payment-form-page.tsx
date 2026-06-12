@@ -260,7 +260,7 @@ export function PaymentFormPage({ config }: { config: PaymentsModuleConfig }) {
       const noteHeader =
         `Payment #${paymentNo}` +
         (location ? ` • Location: ${location}` : "") +
-        (depositTo ? ` • Deposit to: ${depositTo}` : "") +
+        (selectedBankAcct ? ` • ${depositLabel}: ${(selectedBankAcct as any).account_name}` : "") +
         (bankCharges ? ` • Bank charges: ${bankCharges}` : "") +
         (asDraft ? " • DRAFT" : "");
 
