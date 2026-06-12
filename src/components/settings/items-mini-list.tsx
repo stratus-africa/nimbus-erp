@@ -29,7 +29,7 @@ export function ItemsMiniList() {
     queryKey: ["items", tenantId, "mini"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("items").select("id,name,sku,is_active,archived_at,item_type")
+        .from("items").select("id,name,sku,barcode,is_active,archived_at,item_type")
         .eq("tenant_id", tenantId!)
         .is("deleted_at", null)
         .order("name");
@@ -63,7 +63,7 @@ export function ItemsMiniList() {
     return (itemsQ.data ?? []).filter((r: any) => {
       if (!showArchived && r.archived_at) return false;
       if (!term) return true;
-      return [r.name, r.sku].some((v) => v && String(v).toLowerCase().includes(term));
+      return [r.name, r.sku, r.barcode].some((v) => v && String(v).toLowerCase().includes(term));
     }).slice(0, 20);
   }, [itemsQ.data, q, showArchived]);
 
