@@ -50,7 +50,7 @@ function PurchaseOrderDetailPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("purchase_orders")
-        .select("*, suppliers(id, name, billing_address)")
+        .select("*, suppliers(id, name, address)")
         .eq("id", poId)
         .eq("tenant_id", tenantId!)
         .maybeSingle();
