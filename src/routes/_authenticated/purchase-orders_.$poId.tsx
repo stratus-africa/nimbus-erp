@@ -12,6 +12,7 @@ import {
   Sparkles, Paperclip, MessageSquare, X, CheckCircle2, Clock, UserCircle2,
   FilePlus2, Plus, Search, ChevronDown,
 } from "lucide-react";
+import { DocActionsMenu } from "@/components/doc-actions-menu";
 
 export const Route = createFileRoute("/_authenticated/purchase-orders_/$poId")({
   head: () => ({ meta: [{ title: "Purchase Order — Nimbus ERP" }] }),
@@ -323,7 +324,25 @@ function PurchaseOrderDetailPage() {
           </Button>
           <Button variant="ghost" size="sm" className="h-8 gap-1.5"><Share2 className="h-4 w-4" /> Share</Button>
           <Button variant="ghost" size="sm" className="h-8 gap-1.5"><Printer className="h-4 w-4" /> PDF/Print</Button>
-          <Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal className="h-4 w-4" /></Button>
+          <DocActionsMenu
+            docId={poId}
+            invalidateKeys={["purchase-orders", "purchase-orders-sidebar", "purchase-order-detail"]}
+            config={{
+              docTable: "purchase_orders",
+              linesTable: "purchase_order_lines",
+              fkLinesField: "po_id",
+              numberField: "po_number",
+              numberingDocType: "purchase_order",
+              dateField: "po_date",
+              sourceRefFields: [],
+              listRoute: "/purchase-orders",
+              detailRoute: "/purchase-orders/$poId",
+              detailParamKey: "poId",
+              label: "Purchase Order",
+              hasLines: true,
+              softDelete: true,
+            }}
+          />
         </div>
 
         <div className="flex-1 overflow-auto">

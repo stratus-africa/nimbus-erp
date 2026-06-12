@@ -28,6 +28,7 @@ import {
   ChevronDown,
   Wallet,
 } from "lucide-react";
+import { DocActionsMenu } from "@/components/doc-actions-menu";
 
 export const Route = createFileRoute("/_authenticated/invoices_/$invoiceId")({
   head: () => ({ meta: [{ title: "Invoice — Nimbus ERP" }] }),
@@ -379,9 +380,26 @@ function InvoiceDetailPage() {
           <Button variant="ghost" size="sm" className="h-8 gap-1.5">
             <Printer className="h-4 w-4" /> PDF/Print
           </Button>
-          <Button variant="ghost" size="icon" className="h-8 w-8">
-            <MoreHorizontal className="h-4 w-4" />
-          </Button>
+          <DocActionsMenu
+            docId={invoiceId}
+            invalidateKeys={["invoices", "invoices-sidebar", "invoice-detail"]}
+            config={{
+              docTable: "invoices",
+              linesTable: "invoice_lines",
+              fkLinesField: "invoice_id",
+              numberField: "invoice_number",
+              numberingDocType: "invoice",
+              dateField: "invoice_date",
+              sourceRefFields: ["source_quote_id", "source_sales_order_id"],
+              cloneOmitFields: ["amount_paid"],
+              listRoute: "/invoices",
+              detailRoute: "/invoices/$invoiceId",
+              detailParamKey: "invoiceId",
+              label: "Invoice",
+              hasLines: true,
+              softDelete: true,
+            }}
+          />
         </div>
 
         <div className="flex-1 overflow-auto">

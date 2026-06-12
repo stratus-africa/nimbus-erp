@@ -27,6 +27,7 @@ import {
   Search,
   ChevronDown,
 } from "lucide-react";
+import { DocActionsMenu } from "@/components/doc-actions-menu";
 
 export const Route = createFileRoute("/_authenticated/quotes_/$quoteId")({
   head: () => ({ meta: [{ title: "Quote — Nimbus ERP" }] }),
@@ -489,9 +490,25 @@ function QuoteDetailPage() {
         <Button variant="ghost" size="sm" className="h-8 gap-1.5">
           <Printer className="h-4 w-4" /> PDF/Print
         </Button>
-        <Button variant="ghost" size="icon" className="h-8 w-8">
-          <MoreHorizontal className="h-4 w-4" />
-        </Button>
+        <DocActionsMenu
+          docId={quoteId}
+          invalidateKeys={["quotes", "quotes-sidebar", "quote-detail"]}
+          config={{
+            docTable: "quotes",
+            linesTable: "quote_lines",
+            fkLinesField: "quote_id",
+            numberField: "quote_number",
+            numberingDocType: "quote",
+            dateField: "quote_date",
+            sourceRefFields: [],
+            listRoute: "/quotes",
+            detailRoute: "/quotes/$quoteId",
+            detailParamKey: "quoteId",
+            label: "Quote",
+            hasLines: true,
+            softDelete: true,
+          }}
+        />
       </div>
 
       <div className="flex-1 overflow-auto">

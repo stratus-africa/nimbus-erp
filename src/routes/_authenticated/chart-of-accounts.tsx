@@ -23,7 +23,20 @@ export const Route = createFileRoute("/_authenticated/chart-of-accounts")({
   component: CoAPage,
 });
 
-type Account = { id?: string; code: string; name: string; account_type: "asset" | "liability" | "equity" | "income" | "expense"; description?: string | null; opening_balance?: number };
+type Account = { id?: string; code: string; name: string; account_type: "asset" | "liability" | "equity" | "income" | "expense"; account_subtype?: string | null; description?: string | null; opening_balance?: number };
+
+const SUBTYPES: { type: Account["account_type"]; label: string; subtypes: string[] }[] = [
+  { type: "asset", label: "Asset", subtypes: ["Other Asset", "Other Current Asset", "Cash", "Bank", "Fixed Asset", "Accounts Receivable", "Stock", "Payment Clearing Account", "Input Tax", "Intangible Asset", "Non Current Asset", "Deferred Tax Asset"] },
+  { type: "liability", label: "Liability", subtypes: ["Other Current Liability", "Credit Card", "Non Current Liability", "Other Liability", "Accounts Payable", "Output Tax", "Deferred Tax Liability"] },
+  { type: "equity", label: "Equity", subtypes: ["Equity"] },
+  { type: "income", label: "Income", subtypes: ["Income", "Other Income"] },
+  { type: "expense", label: "Expense", subtypes: ["Expense", "Cost of Goods Sold", "Other Expense"] },
+];
+
+function findTypeForSubtype(sub: string): Account["account_type"] {
+  for (const g of SUBTYPES) if (g.subtypes.includes(sub)) return g.type;
+  return "asset";
+}
 
 const TYPE_COLORS: Record<string, string> = {
   asset: "bg-info/10 text-info",
@@ -80,7 +93,7 @@ function CoAPage() {
                 <TableRow key={a.id}>
                   <TableCell className="font-mono">{a.code}</TableCell>
                   <TableCell className="font-medium">{a.name}</TableCell>
-                  <TableCell><Badge variant="outline" className={TYPE_COLORS[a.account_type] ?? ""}>{a.account_type}</Badge></TableCell>
+                  <TableCell><Badge variant="outline" className={TYPE_COLORS[a.account_type] ?? ""}>{a.account_subtype ?? a.account_type}</Badge></TableCell>
                   <TableCell className="text-right tabular-nums">{Number(a.opening_balance ?? 0).toFixed(2)}</TableCell>
                   <TableCell className="text-right">
                     <div className="inline-flex items-center gap-1">
@@ -125,24 +138,34 @@ function AccountDialog({ open, onOpenChange, initial, onSubmit, saving }: { open
       <DialogContent className="sm:max-w-md">
         <DialogHeader><DialogTitle>{a.id ? "Edit account" : "New account"}</DialogTitle></DialogHeader>
         <div className="grid gap-4">
+          <div className="space-y-2">
+            <Label>Account Type *</Label>
+            <Select
+              value={a.account_subtype ?? ""}
+              onValueChange={(v: string) => setA({ ...a, account_subtype: v, account_type: findTypeForSubtype(v) })}
+            >
+              <SelectTrigger><SelectValue placeholder="Select account type" /></SelectTrigger>
+              <SelectContent className="max-h-80">
+                {SUBTYPES.map((g) => (
+                  <div key={g.type}>
+                    <div className="px-2 py-1 text-xs font-semibold text-muted-foreground">{g.label}</div>
+                    {g.subtypes.map((s) => (
+                      <SelectItem key={s} value={s}>{s}</SelectItem>
+                    ))}
+                  </div>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2"><Label>Code *</Label><Input value={a.code} onChange={(e) => setA({ ...a, code: e.target.value })} /></div>
-            <div className="space-y-2">
-              <Label>Type</Label>
-              <Select value={a.account_type} onValueChange={(v: any) => setA({ ...a, account_type: v })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {["asset", "liability", "equity", "income", "expense"].map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
+            <div className="space-y-2"><Label>Code</Label><Input value={a.code} onChange={(e) => setA({ ...a, code: e.target.value })} /></div>
+            <div className="space-y-2"><Label>Opening balance</Label><Input type="number" step="0.01" value={a.opening_balance ?? 0} onChange={(e) => setA({ ...a, opening_balance: parseFloat(e.target.value) || 0 })} /></div>
           </div>
           <div className="space-y-2"><Label>Name *</Label><Input value={a.name} onChange={(e) => setA({ ...a, name: e.target.value })} /></div>
-          <div className="space-y-2"><Label>Opening balance</Label><Input type="number" step="0.01" value={a.opening_balance ?? 0} onChange={(e) => setA({ ...a, opening_balance: parseFloat(e.target.value) || 0 })} /></div>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button disabled={!a.code || !a.name || saving} onClick={() => onSubmit(a)}>{saving ? "Saving…" : "Save"}</Button>
+          <Button disabled={!a.name || !a.account_subtype || saving} onClick={() => onSubmit(a)}>{saving ? "Saving…" : "Save"}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
