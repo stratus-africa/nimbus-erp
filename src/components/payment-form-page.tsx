@@ -55,7 +55,7 @@ export function PaymentFormPage({ config }: { config: PaymentsModuleConfig }) {
   const [date, setDate] = useState<string>(new Date().toISOString().slice(0, 10));
   const [paymentNo, setPaymentNo] = useState<string>("");
   const [method, setMethod] = useState<string>("Cash");
-  const [depositTo, setDepositTo] = useState<string>("MPESA");
+  const [depositTo, setDepositTo] = useState<string>(""); // bank_accounts.id
   const [reference, setReference] = useState("");
   const [allocations, setAllocations] = useState<Record<string, string>>({});
   const [prefilledDocId, setPrefilledDocId] = useState<string | undefined>(search.docId);
