@@ -517,7 +517,18 @@ function CustomerDetailsPage() {
                     </div>
                     <div className="grid grid-cols-2 gap-4 text-sm">
                       <KV label="Outstanding receivables" value={formatCurrency(totalOpen, currency)} />
-                      <KV label="Unused credits" value={formatCurrency(totalCredit, currency)} />
+                      <KV
+                        label="Unused credits"
+                        value={
+                          <Link
+                            to="/payments-received"
+                            search={{ unallocated: true, partyId: customerId }}
+                            className="text-primary hover:underline"
+                          >
+                            {formatCurrency(totalCredit, currency)}
+                          </Link>
+                        }
+                      />
                       <KV label="Total income" value={formatCurrency(totalIncome, currency)} />
                       <KV label="Open invoices" value={`${openInvoices.length}`} />
                     </div>
