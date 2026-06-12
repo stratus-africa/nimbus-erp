@@ -105,6 +105,7 @@ function Dashboard() {
   const { data: profile } = useProfile();
   const currency = profile?.currentTenant?.base_currency ?? "USD";
   const tenantId = profile?.currentTenant?.id;
+  const fyStartMonth = (profile?.currentTenant as any)?.fiscal_year_start ?? 1;
   const search = Route.useSearch();
   const { from, to } = useMemo(() => resolveRange(search), [search]);
 
