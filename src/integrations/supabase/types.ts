@@ -2046,26 +2046,35 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          is_active: boolean
           is_default: boolean
           name: string
           rate: number
+          tax_type: string
           tenant_id: string
+          updated_at: string
         }
         Insert: {
           created_at?: string
           id?: string
+          is_active?: boolean
           is_default?: boolean
           name: string
           rate?: number
+          tax_type?: string
           tenant_id: string
+          updated_at?: string
         }
         Update: {
           created_at?: string
           id?: string
+          is_active?: boolean
           is_default?: boolean
           name?: string
           rate?: number
+          tax_type?: string
           tenant_id?: string
+          updated_at?: string
         }
         Relationships: [
           {
@@ -2278,6 +2287,57 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "validation_rules_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vat_rules: {
+        Row: {
+          created_at: string
+          id: string
+          is_default: boolean
+          is_system: boolean
+          name: string
+          tax_rate_id: string | null
+          tenant_id: string
+          transaction_type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_default?: boolean
+          is_system?: boolean
+          name: string
+          tax_rate_id?: string | null
+          tenant_id: string
+          transaction_type: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_default?: boolean
+          is_system?: boolean
+          name?: string
+          tax_rate_id?: string | null
+          tenant_id?: string
+          transaction_type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vat_rules_tax_rate_id_fkey"
+            columns: ["tax_rate_id"]
+            isOneToOne: false
+            referencedRelation: "tax_rates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vat_rules_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
