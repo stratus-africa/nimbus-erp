@@ -262,7 +262,7 @@ function BankingPage() {
                 <div className="text-right text-sm tabular-nums">
                   {formatMoney(Number(a.current_balance || 0), a.currency)}
                 </div>
-                <div className="text-right">
+                <div className="text-right" onClick={(e) => e.stopPropagation()}>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="icon" className="h-8 w-8">
