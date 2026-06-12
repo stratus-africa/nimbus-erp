@@ -593,6 +593,61 @@ export type Database = {
           },
         ]
       }
+      composite_explosions: {
+        Row: {
+          component_item_id: string
+          created_at: string
+          doc_id: string
+          doc_type: string
+          id: string
+          parent_item_id: string
+          quantity: number
+          tenant_id: string
+        }
+        Insert: {
+          component_item_id: string
+          created_at?: string
+          doc_id: string
+          doc_type: string
+          id?: string
+          parent_item_id: string
+          quantity: number
+          tenant_id: string
+        }
+        Update: {
+          component_item_id?: string
+          created_at?: string
+          doc_id?: string
+          doc_type?: string
+          id?: string
+          parent_item_id?: string
+          quantity?: number
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "composite_explosions_component_item_id_fkey"
+            columns: ["component_item_id"]
+            isOneToOne: false
+            referencedRelation: "items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "composite_explosions_parent_item_id_fkey"
+            columns: ["parent_item_id"]
+            isOneToOne: false
+            referencedRelation: "items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "composite_explosions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       composite_item_components: {
         Row: {
           component_item_id: string
@@ -2565,6 +2620,20 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      apply_composite_explosion: {
+        Args: {
+          _doc_id: string
+          _doc_type: string
+          _lines: Json
+          _tenant: string
+        }
+        Returns: undefined
+      }
+      clear_composite_explosion: {
+        Args: { _doc_id: string; _doc_type: string; _tenant: string }
+        Returns: undefined
+      }
+      complete_assembly_order: { Args: { _id: string }; Returns: undefined }
       current_tenant: { Args: never; Returns: string }
       has_role: {
         Args: {
