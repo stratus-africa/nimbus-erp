@@ -620,15 +620,26 @@ export function PaymentFormPage({ config }: { config: PaymentsModuleConfig }) {
               </SelectContent>
             </Select>
 
-            <Label className="text-rose-600">Deposit To*</Label>
+            <Label className="text-rose-600">{depositLabel}*</Label>
             <Select value={depositTo} onValueChange={setDepositTo}>
               <SelectTrigger className="max-w-md">
-                <SelectValue />
+                <SelectValue placeholder={`Select ${depositLabel.toLowerCase()} account`} />
               </SelectTrigger>
               <SelectContent>
-                {DEPOSIT_ACCOUNTS.map((a) => (
-                  <SelectItem key={a} value={a}>{a}</SelectItem>
-                ))}
+                {bankAccounts.length === 0 ? (
+                  <div className="px-3 py-2 text-xs text-muted-foreground">
+                    No Bank/Cash accounts. Add one in Chart of Accounts.
+                  </div>
+                ) : (
+                  bankAccounts.map((a: any) => (
+                    <SelectItem key={a.id} value={a.id}>
+                      {a.account_name}
+                      <span className="text-xs text-muted-foreground ml-2">
+                        ({a.account_type === "cash" ? "Cash" : "Bank"})
+                      </span>
+                    </SelectItem>
+                  ))
+                )}
               </SelectContent>
             </Select>
 
