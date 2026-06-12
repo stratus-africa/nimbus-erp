@@ -14,6 +14,7 @@ function PurchaseOrdersPage() {
       numberLabel="PO Number"
       config={purchaseOrderConfig}
       onNew={() => navigate({ to: "/purchase-orders/new" })}
+      onRowClick={(r) => navigate({ to: "/purchase-orders/$poId", params: { poId: r.id } })}
     />
   );
 }
