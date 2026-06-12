@@ -122,7 +122,7 @@ export function QuoteFormPage({
 
   // Preview the next quote number (display-only; real number is fetched on save)
   const { data: previewNumber } = useQuery({
-    enabled: !!tenantId,
+    enabled: !!tenantId && !isEdit,
     queryKey: ["preview-quote-number", tenantId],
     queryFn: async () => {
       const { data } = await supabase
