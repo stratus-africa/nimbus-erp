@@ -411,9 +411,9 @@ function QuoteDetailPage() {
         <Button
           variant="ghost"
           size="sm"
-          className="h-8 gap-1.5"
-          disabled
-          title="Sales Orders module not yet enabled"
+          className="h-8 gap-1.5 text-emerald-700 hover:bg-emerald-50 hover:text-emerald-800"
+          disabled={!canConvert || convertToSalesOrder.isPending}
+          onClick={() => convertToSalesOrder.mutate()}
         >
           <FilePlus2 className="h-4 w-4" /> Convert to Sales Order
         </Button>
