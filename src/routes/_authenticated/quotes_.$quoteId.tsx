@@ -382,7 +382,12 @@ function QuoteDetailPage() {
 
       {/* Action bar */}
       <div className="flex flex-wrap items-center gap-1 border-b bg-muted/30 px-6 py-2">
-        <Button variant="ghost" size="sm" className="h-8 gap-1.5">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-8 gap-1.5"
+          onClick={() => navigate({ to: "/quotes/$quoteId/edit", params: { quoteId } })}
+        >
           <Edit className="h-4 w-4" /> Edit
         </Button>
         <Button
