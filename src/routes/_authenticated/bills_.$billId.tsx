@@ -50,7 +50,7 @@ function BillDetailPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("bills")
-        .select("*, suppliers(id, name, billing_address)")
+        .select("*, suppliers(id, name, address)")
         .eq("id", billId)
         .eq("tenant_id", tenantId!)
         .maybeSingle();
