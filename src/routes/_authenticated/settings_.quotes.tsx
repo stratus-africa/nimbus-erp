@@ -28,7 +28,7 @@ const searchSchema = z.object({
 
 const ALLOWED_ROLES = ["super_admin", "company_admin"] as const;
 
-export const Route = createFileRoute("/_authenticated/settings/quotes")({
+export const Route = createFileRoute("/_authenticated/settings_/quotes")({
   head: () => ({ meta: [{ title: "Quotes Settings — Nimbus ERP" }] }),
   validateSearch: (s) => searchSchema.parse(s),
   component: QuotesSettingsPage,
