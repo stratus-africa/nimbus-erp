@@ -61,10 +61,14 @@ export function useSidebarPrefs(userId: string | null | undefined) {
     [persist],
   );
 
+  // Accordion behavior: only one group can be open at a time.
   const setGroupOpen = useCallback(
     (label: string, open: boolean) => {
       setPrefs((p) => {
-        const next = { ...p, groups: { ...p.groups, [label]: open } };
+        const next = {
+          ...p,
+          groups: open ? { [label]: true } : { ...p.groups, [label]: false },
+        };
         persist(next);
         return next;
       });

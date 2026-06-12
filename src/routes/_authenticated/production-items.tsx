@@ -67,9 +67,15 @@ function CompositeItemsPage() {
           <Boxes className="h-5 w-5 text-muted-foreground" />
           <h1 className="text-xl font-semibold">Production Items</h1>
         </div>
-        <Button onClick={() => navigate({ to: "/production-items/new" })} className="h-9 gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white">
-          <Plus className="h-4 w-4" /> New Production Item
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" asChild className="h-9">
+            <Link to="/reports/production-items">View Report</Link>
+          </Button>
+          <Button onClick={() => navigate({ to: "/production-items/new" })} className="h-9 gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white">
+            <Plus className="h-4 w-4" /> New Production Item
+          </Button>
+        </div>
+
       </div>
 
       <div className="border-t bg-card">

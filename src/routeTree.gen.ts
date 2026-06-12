@@ -43,6 +43,7 @@ import { Route as AuthenticatedSettingsItemsRouteImport } from './routes/_authen
 import { Route as AuthenticatedSettingsCustomersVendorsRouteImport } from './routes/_authenticated/settings_.customers-vendors'
 import { Route as AuthenticatedSalesOrdersNewRouteImport } from './routes/_authenticated/sales-orders_.new'
 import { Route as AuthenticatedSalesOrdersSoIdRouteImport } from './routes/_authenticated/sales-orders_.$soId'
+import { Route as AuthenticatedReportsProductionItemsRouteImport } from './routes/_authenticated/reports_.production-items'
 import { Route as AuthenticatedQuotesNewRouteImport } from './routes/_authenticated/quotes_.new'
 import { Route as AuthenticatedQuotesQuoteIdRouteImport } from './routes/_authenticated/quotes_.$quoteId'
 import { Route as AuthenticatedPurchaseOrdersNewRouteImport } from './routes/_authenticated/purchase-orders_.new'
@@ -262,6 +263,12 @@ const AuthenticatedSalesOrdersSoIdRoute =
     path: '/sales-orders/$soId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedReportsProductionItemsRoute =
+  AuthenticatedReportsProductionItemsRouteImport.update({
+    id: '/reports_/production-items',
+    path: '/reports/production-items',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedQuotesNewRoute = AuthenticatedQuotesNewRouteImport.update({
   id: '/quotes_/new',
   path: '/quotes/new',
@@ -477,6 +484,7 @@ export interface FileRoutesByFullPath {
   '/purchase-orders/new': typeof AuthenticatedPurchaseOrdersNewRoute
   '/quotes/$quoteId': typeof AuthenticatedQuotesQuoteIdRoute
   '/quotes/new': typeof AuthenticatedQuotesNewRoute
+  '/reports/production-items': typeof AuthenticatedReportsProductionItemsRoute
   '/sales-orders/$soId': typeof AuthenticatedSalesOrdersSoIdRoute
   '/sales-orders/new': typeof AuthenticatedSalesOrdersNewRoute
   '/settings/customers-vendors': typeof AuthenticatedSettingsCustomersVendorsRoute
@@ -541,6 +549,7 @@ export interface FileRoutesByTo {
   '/purchase-orders/new': typeof AuthenticatedPurchaseOrdersNewRoute
   '/quotes/$quoteId': typeof AuthenticatedQuotesQuoteIdRoute
   '/quotes/new': typeof AuthenticatedQuotesNewRoute
+  '/reports/production-items': typeof AuthenticatedReportsProductionItemsRoute
   '/sales-orders/$soId': typeof AuthenticatedSalesOrdersSoIdRoute
   '/sales-orders/new': typeof AuthenticatedSalesOrdersNewRoute
   '/settings/customers-vendors': typeof AuthenticatedSettingsCustomersVendorsRoute
@@ -607,6 +616,7 @@ export interface FileRoutesById {
   '/_authenticated/purchase-orders_/new': typeof AuthenticatedPurchaseOrdersNewRoute
   '/_authenticated/quotes_/$quoteId': typeof AuthenticatedQuotesQuoteIdRoute
   '/_authenticated/quotes_/new': typeof AuthenticatedQuotesNewRoute
+  '/_authenticated/reports_/production-items': typeof AuthenticatedReportsProductionItemsRoute
   '/_authenticated/sales-orders_/$soId': typeof AuthenticatedSalesOrdersSoIdRoute
   '/_authenticated/sales-orders_/new': typeof AuthenticatedSalesOrdersNewRoute
   '/_authenticated/settings_/customers-vendors': typeof AuthenticatedSettingsCustomersVendorsRoute
@@ -673,6 +683,7 @@ export interface FileRouteTypes {
     | '/purchase-orders/new'
     | '/quotes/$quoteId'
     | '/quotes/new'
+    | '/reports/production-items'
     | '/sales-orders/$soId'
     | '/sales-orders/new'
     | '/settings/customers-vendors'
@@ -737,6 +748,7 @@ export interface FileRouteTypes {
     | '/purchase-orders/new'
     | '/quotes/$quoteId'
     | '/quotes/new'
+    | '/reports/production-items'
     | '/sales-orders/$soId'
     | '/sales-orders/new'
     | '/settings/customers-vendors'
@@ -802,6 +814,7 @@ export interface FileRouteTypes {
     | '/_authenticated/purchase-orders_/new'
     | '/_authenticated/quotes_/$quoteId'
     | '/_authenticated/quotes_/new'
+    | '/_authenticated/reports_/production-items'
     | '/_authenticated/sales-orders_/$soId'
     | '/_authenticated/sales-orders_/new'
     | '/_authenticated/settings_/customers-vendors'
@@ -1071,6 +1084,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSalesOrdersSoIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/reports_/production-items': {
+      id: '/_authenticated/reports_/production-items'
+      path: '/reports/production-items'
+      fullPath: '/reports/production-items'
+      preLoaderRoute: typeof AuthenticatedReportsProductionItemsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/quotes_/new': {
       id: '/_authenticated/quotes_/new'
       path: '/quotes/new'
@@ -1317,6 +1337,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedPurchaseOrdersNewRoute: typeof AuthenticatedPurchaseOrdersNewRoute
   AuthenticatedQuotesQuoteIdRoute: typeof AuthenticatedQuotesQuoteIdRoute
   AuthenticatedQuotesNewRoute: typeof AuthenticatedQuotesNewRoute
+  AuthenticatedReportsProductionItemsRoute: typeof AuthenticatedReportsProductionItemsRoute
   AuthenticatedSalesOrdersSoIdRoute: typeof AuthenticatedSalesOrdersSoIdRoute
   AuthenticatedSalesOrdersNewRoute: typeof AuthenticatedSalesOrdersNewRoute
   AuthenticatedSettingsCustomersVendorsRoute: typeof AuthenticatedSettingsCustomersVendorsRoute
@@ -1382,6 +1403,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedPurchaseOrdersNewRoute: AuthenticatedPurchaseOrdersNewRoute,
   AuthenticatedQuotesQuoteIdRoute: AuthenticatedQuotesQuoteIdRoute,
   AuthenticatedQuotesNewRoute: AuthenticatedQuotesNewRoute,
+  AuthenticatedReportsProductionItemsRoute:
+    AuthenticatedReportsProductionItemsRoute,
   AuthenticatedSalesOrdersSoIdRoute: AuthenticatedSalesOrdersSoIdRoute,
   AuthenticatedSalesOrdersNewRoute: AuthenticatedSalesOrdersNewRoute,
   AuthenticatedSettingsCustomersVendorsRoute:
@@ -1422,13 +1445,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
