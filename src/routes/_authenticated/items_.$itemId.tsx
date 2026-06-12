@@ -409,23 +409,38 @@ function ItemViewPage() {
 
         {/* WAREHOUSES */}
         <TabsContent value="warehouses" className="flex-1 m-0 p-6 overflow-auto">
-          <div className="rounded-md border">
-            <div className="grid grid-cols-[1fr_140px_140px_140px] gap-4 border-b bg-muted/40 px-4 py-2.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-              <span>Warehouse</span>
-              <span className="text-right">Stock on Hand</span>
-              <span className="text-right">Committed</span>
-              <span className="text-right">Available</span>
-            </div>
-            <div className="grid grid-cols-[1fr_140px_140px_140px] gap-4 px-4 py-3 text-sm">
-              <span className="font-medium">Primary Warehouse <Badge variant="secondary" className="ml-2">Default</Badge></span>
-              <span className="text-right tabular-nums">{stock.toFixed(2)}</span>
-              <span className="text-right tabular-nums">0.00</span>
-              <span className="text-right tabular-nums">{stock.toFixed(2)}</span>
-            </div>
-          </div>
-          <p className="mt-3 text-xs text-muted-foreground">
-            Multi-warehouse tracking is not enabled. Stock is consolidated in the default warehouse.
-          </p>
+          {warehouses.length === 0 ? (
+            <EmptyState icon={Package} title="No warehouses configured" description="Add a location under Settings → Locations to track stock per warehouse." />
+          ) : (
+            <>
+              <div className="rounded-md border">
+                <div className="grid grid-cols-[1.4fr_140px_140px_140px] gap-4 border-b bg-muted/40 px-4 py-2.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                  <span>Warehouse</span>
+                  <span className="text-right">Stock on Hand</span>
+                  <span className="text-right">Committed</span>
+                  <span className="text-right">Available</span>
+                </div>
+                {warehouses.map((w: any) => {
+                  const onHand = w.is_primary ? stock : 0;
+                  return (
+                    <div key={w.id} className="grid grid-cols-[1.4fr_140px_140px_140px] gap-4 border-b px-4 py-3 text-sm last:border-b-0">
+                      <span className="font-medium">
+                        {w.name}
+                        {w.is_primary && <Badge variant="secondary" className="ml-2">Default</Badge>}
+                        {w.branch && <span className="ml-2 text-xs text-muted-foreground">· {w.branch}</span>}
+                      </span>
+                      <span className="text-right tabular-nums">{onHand.toFixed(2)}</span>
+                      <span className="text-right tabular-nums">0.00</span>
+                      <span className="text-right tabular-nums">{onHand.toFixed(2)}</span>
+                    </div>
+                  );
+                })}
+              </div>
+              <p className="mt-3 text-xs text-muted-foreground">
+                Stock currently sits in the default warehouse. Enable per-warehouse tracking to split quantities across locations.
+              </p>
+            </>
+          )}
         </TabsContent>
 
         {/* BATCHES */}
