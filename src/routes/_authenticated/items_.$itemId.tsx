@@ -47,6 +47,22 @@ function ItemViewPage() {
     },
   });
 
+  const { data: warehouses = [] } = useQuery({
+    enabled: !!tenantId,
+    queryKey: ["item-warehouses", tenantId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("locations" as any)
+        .select("id, name, branch, city, is_primary, is_active")
+        .eq("tenant_id", tenantId!)
+        .eq("is_active", true)
+        .order("is_primary", { ascending: false })
+        .order("name", { ascending: true });
+      if (error) throw error;
+      return (data as any[]) ?? [];
+    },
+  });
+
   const filteredSidebar = (allItems ?? []).filter((it: any) => {
     const q = sidebarSearch.trim().toLowerCase();
     if (!q) return true;
