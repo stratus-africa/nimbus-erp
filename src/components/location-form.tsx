@@ -80,23 +80,38 @@ export function LocationForm({ locationId }: { locationId?: string }) {
       if (!form.name.trim()) throw new Error("Name is required");
       if (!form.country.trim()) throw new Error("Country is required");
       if (!tenantId) throw new Error("No tenant");
+      const { is_primary, ...rest } = form;
       const payload = {
-        ...form,
+        ...rest,
         tenant_id: tenantId,
         name: form.name.trim(),
       };
       if (isEdit) {
-        const { error } = await supabase.from("locations" as any).update(payload).eq("id", locationId!);
+        if (is_primary) {
+          await supabase.from("locations" as any)
+            .update({ is_primary: false })
+            .eq("tenant_id", tenantId)
+            .neq("id", locationId!);
+        }
+        const { error } = await supabase
+          .from("locations" as any)
+          .update({ ...payload, is_primary })
+          .eq("id", locationId!);
         if (error) throw error;
       } else {
-        // mark first ever location as primary
         const { count } = await supabase
           .from("locations" as any)
           .select("id", { count: "exact", head: true })
           .eq("tenant_id", tenantId);
+        const shouldBePrimary = is_primary || !count || count === 0;
+        if (shouldBePrimary && count && count > 0) {
+          await supabase.from("locations" as any)
+            .update({ is_primary: false })
+            .eq("tenant_id", tenantId);
+        }
         const { error } = await supabase.from("locations" as any).insert({
           ...payload,
-          is_primary: !count || count === 0,
+          is_primary: shouldBePrimary,
         });
         if (error) throw error;
       }
