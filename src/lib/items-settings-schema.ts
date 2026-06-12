@@ -37,7 +37,7 @@ export const itemsSettingsSchema = z
     preventNegativeStock: z.boolean().default(true),
     stockLevel: z.enum(["branch", "warehouse"]).default("branch"),
     outOfStockWarn: z.boolean().default(true),
-    reorderNotify: z.boolean().default(true),
+    reorderNotify: z.boolean().default(false),
     notifyEmail: z.string().email().or(z.literal("")).default(""),
     trackLandedCost: z.boolean().default(true),
     replenishments: z.boolean().default(false),
