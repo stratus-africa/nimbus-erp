@@ -425,6 +425,25 @@ export function PaymentFormPage({ config }: { config: PaymentsModuleConfig }) {
 
         // Record a bank transaction (deposit for received, withdrawal for made)
         // and update the bank account's running balance.
+        // Invariant guards — refuse to write a mismatched/unbalanced row.
+        if (!["cash", "bank"].includes((selectedBankAcct as any).account_type)) {
+          throw new Error(`${depositLabel} must be a Bank or Cash account`);
+        }
+        const depositAmt = isReceived ? amountReceived : 0;
+        const withdrawalAmt = isReceived ? 0 : amountReceived;
+        if (depositAmt < 0 || withdrawalAmt < 0) {
+          throw new Error("Amounts cannot be negative");
+        }
+        if (depositAmt > 0 && withdrawalAmt > 0) {
+          throw new Error("A bank transaction cannot be both a deposit and a withdrawal");
+        }
+        // Sanity check: journal must balance
+        const totalDr = lines.reduce((s, l) => s + Number(l.debit || 0), 0);
+        const totalCr = lines.reduce((s, l) => s + Number(l.credit || 0), 0);
+        if (Math.abs(totalDr - totalCr) > 0.001) {
+          throw new Error(`Ledger out of balance (Dr ${totalDr.toFixed(2)} ≠ Cr ${totalCr.toFixed(2)})`);
+        }
+
         const bankTxnPayload: any = {
           tenant_id: tenantId,
           bank_account_id: (selectedBankAcct as any).id,
@@ -435,8 +454,10 @@ export function PaymentFormPage({ config }: { config: PaymentsModuleConfig }) {
           status: "posted",
           branch: location || null,
           from_account_id: depositAcct,
-          deposit: isReceived ? amountReceived : 0,
-          withdrawal: isReceived ? 0 : amountReceived,
+          deposit: depositAmt,
+          withdrawal: withdrawalAmt,
+          source_type: config.table,
+          source_id: paymentIds[0] ?? null,
           created_by: uid ?? null,
         };
         const { error: btErr } = await supabase
