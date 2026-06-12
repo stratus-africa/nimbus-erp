@@ -296,8 +296,10 @@ function ItemsPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      <ItemsCsvImportDialog open={importOpen} onOpenChange={setImportOpen} />
     </div>
   );
 }
+
 
 
