@@ -30,7 +30,7 @@ const SECTIONS: Section[] = [
       [{
         title: "Organization", icon: Building2, tone: "emerald",
         items: [
-          { label: "Profile" },
+          { label: "Profile", to: "/settings/profile" },
           { label: "Branding" },
           { label: "Custom Domain" },
           { label: "Locations", to: "/settings/locations" },

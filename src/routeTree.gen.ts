@@ -37,6 +37,7 @@ import { Route as AuthenticatedSuppliersNewRouteImport } from './routes/_authent
 import { Route as AuthenticatedSuppliersSupplierIdRouteImport } from './routes/_authenticated/suppliers.$supplierId'
 import { Route as AuthenticatedSettingsVatRouteImport } from './routes/_authenticated/settings_.vat'
 import { Route as AuthenticatedSettingsQuotesRouteImport } from './routes/_authenticated/settings_.quotes'
+import { Route as AuthenticatedSettingsProfileRouteImport } from './routes/_authenticated/settings_.profile'
 import { Route as AuthenticatedSettingsLocationsRouteImport } from './routes/_authenticated/settings_.locations'
 import { Route as AuthenticatedSettingsItemsRouteImport } from './routes/_authenticated/settings_.items'
 import { Route as AuthenticatedSettingsCustomersVendorsRouteImport } from './routes/_authenticated/settings_.customers-vendors'
@@ -223,6 +224,12 @@ const AuthenticatedSettingsQuotesRoute =
   AuthenticatedSettingsQuotesRouteImport.update({
     id: '/settings_/quotes',
     path: '/settings/quotes',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedSettingsProfileRoute =
+  AuthenticatedSettingsProfileRouteImport.update({
+    id: '/settings_/profile',
+    path: '/settings/profile',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedSettingsLocationsRoute =
@@ -475,6 +482,7 @@ export interface FileRoutesByFullPath {
   '/settings/customers-vendors': typeof AuthenticatedSettingsCustomersVendorsRoute
   '/settings/items': typeof AuthenticatedSettingsItemsRoute
   '/settings/locations': typeof AuthenticatedSettingsLocationsRoute
+  '/settings/profile': typeof AuthenticatedSettingsProfileRoute
   '/settings/quotes': typeof AuthenticatedSettingsQuotesRoute
   '/settings/vat': typeof AuthenticatedSettingsVatRoute
   '/suppliers/$supplierId': typeof AuthenticatedSuppliersSupplierIdRoute
@@ -538,6 +546,7 @@ export interface FileRoutesByTo {
   '/settings/customers-vendors': typeof AuthenticatedSettingsCustomersVendorsRoute
   '/settings/items': typeof AuthenticatedSettingsItemsRoute
   '/settings/locations': typeof AuthenticatedSettingsLocationsRoute
+  '/settings/profile': typeof AuthenticatedSettingsProfileRoute
   '/settings/quotes': typeof AuthenticatedSettingsQuotesRoute
   '/settings/vat': typeof AuthenticatedSettingsVatRoute
   '/suppliers/$supplierId': typeof AuthenticatedSuppliersSupplierIdRoute
@@ -603,6 +612,7 @@ export interface FileRoutesById {
   '/_authenticated/settings_/customers-vendors': typeof AuthenticatedSettingsCustomersVendorsRoute
   '/_authenticated/settings_/items': typeof AuthenticatedSettingsItemsRoute
   '/_authenticated/settings_/locations': typeof AuthenticatedSettingsLocationsRoute
+  '/_authenticated/settings_/profile': typeof AuthenticatedSettingsProfileRoute
   '/_authenticated/settings_/quotes': typeof AuthenticatedSettingsQuotesRoute
   '/_authenticated/settings_/vat': typeof AuthenticatedSettingsVatRoute
   '/_authenticated/suppliers/$supplierId': typeof AuthenticatedSuppliersSupplierIdRoute
@@ -668,6 +678,7 @@ export interface FileRouteTypes {
     | '/settings/customers-vendors'
     | '/settings/items'
     | '/settings/locations'
+    | '/settings/profile'
     | '/settings/quotes'
     | '/settings/vat'
     | '/suppliers/$supplierId'
@@ -731,6 +742,7 @@ export interface FileRouteTypes {
     | '/settings/customers-vendors'
     | '/settings/items'
     | '/settings/locations'
+    | '/settings/profile'
     | '/settings/quotes'
     | '/settings/vat'
     | '/suppliers/$supplierId'
@@ -795,6 +807,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings_/customers-vendors'
     | '/_authenticated/settings_/items'
     | '/_authenticated/settings_/locations'
+    | '/_authenticated/settings_/profile'
     | '/_authenticated/settings_/quotes'
     | '/_authenticated/settings_/vat'
     | '/_authenticated/suppliers/$supplierId'
@@ -1014,6 +1027,13 @@ declare module '@tanstack/react-router' {
       path: '/settings/quotes'
       fullPath: '/settings/quotes'
       preLoaderRoute: typeof AuthenticatedSettingsQuotesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/settings_/profile': {
+      id: '/_authenticated/settings_/profile'
+      path: '/settings/profile'
+      fullPath: '/settings/profile'
+      preLoaderRoute: typeof AuthenticatedSettingsProfileRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/settings_/locations': {
@@ -1302,6 +1322,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSettingsCustomersVendorsRoute: typeof AuthenticatedSettingsCustomersVendorsRoute
   AuthenticatedSettingsItemsRoute: typeof AuthenticatedSettingsItemsRoute
   AuthenticatedSettingsLocationsRoute: typeof AuthenticatedSettingsLocationsRoute
+  AuthenticatedSettingsProfileRoute: typeof AuthenticatedSettingsProfileRoute
   AuthenticatedSettingsQuotesRoute: typeof AuthenticatedSettingsQuotesRoute
   AuthenticatedSettingsVatRoute: typeof AuthenticatedSettingsVatRoute
   AuthenticatedSuppliersSupplierIdRoute: typeof AuthenticatedSuppliersSupplierIdRoute
@@ -1367,6 +1388,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
     AuthenticatedSettingsCustomersVendorsRoute,
   AuthenticatedSettingsItemsRoute: AuthenticatedSettingsItemsRoute,
   AuthenticatedSettingsLocationsRoute: AuthenticatedSettingsLocationsRoute,
+  AuthenticatedSettingsProfileRoute: AuthenticatedSettingsProfileRoute,
   AuthenticatedSettingsQuotesRoute: AuthenticatedSettingsQuotesRoute,
   AuthenticatedSettingsVatRoute: AuthenticatedSettingsVatRoute,
   AuthenticatedSuppliersSupplierIdRoute: AuthenticatedSuppliersSupplierIdRoute,
