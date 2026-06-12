@@ -65,6 +65,7 @@ function BankingPage() {
   const tenantId = profile?.currentTenant?.id;
   const baseCurrency = profile?.currentTenant?.base_currency ?? "KES";
   const qc = useQueryClient();
+  const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
 
