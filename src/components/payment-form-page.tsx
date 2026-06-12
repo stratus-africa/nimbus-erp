@@ -61,6 +61,31 @@ export function PaymentFormPage({ config }: { config: PaymentsModuleConfig }) {
   const [prefilledDocId, setPrefilledDocId] = useState<string | undefined>(search.docId);
   const [excessConfirm, setExcessConfirm] = useState<null | { asDraft: boolean }>(null);
 
+  // Cash/Bank accounts from the Banking module (synced with Chart of Accounts)
+  const { data: bankAccounts = [] } = useQuery({
+    enabled: !!tenantId,
+    queryKey: ["bank_accounts_for_payment", tenantId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("bank_accounts" as any)
+        .select("id, account_name, account_type, currency, coa_account_id, current_balance, is_active")
+        .eq("tenant_id", tenantId!)
+        .eq("is_active", true)
+        .in("account_type", ["cash", "bank"])
+        .order("account_name");
+      if (error) throw error;
+      return (data as any[]) ?? [];
+    },
+  });
+  useEffect(() => {
+    if (!depositTo && bankAccounts.length > 0) setDepositTo(bankAccounts[0].id);
+  }, [bankAccounts, depositTo]);
+  const selectedBankAcct = useMemo(
+    () => bankAccounts.find((b: any) => b.id === depositTo),
+    [bankAccounts, depositTo],
+  );
+  const depositLabel = isReceived ? "Deposit To" : "Paid Through";
+
   // Draft payment number
   const { data: nextNumber } = useQuery({
     enabled: !!tenantId,
