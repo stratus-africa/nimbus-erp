@@ -153,28 +153,71 @@ function AppSidebar() {
           </div>
           {!collapsed && <span>Nimbus</span>}
         </div>
-        {NAV_GROUPS.map((g) => (
-          <SidebarGroup key={g.label}>
-            {!collapsed && <SidebarGroupLabel>{g.label}</SidebarGroupLabel>}
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {g.items.map((item) => {
-                  const active = pathname === item.url || pathname.startsWith(item.url + "/");
+        <SidebarGroup>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {NAV_GROUPS.map((g) => {
+                const Icon = g.icon;
+                if (!g.items) {
+                  const active = pathname === g.url || (g.url ? pathname.startsWith(g.url + "/") : false);
                   return (
-                    <SidebarMenuItem key={item.url}>
-                      <SidebarMenuButton asChild isActive={active}>
-                        <Link to={item.url} className="flex items-center gap-2">
-                          <item.icon className="h-4 w-4" />
-                          {!collapsed && <span>{item.title}</span>}
+                    <SidebarMenuItem key={g.label}>
+                      <SidebarMenuButton asChild isActive={active} tooltip={g.label}>
+                        <Link to={g.url!} className="flex items-center gap-2">
+                          <Icon className="h-4 w-4" />
+                          {!collapsed && <span>{g.label}</span>}
                         </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                   );
-                })}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        ))}
+                }
+                const groupActive = g.items.some(
+                  (i) => pathname === i.url || pathname.startsWith(i.url + "/"),
+                );
+                return (
+                  <Collapsible
+                    key={g.label}
+                    defaultOpen={groupActive}
+                    className="group/collapsible"
+                  >
+                    <SidebarMenuItem>
+                      <CollapsibleTrigger asChild>
+                        <SidebarMenuButton tooltip={g.label} isActive={groupActive}>
+                          <Icon className="h-4 w-4" />
+                          {!collapsed && (
+                            <>
+                              <span>{g.label}</span>
+                              <ChevronRight className="ml-auto h-4 w-4 transition-transform group-data-[state=open]/collapsible:rotate-90" />
+                            </>
+                          )}
+                        </SidebarMenuButton>
+                      </CollapsibleTrigger>
+                      {!collapsed && (
+                        <CollapsibleContent>
+                          <SidebarMenuSub>
+                            {g.items.map((item) => {
+                              const active = pathname === item.url || pathname.startsWith(item.url + "/");
+                              return (
+                                <SidebarMenuSubItem key={item.url}>
+                                  <SidebarMenuSubButton asChild isActive={active}>
+                                    <Link to={item.url}>
+                                      <span>{item.title}</span>
+                                    </Link>
+                                  </SidebarMenuSubButton>
+                                </SidebarMenuSubItem>
+                              );
+                            })}
+                          </SidebarMenuSub>
+                        </CollapsibleContent>
+                      )}
+                    </SidebarMenuItem>
+                  </Collapsible>
+                );
+              })}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
         <SidebarGroup>
           {!collapsed && <SidebarGroupLabel>Workspace</SidebarGroupLabel>}
           <SidebarGroupContent>
