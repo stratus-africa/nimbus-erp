@@ -9,15 +9,9 @@ import { formatCurrency, formatDate, formatDateTime } from "@/lib/format";
 import { toast } from "sonner";
 import {
   Edit, Send, Share2, Printer, FileText, MoreHorizontal, Sparkles, Paperclip,
-} from "lucide-react";
-import { DocActionsMenu } from "@/components/doc-actions-menu";
-import {
-  X as _X_unused,
-} from "lucide-react";
-// placeholder re-import block (kept for diff stability)
-import {
   MessageSquare, X, CheckCircle2, Clock, UserCircle2, FilePlus2, Plus, Search, ChevronDown,
 } from "lucide-react";
+import { DocActionsMenu } from "@/components/doc-actions-menu";
 
 export const Route = createFileRoute("/_authenticated/sales-orders_/$soId")({
   head: () => ({ meta: [{ title: "Sales Order — Nimbus ERP" }] }),
