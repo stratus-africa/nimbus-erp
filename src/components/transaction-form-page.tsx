@@ -84,7 +84,7 @@ export function TransactionFormPage({
   });
 
   const isCustomerDoc = config.partyTable === "customers";
-  const enforcesCredit = isCustomerDoc && (config.kind === "invoice" || config.kind === "sales_order");
+  const enforcesCredit = isCustomerDoc && config.kind === "invoice";
   const { settings: cvSettings } = useCVSettings();
 
   const { data: customerCredit } = useQuery({
@@ -105,11 +105,9 @@ export function TransactionFormPage({
       }
       let openSOs = 0;
       if (cvSettings?.includeSalesOrdersInCreditLimit) {
-        let q = (supabase as any).from("sales_orders").select("total, id, status")
+        const { data } = await (supabase as any).from("sales_orders").select("total, status")
           .eq("tenant_id", tenantId).eq("customer_id", partyId)
           .not("status", "in", "(cancelled,closed,draft)");
-        if (initial?.id && config.kind === "sales_order") q = q.neq("id", initial.id);
-        const { data } = await q;
         openSOs = (data ?? []).reduce((s: number, r: any) => s + Number(r.total ?? 0), 0);
       }
       return { limit, exposure: openInvoices + openSOs, name: (c as any)?.name ?? "" };
