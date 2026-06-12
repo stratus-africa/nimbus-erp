@@ -23,11 +23,13 @@ type Form = {
   zip_code: string;
   phone: string;
   email: string;
+  is_primary: boolean;
 };
 
 const EMPTY: Form = {
   name: "", branch: "", attention: "", street1: "", street2: "",
   city: "", country: "Kenya", state: "", zip_code: "", phone: "", email: "",
+  is_primary: false,
 };
 
 const COUNTRIES = ["Kenya", "Uganda", "Tanzania", "Rwanda", "Ethiopia", "Nigeria", "South Africa", "United States", "United Kingdom"];
