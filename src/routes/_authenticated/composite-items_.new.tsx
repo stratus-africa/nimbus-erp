@@ -60,6 +60,17 @@ function NewCompositePage() {
 
   const totalCost = useMemo(() => calculateCompositeCost(lines), [lines]);
   const margin = Number(sellingPrice) - totalCost;
+  const availability = useMemo(() => {
+    const enriched = lines
+      .filter((l) => l.component_item_id && l.quantity > 0)
+      .map((l) => {
+        const it = items?.find((x: any) => x.id === l.component_item_id);
+        const stock = it?.item_type === "inventory" ? Number(it?.stock_on_hand ?? 0) : Infinity;
+        return { quantity: Number(l.quantity), stock_on_hand: stock };
+      });
+    if (!enriched.length) return 0;
+    return calculateCompositeAvailability(enriched);
+  }, [lines, items]);
 
   const save = async () => {
     if (!tenantId) return;
