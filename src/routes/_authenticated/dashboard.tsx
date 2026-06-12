@@ -324,17 +324,17 @@ function Dashboard() {
             <CardHeader className="border-b bg-muted/30">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-base font-semibold">Income and Expense</CardTitle>
-                <span className="text-xs text-muted-foreground">{formatDate(from)} — {formatDate(to)}</span>
+                <span className="text-xs text-muted-foreground">{computed.fyLabel}</span>
               </div>
             </CardHeader>
             <CardContent className="p-6">
               <div className="mb-4 flex flex-wrap items-center gap-6 text-sm">
-                <Legend dot="bg-success" label="Total Income" value={formatCurrency(computed.totalIncome, currency)} />
-                <Legend dot="bg-destructive" label="Total Expenses" value={formatCurrency(computed.totalExpense, currency)} />
+                <Legend dot="bg-success" label="Total Income" value={formatCurrency(computed.fyTotalIncome, currency)} />
+                <Legend dot="bg-destructive" label="Total Expenses" value={formatCurrency(computed.fyTotalExpense, currency)} />
               </div>
               <div className="h-60">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={computed.series} barGap={4}>
+                  <LineChart data={computed.fySeries} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                     <CartesianGrid vertical={false} strokeDasharray="3 3" className="stroke-border" />
                     <XAxis dataKey="name" tick={{ fontSize: 11 }} tickLine={false} axisLine={false} interval={0} />
                     <YAxis tick={{ fontSize: 11 }} tickLine={false} axisLine={false} tickFormatter={(v) => `${Math.round(Number(v) / 1000)} K`} />
@@ -342,9 +342,9 @@ function Dashboard() {
                       formatter={(v: any) => formatCurrency(v, currency)}
                       contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 }}
                     />
-                    <Bar dataKey="income" fill="hsl(var(--success))" radius={[3, 3, 0, 0]} />
-                    <Bar dataKey="expense" fill="hsl(var(--destructive))" radius={[3, 3, 0, 0]} />
-                  </BarChart>
+                    <Line type="monotone" dataKey="income" stroke="hsl(var(--success))" strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 5 }} />
+                    <Line type="monotone" dataKey="expense" stroke="hsl(var(--destructive))" strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 5 }} />
+                  </LineChart>
                 </ResponsiveContainer>
               </div>
             </CardContent>
