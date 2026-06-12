@@ -117,6 +117,8 @@ const NAV_GROUPS: NavGroup[] = [
 export function AppShell({ children }: { children: ReactNode }) {
   const { data: profile, isLoading } = useProfile();
   const [onboardOpen, setOnboardOpen] = useState(false);
+  const userId = profile?.user?.id ?? null;
+  const { prefs, setOpen, setGroupOpen } = useSidebarPrefs(userId);
 
   useEffect(() => {
     if (!isLoading && profile && profile.memberships.length === 0) {
@@ -125,12 +127,12 @@ export function AppShell({ children }: { children: ReactNode }) {
   }, [isLoading, profile]);
 
   return (
-    <SidebarProvider>
+    <SidebarProvider open={prefs.open} onOpenChange={setOpen}>
       <div className="flex min-h-screen w-full bg-muted/30">
-        <AppSidebar />
+        <AppSidebar groupPrefs={prefs.groups} onGroupToggle={setGroupOpen} />
         <div className="flex flex-1 flex-col">
           <TopBar />
-          <main className="flex-1 p-6">{children}</main>
+          <main id="main-content" className="flex-1 p-6">{children}</main>
         </div>
       </div>
       <Toaster richColors position="top-right" />
