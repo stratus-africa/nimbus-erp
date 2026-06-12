@@ -29,7 +29,7 @@ export function useCustomizations<T extends Record<string, any>>(
         .eq("entity", entity)
         .order("created_at", { ascending: true });
       if (error) throw error;
-      return (data ?? []) as T[];
+      return ((data ?? []) as unknown) as T[];
     },
   });
 
