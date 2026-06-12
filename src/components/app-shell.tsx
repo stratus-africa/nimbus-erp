@@ -93,7 +93,7 @@ const NAV_GROUPS: NavGroup[] = [
     icon: Boxes,
     items: [
       { title: "Items", url: "/items", icon: Boxes },
-      { title: "Production Items", url: "/composite-items", icon: Boxes },
+      { title: "Production Items", url: "/production-items", icon: Boxes },
       { title: "Production", url: "/assembly-orders", icon: ClipboardList },
       { title: "Adjustments", url: "/inventory-adjustments", icon: ClipboardList },
       { title: "Packages", url: "/packages", icon: Boxes },

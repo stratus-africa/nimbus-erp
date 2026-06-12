@@ -14,7 +14,7 @@ import { Plus, Trash2, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { calculateCompositeCost, calculateCompositeAvailability } from "@/lib/composite-utils";
 
-export const Route = createFileRoute("/_authenticated/composite-items_/new")({
+export const Route = createFileRoute("/_authenticated/production-items_/new")({
   head: () => ({ meta: [{ title: "New Production Item — Nimbus ERP" }] }),
   component: NewCompositePage,
 });
@@ -129,7 +129,7 @@ function NewCompositePage() {
       if (le) throw le;
 
       toast.success("Production item created");
-      navigate({ to: "/composite-items/$id", params: { id: comp.id } });
+      navigate({ to: "/production-items/$id", params: { id: comp.id } });
     } catch (e: any) {
       toast.error(e.message ?? "Failed");
     } finally {
@@ -141,11 +141,11 @@ function NewCompositePage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" onClick={() => navigate({ to: "/composite-items" })}><ArrowLeft className="h-4 w-4" /></Button>
+          <Button variant="ghost" size="icon" onClick={() => navigate({ to: "/production-items" })}><ArrowLeft className="h-4 w-4" /></Button>
           <h1 className="text-xl font-semibold">New Production Item</h1>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => navigate({ to: "/composite-items" })}>Cancel</Button>
+          <Button variant="outline" onClick={() => navigate({ to: "/production-items" })}>Cancel</Button>
           <Button disabled={saving} onClick={save} className="bg-emerald-600 hover:bg-emerald-700">{saving ? "Saving…" : "Save"}</Button>
         </div>
       </div>
