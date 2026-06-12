@@ -32,7 +32,7 @@ import {
 
 export const Route = createFileRoute("/_authenticated/quotes_/new")({
   head: () => ({ meta: [{ title: "New Quote — Nimbus ERP" }] }),
-  component: NewQuotePage,
+  component: () => <QuoteFormPage />,
 });
 
 type Line = {
