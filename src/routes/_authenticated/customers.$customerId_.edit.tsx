@@ -70,6 +70,7 @@ function EditCustomerRoute() {
     billing_address: c.billing_address ?? "",
     shipping_address: c.shipping_address ?? "",
     payment_terms: paymentTermsLabel(c.payment_terms_days),
+    credit_limit: c.credit_limit != null ? String(c.credit_limit) : "",
     remarks: c.notes ?? "",
     vat_treatment: c.vat_number ? "VAT Registered" : "Non VAT Registered",
   };

@@ -583,6 +583,24 @@ export function CustomerFormPage({ customerId, initial }: { customerId?: string;
                     )}
                   />
                 </Row>
+                {creditLimitEnabled && (
+                  <Row label="Credit Limit" info error={errors.credit_limit?.message}>
+                    <div className="flex max-w-md">
+                      <div className="flex items-center px-3 border border-r-0 rounded-l-md bg-muted/40 text-sm text-muted-foreground">
+                        {currency}
+                      </div>
+                      <Input
+                        inputMode="decimal"
+                        placeholder="0.00"
+                        className={cn("rounded-l-none", errors.credit_limit && "border-destructive")}
+                        {...register("credit_limit")}
+                      />
+                    </div>
+                    <p className="mt-1.5 text-xs text-muted-foreground">
+                      Maximum outstanding balance allowed for this customer. Leave blank or 0 for no limit.
+                    </p>
+                  </Row>
+                )}
                 <Row label="Enable Portal?" info>
                   <Controller
                     control={control}
