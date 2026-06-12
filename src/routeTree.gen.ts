@@ -27,6 +27,7 @@ import { Route as AuthenticatedInventoryAdjustmentsRouteImport } from './routes/
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedChartOfAccountsRouteImport } from './routes/_authenticated/chart-of-accounts'
 import { Route as AuthenticatedBillsRouteImport } from './routes/_authenticated/bills'
+import { Route as AuthenticatedBankingRouteImport } from './routes/_authenticated/banking'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedSuppliersIndexRouteImport } from './routes/_authenticated/suppliers.index'
 import { Route as AuthenticatedCustomersIndexRouteImport } from './routes/_authenticated/customers.index'
@@ -154,6 +155,11 @@ const AuthenticatedChartOfAccountsRoute =
 const AuthenticatedBillsRoute = AuthenticatedBillsRouteImport.update({
   id: '/bills',
   path: '/bills',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedBankingRoute = AuthenticatedBankingRouteImport.update({
+  id: '/banking',
+  path: '/banking',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
@@ -356,6 +362,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/signup': typeof SignupRoute
   '/admin': typeof AuthenticatedAdminRoute
+  '/banking': typeof AuthenticatedBankingRoute
   '/bills': typeof AuthenticatedBillsRoute
   '/chart-of-accounts': typeof AuthenticatedChartOfAccountsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -408,6 +415,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/signup': typeof SignupRoute
   '/admin': typeof AuthenticatedAdminRoute
+  '/banking': typeof AuthenticatedBankingRoute
   '/bills': typeof AuthenticatedBillsRoute
   '/chart-of-accounts': typeof AuthenticatedChartOfAccountsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -462,6 +470,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/signup': typeof SignupRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
+  '/_authenticated/banking': typeof AuthenticatedBankingRoute
   '/_authenticated/bills': typeof AuthenticatedBillsRoute
   '/_authenticated/chart-of-accounts': typeof AuthenticatedChartOfAccountsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
@@ -516,6 +525,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/signup'
     | '/admin'
+    | '/banking'
     | '/bills'
     | '/chart-of-accounts'
     | '/dashboard'
@@ -568,6 +578,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/signup'
     | '/admin'
+    | '/banking'
     | '/bills'
     | '/chart-of-accounts'
     | '/dashboard'
@@ -621,6 +632,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/signup'
     | '/_authenticated/admin'
+    | '/_authenticated/banking'
     | '/_authenticated/bills'
     | '/_authenticated/chart-of-accounts'
     | '/_authenticated/dashboard'
@@ -802,6 +814,13 @@ declare module '@tanstack/react-router' {
       path: '/bills'
       fullPath: '/bills'
       preLoaderRoute: typeof AuthenticatedBillsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/banking': {
+      id: '/_authenticated/banking'
+      path: '/banking'
+      fullPath: '/banking'
+      preLoaderRoute: typeof AuthenticatedBankingRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/admin': {
@@ -1053,6 +1072,7 @@ const AuthenticatedSettingsRouteWithChildren =
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
+  AuthenticatedBankingRoute: typeof AuthenticatedBankingRoute
   AuthenticatedBillsRoute: typeof AuthenticatedBillsRoute
   AuthenticatedChartOfAccountsRoute: typeof AuthenticatedChartOfAccountsRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
@@ -1102,6 +1122,7 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
+  AuthenticatedBankingRoute: AuthenticatedBankingRoute,
   AuthenticatedBillsRoute: AuthenticatedBillsRoute,
   AuthenticatedChartOfAccountsRoute: AuthenticatedChartOfAccountsRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
@@ -1169,3 +1190,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
