@@ -35,6 +35,7 @@ import { Route as AuthenticatedSuppliersNewRouteImport } from './routes/_authent
 import { Route as AuthenticatedSuppliersSupplierIdRouteImport } from './routes/_authenticated/suppliers.$supplierId'
 import { Route as AuthenticatedSettingsQuotesRouteImport } from './routes/_authenticated/settings_.quotes'
 import { Route as AuthenticatedSettingsLocationsRouteImport } from './routes/_authenticated/settings_.locations'
+import { Route as AuthenticatedSettingsItemsRouteImport } from './routes/_authenticated/settings_.items'
 import { Route as AuthenticatedSalesOrdersNewRouteImport } from './routes/_authenticated/sales-orders_.new'
 import { Route as AuthenticatedSalesOrdersSoIdRouteImport } from './routes/_authenticated/sales-orders_.$soId'
 import { Route as AuthenticatedQuotesNewRouteImport } from './routes/_authenticated/quotes_.new'
@@ -202,6 +203,12 @@ const AuthenticatedSettingsLocationsRoute =
   AuthenticatedSettingsLocationsRouteImport.update({
     id: '/settings_/locations',
     path: '/settings/locations',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedSettingsItemsRoute =
+  AuthenticatedSettingsItemsRouteImport.update({
+    id: '/settings_/items',
+    path: '/settings/items',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedSalesOrdersNewRoute =
@@ -403,6 +410,7 @@ export interface FileRoutesByFullPath {
   '/quotes/new': typeof AuthenticatedQuotesNewRoute
   '/sales-orders/$soId': typeof AuthenticatedSalesOrdersSoIdRoute
   '/sales-orders/new': typeof AuthenticatedSalesOrdersNewRoute
+  '/settings/items': typeof AuthenticatedSettingsItemsRoute
   '/settings/locations': typeof AuthenticatedSettingsLocationsRoute
   '/settings/quotes': typeof AuthenticatedSettingsQuotesRoute
   '/suppliers/$supplierId': typeof AuthenticatedSuppliersSupplierIdRoute
@@ -457,6 +465,7 @@ export interface FileRoutesByTo {
   '/quotes/new': typeof AuthenticatedQuotesNewRoute
   '/sales-orders/$soId': typeof AuthenticatedSalesOrdersSoIdRoute
   '/sales-orders/new': typeof AuthenticatedSalesOrdersNewRoute
+  '/settings/items': typeof AuthenticatedSettingsItemsRoute
   '/settings/locations': typeof AuthenticatedSettingsLocationsRoute
   '/settings/quotes': typeof AuthenticatedSettingsQuotesRoute
   '/suppliers/$supplierId': typeof AuthenticatedSuppliersSupplierIdRoute
@@ -513,6 +522,7 @@ export interface FileRoutesById {
   '/_authenticated/quotes_/new': typeof AuthenticatedQuotesNewRoute
   '/_authenticated/sales-orders_/$soId': typeof AuthenticatedSalesOrdersSoIdRoute
   '/_authenticated/sales-orders_/new': typeof AuthenticatedSalesOrdersNewRoute
+  '/_authenticated/settings_/items': typeof AuthenticatedSettingsItemsRoute
   '/_authenticated/settings_/locations': typeof AuthenticatedSettingsLocationsRoute
   '/_authenticated/settings_/quotes': typeof AuthenticatedSettingsQuotesRoute
   '/_authenticated/suppliers/$supplierId': typeof AuthenticatedSuppliersSupplierIdRoute
@@ -569,6 +579,7 @@ export interface FileRouteTypes {
     | '/quotes/new'
     | '/sales-orders/$soId'
     | '/sales-orders/new'
+    | '/settings/items'
     | '/settings/locations'
     | '/settings/quotes'
     | '/suppliers/$supplierId'
@@ -623,6 +634,7 @@ export interface FileRouteTypes {
     | '/quotes/new'
     | '/sales-orders/$soId'
     | '/sales-orders/new'
+    | '/settings/items'
     | '/settings/locations'
     | '/settings/quotes'
     | '/suppliers/$supplierId'
@@ -678,6 +690,7 @@ export interface FileRouteTypes {
     | '/_authenticated/quotes_/new'
     | '/_authenticated/sales-orders_/$soId'
     | '/_authenticated/sales-orders_/new'
+    | '/_authenticated/settings_/items'
     | '/_authenticated/settings_/locations'
     | '/_authenticated/settings_/quotes'
     | '/_authenticated/suppliers/$supplierId'
@@ -883,6 +896,13 @@ declare module '@tanstack/react-router' {
       path: '/settings/locations'
       fullPath: '/settings/locations'
       preLoaderRoute: typeof AuthenticatedSettingsLocationsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/settings_/items': {
+      id: '/_authenticated/settings_/items'
+      path: '/settings/items'
+      fullPath: '/settings/items'
+      preLoaderRoute: typeof AuthenticatedSettingsItemsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/sales-orders_/new': {
@@ -1113,6 +1133,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedQuotesNewRoute: typeof AuthenticatedQuotesNewRoute
   AuthenticatedSalesOrdersSoIdRoute: typeof AuthenticatedSalesOrdersSoIdRoute
   AuthenticatedSalesOrdersNewRoute: typeof AuthenticatedSalesOrdersNewRoute
+  AuthenticatedSettingsItemsRoute: typeof AuthenticatedSettingsItemsRoute
   AuthenticatedSettingsLocationsRoute: typeof AuthenticatedSettingsLocationsRoute
   AuthenticatedSettingsQuotesRoute: typeof AuthenticatedSettingsQuotesRoute
   AuthenticatedSuppliersSupplierIdRoute: typeof AuthenticatedSuppliersSupplierIdRoute
@@ -1168,6 +1189,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedQuotesNewRoute: AuthenticatedQuotesNewRoute,
   AuthenticatedSalesOrdersSoIdRoute: AuthenticatedSalesOrdersSoIdRoute,
   AuthenticatedSalesOrdersNewRoute: AuthenticatedSalesOrdersNewRoute,
+  AuthenticatedSettingsItemsRoute: AuthenticatedSettingsItemsRoute,
   AuthenticatedSettingsLocationsRoute: AuthenticatedSettingsLocationsRoute,
   AuthenticatedSettingsQuotesRoute: AuthenticatedSettingsQuotesRoute,
   AuthenticatedSuppliersSupplierIdRoute: AuthenticatedSuppliersSupplierIdRoute,
