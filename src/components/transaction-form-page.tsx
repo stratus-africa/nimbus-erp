@@ -93,7 +93,7 @@ export function TransactionFormPage({
     queryFn: async () => {
       const { data: c } = await supabase
         .from("customers").select("credit_limit, name").eq("id", partyId).maybeSingle();
-      const limit = Number(c?.credit_limit ?? 0);
+      const limit = Number((c as any)?.credit_limit ?? 0);
       let openInvoices = 0;
       {
         let q = (supabase as any).from("invoices").select("balance_due, id")
@@ -112,14 +112,11 @@ export function TransactionFormPage({
         const { data } = await q;
         openSOs = (data ?? []).reduce((s: number, r: any) => s + Number(r.total ?? 0), 0);
       }
-      return { limit, exposure: openInvoices + openSOs, name: c?.name ?? "" };
+      return { limit, exposure: openInvoices + openSOs, name: (c as any)?.name ?? "" };
     },
   });
 
-  const projectedExposure = (customerCredit?.exposure ?? 0) + Number(total || 0);
-  const creditLimitValue = customerCredit?.limit ?? 0;
-  const exceedsCredit = !!cvSettings?.customerCreditLimitEnabled && enforcesCredit && creditLimitValue > 0 && projectedExposure > creditLimitValue;
-  void Plus; void Trash2;
+  const { data: items } = useQuery({
     queryKey: ["items-pick", tenantId],
     queryFn: async () => {
       const { data } = await supabase
