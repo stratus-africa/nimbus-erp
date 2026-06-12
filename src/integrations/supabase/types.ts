@@ -14,6 +14,115 @@ export type Database = {
   }
   public: {
     Tables: {
+      assembly_consumptions: {
+        Row: {
+          assembly_order_id: string
+          component_item_id: string
+          created_at: string
+          id: string
+          quantity_used: number
+          tenant_id: string
+          unit_cost: number
+        }
+        Insert: {
+          assembly_order_id: string
+          component_item_id: string
+          created_at?: string
+          id?: string
+          quantity_used: number
+          tenant_id: string
+          unit_cost?: number
+        }
+        Update: {
+          assembly_order_id?: string
+          component_item_id?: string
+          created_at?: string
+          id?: string
+          quantity_used?: number
+          tenant_id?: string
+          unit_cost?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assembly_consumptions_assembly_order_id_fkey"
+            columns: ["assembly_order_id"]
+            isOneToOne: false
+            referencedRelation: "assembly_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assembly_consumptions_component_item_id_fkey"
+            columns: ["component_item_id"]
+            isOneToOne: false
+            referencedRelation: "items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assembly_consumptions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      assembly_orders: {
+        Row: {
+          assembly_item_id: string
+          completed_at: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          notes: string | null
+          order_number: string | null
+          quantity: number
+          status: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          assembly_item_id: string
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          notes?: string | null
+          order_number?: string | null
+          quantity: number
+          status?: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          assembly_item_id?: string
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          notes?: string | null
+          order_number?: string | null
+          quantity?: number
+          status?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assembly_orders_assembly_item_id_fkey"
+            columns: ["assembly_item_id"]
+            isOneToOne: false
+            referencedRelation: "items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assembly_orders_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_logs: {
         Row: {
           action: string
@@ -477,6 +586,112 @@ export type Database = {
           },
           {
             foreignKeyName: "chart_of_accounts_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      composite_item_components: {
+        Row: {
+          component_item_id: string
+          composite_item_id: string
+          created_at: string
+          id: string
+          quantity: number
+          tenant_id: string
+          unit_cost: number
+          updated_at: string
+        }
+        Insert: {
+          component_item_id: string
+          composite_item_id: string
+          created_at?: string
+          id?: string
+          quantity: number
+          tenant_id: string
+          unit_cost?: number
+          updated_at?: string
+        }
+        Update: {
+          component_item_id?: string
+          composite_item_id?: string
+          created_at?: string
+          id?: string
+          quantity?: number
+          tenant_id?: string
+          unit_cost?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "composite_item_components_component_item_id_fkey"
+            columns: ["component_item_id"]
+            isOneToOne: false
+            referencedRelation: "items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "composite_item_components_composite_item_id_fkey"
+            columns: ["composite_item_id"]
+            isOneToOne: false
+            referencedRelation: "composite_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "composite_item_components_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      composite_items: {
+        Row: {
+          composite_type: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          parent_item_id: string
+          status: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          composite_type?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          parent_item_id: string
+          status?: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          composite_type?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          parent_item_id?: string
+          status?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "composite_items_parent_item_id_fkey"
+            columns: ["parent_item_id"]
+            isOneToOne: true
+            referencedRelation: "items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "composite_items_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
@@ -2404,7 +2619,12 @@ export type Database = {
         | "paid"
         | "overdue"
         | "cancelled"
-      item_type: "inventory" | "service" | "non_inventory"
+      item_type:
+        | "inventory"
+        | "service"
+        | "non_inventory"
+        | "composite"
+        | "assembly"
       po_status:
         | "draft"
         | "approved"
@@ -2578,7 +2798,13 @@ export const Constants = {
         "overdue",
         "cancelled",
       ],
-      item_type: ["inventory", "service", "non_inventory"],
+      item_type: [
+        "inventory",
+        "service",
+        "non_inventory",
+        "composite",
+        "assembly",
+      ],
       po_status: [
         "draft",
         "approved",
