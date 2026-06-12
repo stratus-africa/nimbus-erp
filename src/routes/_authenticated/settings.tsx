@@ -86,7 +86,7 @@ const SECTIONS: Section[] = [
         title: "General", icon: LayoutGrid, tone: "emerald",
         items: [
           { label: "Customers and Vendors", to: "/customers" },
-          { label: "Items", to: "/items" },
+          { label: "Items", to: "/settings/items" },
           { label: "Accountant" },
           { label: "Tasks" },
         ],
