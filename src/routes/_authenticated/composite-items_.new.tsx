@@ -15,7 +15,7 @@ import { toast } from "sonner";
 import { calculateCompositeCost, calculateCompositeAvailability } from "@/lib/composite-utils";
 
 export const Route = createFileRoute("/_authenticated/composite-items_/new")({
-  head: () => ({ meta: [{ title: "New Composite Item — Nimbus ERP" }] }),
+  head: () => ({ meta: [{ title: "New Production Item — Nimbus ERP" }] }),
   component: NewCompositePage,
 });
 
@@ -128,7 +128,7 @@ function NewCompositePage() {
       const { error: le } = await supabase.from("composite_item_components").insert(compRows);
       if (le) throw le;
 
-      toast.success("Composite item created");
+      toast.success("Production item created");
       navigate({ to: "/composite-items/$id", params: { id: comp.id } });
     } catch (e: any) {
       toast.error(e.message ?? "Failed");
@@ -142,7 +142,7 @@ function NewCompositePage() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="icon" onClick={() => navigate({ to: "/composite-items" })}><ArrowLeft className="h-4 w-4" /></Button>
-          <h1 className="text-xl font-semibold">New Composite Item</h1>
+          <h1 className="text-xl font-semibold">New Production Item</h1>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => navigate({ to: "/composite-items" })}>Cancel</Button>
