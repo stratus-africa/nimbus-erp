@@ -414,7 +414,7 @@ export function PaymentFormPage({ config }: { config: PaymentsModuleConfig }) {
           lines.push({
             entry_id: journalId,
             account_id: depositAcct,
-            description: `Paid from ${depositTo}`,
+            description: `Paid from ${selectedBankAcct?.account_name ?? ""}`,
             debit: 0,
             credit: amountReceived,
             position: 2,
