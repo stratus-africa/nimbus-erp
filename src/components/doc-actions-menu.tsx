@@ -181,9 +181,23 @@ export function DocActionsMenu({
       <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete this {config.label.toLowerCase()}?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone.
+            <AlertDialogTitle>
+              {config.deleteConfirm?.title ?? `Delete this ${config.label.toLowerCase()}?`}
+            </AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-2 text-sm">
+                <p>
+                  {config.deleteConfirm?.description ??
+                    "This action cannot be undone."}
+                </p>
+                {config.deleteConfirm?.impacts && config.deleteConfirm.impacts.length > 0 && (
+                  <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
+                    {config.deleteConfirm.impacts.map((line, i) => (
+                      <li key={i}>{line}</li>
+                    ))}
+                  </ul>
+                )}
+              </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
