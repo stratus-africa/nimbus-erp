@@ -337,6 +337,7 @@ function Dashboard() {
               )}
             </CardContent>
           </Card>
+          </div>
         </div>
 
         {/* Right column: Recent Activity */}
