@@ -262,10 +262,16 @@ function BankAccountDetailPage() {
         )}>
           <Icon className="h-5 w-5" />
         </div>
-        <div>
+        <div className="flex-1">
           <div className="text-xs text-muted-foreground">Amount in Books</div>
           <div className="text-lg font-semibold tabular-nums">{formatMoney(bookBalance, currency)}</div>
         </div>
+        {Math.abs(Number(account.current_balance ?? 0) - bookBalance) > 0.005 && (
+          <div className="text-xs rounded-md border border-amber-300 bg-amber-50 text-amber-800 px-3 py-1.5 dark:bg-amber-950/30 dark:text-amber-200">
+            Stored balance ({formatMoney(Number(account.current_balance ?? 0), currency)})
+            doesn't match transactions. Click <span className="font-medium">Reconcile balance</span>.
+          </div>
+        )}
       </div>
 
       {/* Tabs */}
