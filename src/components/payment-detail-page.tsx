@@ -52,7 +52,7 @@ export function PaymentDetailPage({ config }: { config: PaymentsModuleConfig }) 
     queryFn: async () => {
       const partyJoin = isReceived
         ? "customers(id, name, billing_address, email, phone)"
-        : "suppliers(id, name, billing_address, email, phone)";
+        : "suppliers(id, name, address, email, phone)";
       const docJoin = isReceived
         ? `invoices(id, ${config.docNumberField}, invoice_date, total, ${partyJoin})`
         : `bills(id, ${config.docNumberField}, bill_date, total, ${partyJoin})`;
