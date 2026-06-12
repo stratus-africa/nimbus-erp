@@ -226,6 +226,16 @@ function BankAccountDetailPage() {
         </div>
         <div className="flex items-center gap-2">
           <Button
+            variant="outline"
+            className="h-9 gap-2"
+            onClick={() => reconcile.mutate()}
+            disabled={reconcile.isPending}
+            title="Recompute the running balance from journal & bank transactions"
+          >
+            <RotateCcw className={cn("h-4 w-4", reconcile.isPending && "animate-spin")} />
+            {reconcile.isPending ? "Reconciling…" : "Reconcile balance"}
+          </Button>
+          <Button
             className="h-9 gap-2 bg-orange-500 hover:bg-orange-600 text-white"
             onClick={() => setAddOpen(true)}
           >
