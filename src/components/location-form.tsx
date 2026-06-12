@@ -203,6 +203,22 @@ export function LocationForm({ locationId }: { locationId?: string }) {
             <Row label="Email">
               <Input type="email" value={form.email} onChange={(e) => update("email", e.target.value)} />
             </Row>
+            <div className="pt-3 border-t">
+              <label className="flex items-start gap-2 cursor-pointer">
+                <Checkbox
+                  checked={form.is_primary}
+                  onCheckedChange={(v) => update("is_primary", !!v)}
+                  className="mt-0.5"
+                />
+                <span className="text-sm flex items-center gap-1.5">
+                  <Star className={form.is_primary ? "h-4 w-4 fill-orange-500 text-orange-500" : "h-4 w-4 text-muted-foreground"} />
+                  Mark as the organization's Primary Warehouse / Location
+                </span>
+              </label>
+              <p className="ml-6 mt-1 text-xs text-muted-foreground">
+                The primary location is used as the default warehouse on sales orders, invoices, purchase orders, and inventory transactions.
+              </p>
+            </div>
 
             <div className="flex gap-2 pt-4 border-t">
               <Button
