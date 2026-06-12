@@ -24,7 +24,10 @@ import {
 import type { DocConfig } from "@/components/transactions-module";
 import { formatCurrency } from "@/lib/format";
 import { toast } from "sonner";
-import { FileText, Plus, Settings, Trash2, X } from "lucide-react";
+import { FileText, Plus, Settings, Trash2, X, AlertTriangle } from "lucide-react";
+import { useCVSettings } from "@/hooks/use-cv-settings";
+import { formatCurrency as _fmt } from "@/lib/format";
+void _fmt;
 
 type Line = {
   id?: string;
