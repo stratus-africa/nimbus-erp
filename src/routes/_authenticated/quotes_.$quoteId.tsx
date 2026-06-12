@@ -225,6 +225,63 @@ function QuoteDetailPage() {
     onError: (e: any) => toast.error(e.message ?? "Conversion failed"),
   });
 
+  const convertToSalesOrder = useMutation({
+    mutationFn: async () => {
+      if (!tenantId || !quote) throw new Error("Missing tenant or quote");
+      const { data: numData, error: numErr } = await supabase.rpc("next_doc_number", {
+        _tenant: tenantId,
+        _doc_type: "sales_order",
+      });
+      if (numErr) throw numErr;
+      const { data: auth } = await supabase.auth.getUser();
+      const { data: so, error: soErr } = await (supabase as any)
+        .from("sales_orders")
+        .insert({
+          tenant_id: tenantId,
+          so_number: numData as unknown as string,
+          customer_id: quote.customer_id,
+          so_date: new Date().toISOString().slice(0, 10),
+          status: "draft",
+          subtotal: totals.subtotal - totals.discountTotal,
+          tax_total: totals.vatTotal,
+          total: totals.grandTotal,
+          notes: quote.notes,
+          source_quote_id: quote.id,
+          created_by: auth.user?.id,
+        })
+        .select()
+        .single();
+      if (soErr) throw soErr;
+      const lineRows = (lines ?? []).map((l: any, idx: number) => ({
+        sales_order_id: so.id,
+        item_id: l.item_id,
+        description: l.description,
+        quantity: l.quantity,
+        rate: l.rate,
+        tax_rate: l.tax_rate,
+        line_total: l.line_total,
+        position: l.position ?? idx,
+      }));
+      if (lineRows.length) {
+        const { error: lerr } = await (supabase as any).from("sales_order_lines").insert(lineRows);
+        if (lerr) throw lerr;
+      }
+      await supabase
+        .from("quotes")
+        .update({ status: "converted" })
+        .eq("id", quote.id)
+        .eq("tenant_id", tenantId);
+      return so;
+    },
+    onSuccess: (so: any) => {
+      toast.success(`Sales Order ${so.so_number} created`);
+      qc.invalidateQueries({ queryKey: ["quote-detail", quoteId] });
+      qc.invalidateQueries({ queryKey: ["quotes"] });
+      navigate({ to: "/sales-orders/$soId", params: { soId: so.id } });
+    },
+    onError: (e: any) => toast.error(e.message ?? "Conversion failed"),
+  });
+
   if (isLoading) {
     return <div className="p-10 text-center text-muted-foreground">Loading quote…</div>;
   }
@@ -411,9 +468,9 @@ function QuoteDetailPage() {
         <Button
           variant="ghost"
           size="sm"
-          className="h-8 gap-1.5"
-          disabled
-          title="Sales Orders module not yet enabled"
+          className="h-8 gap-1.5 text-emerald-700 hover:bg-emerald-50 hover:text-emerald-800"
+          disabled={!canConvert || convertToSalesOrder.isPending}
+          onClick={() => convertToSalesOrder.mutate()}
         >
           <FilePlus2 className="h-4 w-4" /> Convert to Sales Order
         </Button>
