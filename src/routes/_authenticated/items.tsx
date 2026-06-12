@@ -12,10 +12,11 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useMemo, useState } from "react";
-import { ChevronDown, Plus, MoreHorizontal, SlidersHorizontal, Search, RefreshCw, ImageIcon, Pencil, Archive, ArchiveRestore, Trash2 } from "lucide-react";
+import { ChevronDown, Plus, MoreHorizontal, SlidersHorizontal, Search, RefreshCw, ImageIcon, Pencil, Archive, ArchiveRestore, Trash2, Upload } from "lucide-react";
 import { formatCurrency } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { ItemsCsvImportDialog } from "@/components/items/items-csv-import-dialog";
 
 export const Route = createFileRoute("/_authenticated/items")({
   head: () => ({ meta: [{ title: "Items — Nimbus ERP" }] }),
@@ -103,6 +104,7 @@ function ItemsPage() {
   });
 
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [importOpen, setImportOpen] = useState(false);
 
   const allChecked = filtered.length > 0 && filtered.every((r: any) => selected.has(r.id));
   const toggleAll = () => setSelected(allChecked ? new Set() : new Set(filtered.map((r: any) => r.id)));
@@ -159,6 +161,9 @@ function ItemsPage() {
         </DropdownMenu>
 
         <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" className="h-9 gap-1.5" onClick={() => setImportOpen(true)}>
+            <Upload className="h-4 w-4" /> Import
+          </Button>
           <Button onClick={openNew} className="h-9 gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white">
             <Plus className="h-4 w-4" /> New
           </Button>
@@ -171,7 +176,7 @@ function ItemsPage() {
             <DropdownMenuContent align="end" className="w-48">
               <DropdownMenuItem onClick={() => qc.invalidateQueries({ queryKey: ["items"] })}>Refresh</DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>Import Items</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setImportOpen(true)}>Import Items</DropdownMenuItem>
               <DropdownMenuItem>Export Items</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -291,8 +296,10 @@ function ItemsPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      <ItemsCsvImportDialog open={importOpen} onOpenChange={setImportOpen} />
     </div>
   );
 }
+
 
 
