@@ -236,7 +236,16 @@ export function PaymentsListing({
                 const doc = r[config.docTable];
                 const party = doc?.[config.partyTable];
                 return (
-                  <tr key={r.id} className="border-b transition-colors hover:bg-muted/40">
+                  <tr
+                    key={r.id}
+                    className="cursor-pointer border-b transition-colors hover:bg-muted/40"
+                    onClick={() => navigate({
+                      to: config.kind === "received"
+                        ? "/payments-received/$paymentId"
+                        : "/payments-made/$paymentId",
+                      params: { paymentId: r.id },
+                    } as any)}
+                  >
                     <td className="px-4 py-3 align-middle whitespace-nowrap">{formatDate(r.payment_date)}</td>
                     <td className="px-3 py-3 align-middle font-medium">{party?.name ?? "—"}</td>
                     <td className="px-3 py-3 align-middle">{doc?.[config.docNumberField] ?? "—"}</td>
