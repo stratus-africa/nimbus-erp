@@ -12,7 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useMemo, useState } from "react";
 import { Plus, Trash2, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
-import { calculateCompositeCost } from "@/lib/composite-utils";
+import { calculateCompositeCost, calculateCompositeAvailability } from "@/lib/composite-utils";
 
 export const Route = createFileRoute("/_authenticated/composite-items_/new")({
   head: () => ({ meta: [{ title: "New Composite Item — Nimbus ERP" }] }),
