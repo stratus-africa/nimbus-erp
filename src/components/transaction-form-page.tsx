@@ -284,6 +284,21 @@ export function TransactionFormPage({
         .from(config.linesTable)
         .insert(lineRows as any);
       if (le) throw le;
+
+      // Auto-explode any composite (kit) items into component reservations / deductions.
+      if (docId && (config.kind === "invoice" || config.kind === "quote" || config.kind === "sales_order")) {
+        try {
+          await applyCompositeExplosion(
+            tenantId,
+            config.kind as "invoice" | "quote" | "sales_order",
+            docId,
+            lines.map((l) => ({ item_id: l.item_id ?? null, quantity: l.quantity })),
+          );
+        } catch (e: any) {
+          console.warn("Composite explosion failed", e?.message);
+        }
+      }
+
       toast.success(sendAfter ? "Saved and sent" : "Saved");
       navigate({ to: backTo });
     } catch (e: any) {
