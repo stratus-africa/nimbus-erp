@@ -189,6 +189,18 @@ export function SalesOrderFormPage({
       if (!customerId) throw new Error("Please select a customer");
       if (lines.length === 0) throw new Error("Add at least one line");
 
+      if (credit.enabled && credit.exceeds) {
+        const over = (credit.projectedExposure - credit.limit).toFixed(2);
+        if (credit.action === "restrict") {
+          throw new Error(`Credit limit exceeded by ${over} ${currency}. Cannot save this sales order.`);
+        }
+        const ok = window.confirm(
+          `${credit.customerName || "Customer"} will exceed their credit limit of ${credit.limit.toFixed(2)} ${currency} by ${over} ${currency}. Continue?`,
+        );
+        if (!ok) throw new Error("Cancelled");
+      }
+
+
       let soId: string;
       const basePayload: any = {
         tenant_id: tenantId,
