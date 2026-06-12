@@ -210,6 +210,29 @@ function Dashboard() {
       })),
     ].sort((a, b) => String(b.created).localeCompare(String(a.created)));
 
+    // Always-on Financial Year series (independent of range filter)
+    const fyMonths = fiscalYearMonths(fyStartMonth);
+    const fyStartDate = new Date(fyMonths[0].year, fyMonths[0].month, 1);
+    const fyEndDate = new Date(fyMonths[11].year, fyMonths[11].month + 1, 0);
+    const fyFrom = iso(fyStartDate);
+    const fyTo = iso(fyEndDate);
+    const fyInvoices = (data?.invoices ?? []).filter((r: any) => inRange(r.invoice_date, fyFrom, fyTo));
+    const fyBills = (data?.bills ?? []).filter((r: any) => inRange(r.bill_date, fyFrom, fyTo));
+    const fySeries = fyMonths.map((m) => {
+      const income = (fyInvoices as any[])
+        .filter((r) => r.invoice_date && new Date(r.invoice_date).getFullYear() === m.year && new Date(r.invoice_date).getMonth() === m.month)
+        .reduce((s, r) => s + Number(r.total ?? 0), 0);
+      const expense = (fyBills as any[])
+        .filter((r) => r.bill_date && new Date(r.bill_date).getFullYear() === m.year && new Date(r.bill_date).getMonth() === m.month)
+        .reduce((s, r) => s + Number(r.total ?? 0), 0);
+      return { name: m.label, income, expense };
+    });
+    const fyTotalIncome = fySeries.reduce((s, m) => s + m.income, 0);
+    const fyTotalExpense = fySeries.reduce((s, m) => s + m.expense, 0);
+    const fyLabel = fyStartDate.getFullYear() === fyEndDate.getFullYear()
+      ? `FY ${fyStartDate.getFullYear()}`
+      : `FY ${fyStartDate.getFullYear()}–${String(fyEndDate.getFullYear()).slice(-2)}`;
+
     return {
       recCurrent, recOverdue, payCurrent, payOverdue,
       series, totalIncome, totalExpense,
@@ -218,8 +241,9 @@ function Dashboard() {
       recentInvoices: invoices.slice(0, 6),
       recentBills: bills.slice(0, 6),
       timeline: events.slice(0, 10),
+      fySeries, fyTotalIncome, fyTotalExpense, fyLabel,
     };
-  }, [data, from, to, today]);
+  }, [data, from, to, today, fyStartMonth]);
 
   return (
     <div className="space-y-6">
