@@ -334,6 +334,24 @@ export function TransactionFormPage({
                 </SelectContent>
               </Select>
             </div>
+            {enforcesCredit && cvSettings?.customerCreditLimitEnabled && customerCredit && creditLimit > 0 && (
+              <div className={`mt-3 flex items-start gap-2 rounded-md border px-3 py-2 text-xs ${exceedsCredit ? "border-rose-300 bg-rose-50 text-rose-800" : "border-amber-200 bg-amber-50/70 text-amber-900"}`}>
+                <AlertTriangle className="h-3.5 w-3.5 mt-0.5 shrink-0" />
+                <div className="space-y-0.5">
+                  <div>
+                    Credit limit <span className="font-medium">{creditLimit.toFixed(2)} {currency}</span> ·
+                    Open balance <span className="font-medium">{(customerCredit.exposure - existingDocAmount).toFixed(2)} {currency}</span> ·
+                    This invoice <span className="font-medium">{total.toFixed(2)} {currency}</span>
+                  </div>
+                  {exceedsCredit && (
+                    <div className="font-semibold">
+                      Projected exposure {projectedExposure.toFixed(2)} {currency} exceeds limit by {(projectedExposure - creditLimit).toFixed(2)} {currency}.
+                      {creditAction === "restrict" ? " Save blocked." : " You'll be asked to confirm on save."}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-[180px_1fr_180px_1fr] sm:items-center">
