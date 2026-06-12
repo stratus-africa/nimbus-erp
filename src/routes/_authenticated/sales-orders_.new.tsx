@@ -249,6 +249,19 @@ export function SalesOrderFormPage({
       }));
       const { error: le } = await (supabase as any).from("sales_order_lines").insert(lineRows);
       if (le) throw le;
+
+      // Reserve component stock for any composite (kit) line items.
+      try {
+        await applyCompositeExplosion(
+          tenantId,
+          "sales_order",
+          soId,
+          lines.map((l) => ({ item_id: l.item_id, quantity: l.quantity })),
+        );
+      } catch (e: any) {
+        console.warn("Composite explosion failed", e?.message);
+      }
+
       return soId;
     },
     onSuccess: (id) => {
