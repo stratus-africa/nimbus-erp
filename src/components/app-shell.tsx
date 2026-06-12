@@ -60,6 +60,7 @@ const NAV_GROUPS = [
     items: [
       { title: "Customers", url: "/customers", icon: Users },
       { title: "Quotes", url: "/quotes", icon: FileText },
+      { title: "Sales Orders", url: "/sales-orders", icon: FileText },
       { title: "Invoices", url: "/invoices", icon: ReceiptText },
       { title: "Payments Received", url: "/payments-received", icon: ReceiptText },
     ],
