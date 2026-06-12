@@ -25,6 +25,7 @@ import { Route as AuthenticatedItemsRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedInvoicesRouteImport } from './routes/_authenticated/invoices'
 import { Route as AuthenticatedInventoryAdjustmentsRouteImport } from './routes/_authenticated/inventory-adjustments'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedCompositeItemsRouteImport } from './routes/_authenticated/composite-items'
 import { Route as AuthenticatedChartOfAccountsRouteImport } from './routes/_authenticated/chart-of-accounts'
 import { Route as AuthenticatedBillsRouteImport } from './routes/_authenticated/bills'
 import { Route as AuthenticatedBankingRouteImport } from './routes/_authenticated/banking'
@@ -54,6 +55,8 @@ import { Route as AuthenticatedInvoicesNewRouteImport } from './routes/_authenti
 import { Route as AuthenticatedInvoicesInvoiceIdRouteImport } from './routes/_authenticated/invoices_.$invoiceId'
 import { Route as AuthenticatedCustomersNewRouteImport } from './routes/_authenticated/customers.new'
 import { Route as AuthenticatedCustomersCustomerIdRouteImport } from './routes/_authenticated/customers.$customerId'
+import { Route as AuthenticatedCompositeItemsNewRouteImport } from './routes/_authenticated/composite-items_.new'
+import { Route as AuthenticatedCompositeItemsIdRouteImport } from './routes/_authenticated/composite-items_.$id'
 import { Route as AuthenticatedBillsNewRouteImport } from './routes/_authenticated/bills_.new'
 import { Route as AuthenticatedBillsBillIdRouteImport } from './routes/_authenticated/bills_.$billId'
 import { Route as AuthenticatedBankingAccountIdRouteImport } from './routes/_authenticated/banking_.$accountId'
@@ -150,6 +153,12 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedCompositeItemsRoute =
+  AuthenticatedCompositeItemsRouteImport.update({
+    id: '/composite-items',
+    path: '/composite-items',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedChartOfAccountsRoute =
   AuthenticatedChartOfAccountsRouteImport.update({
     id: '/chart-of-accounts',
@@ -319,6 +328,18 @@ const AuthenticatedCustomersCustomerIdRoute =
     path: '/customers/$customerId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedCompositeItemsNewRoute =
+  AuthenticatedCompositeItemsNewRouteImport.update({
+    id: '/composite-items_/new',
+    path: '/composite-items/new',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedCompositeItemsIdRoute =
+  AuthenticatedCompositeItemsIdRouteImport.update({
+    id: '/composite-items_/$id',
+    path: '/composite-items/$id',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedBillsNewRoute = AuthenticatedBillsNewRouteImport.update({
   id: '/bills_/new',
   path: '/bills/new',
@@ -393,6 +414,7 @@ export interface FileRoutesByFullPath {
   '/banking': typeof AuthenticatedBankingRoute
   '/bills': typeof AuthenticatedBillsRoute
   '/chart-of-accounts': typeof AuthenticatedChartOfAccountsRoute
+  '/composite-items': typeof AuthenticatedCompositeItemsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/inventory-adjustments': typeof AuthenticatedInventoryAdjustmentsRoute
   '/invoices': typeof AuthenticatedInvoicesRoute
@@ -408,6 +430,8 @@ export interface FileRoutesByFullPath {
   '/banking/$accountId': typeof AuthenticatedBankingAccountIdRoute
   '/bills/$billId': typeof AuthenticatedBillsBillIdRoute
   '/bills/new': typeof AuthenticatedBillsNewRoute
+  '/composite-items/$id': typeof AuthenticatedCompositeItemsIdRoute
+  '/composite-items/new': typeof AuthenticatedCompositeItemsNewRoute
   '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
   '/customers/new': typeof AuthenticatedCustomersNewRoute
   '/invoices/$invoiceId': typeof AuthenticatedInvoicesInvoiceIdRoute
@@ -450,6 +474,7 @@ export interface FileRoutesByTo {
   '/banking': typeof AuthenticatedBankingRoute
   '/bills': typeof AuthenticatedBillsRoute
   '/chart-of-accounts': typeof AuthenticatedChartOfAccountsRoute
+  '/composite-items': typeof AuthenticatedCompositeItemsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/inventory-adjustments': typeof AuthenticatedInventoryAdjustmentsRoute
   '/invoices': typeof AuthenticatedInvoicesRoute
@@ -465,6 +490,8 @@ export interface FileRoutesByTo {
   '/banking/$accountId': typeof AuthenticatedBankingAccountIdRoute
   '/bills/$billId': typeof AuthenticatedBillsBillIdRoute
   '/bills/new': typeof AuthenticatedBillsNewRoute
+  '/composite-items/$id': typeof AuthenticatedCompositeItemsIdRoute
+  '/composite-items/new': typeof AuthenticatedCompositeItemsNewRoute
   '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
   '/customers/new': typeof AuthenticatedCustomersNewRoute
   '/invoices/$invoiceId': typeof AuthenticatedInvoicesInvoiceIdRoute
@@ -509,6 +536,7 @@ export interface FileRoutesById {
   '/_authenticated/banking': typeof AuthenticatedBankingRoute
   '/_authenticated/bills': typeof AuthenticatedBillsRoute
   '/_authenticated/chart-of-accounts': typeof AuthenticatedChartOfAccountsRoute
+  '/_authenticated/composite-items': typeof AuthenticatedCompositeItemsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/inventory-adjustments': typeof AuthenticatedInventoryAdjustmentsRoute
   '/_authenticated/invoices': typeof AuthenticatedInvoicesRoute
@@ -524,6 +552,8 @@ export interface FileRoutesById {
   '/_authenticated/banking_/$accountId': typeof AuthenticatedBankingAccountIdRoute
   '/_authenticated/bills_/$billId': typeof AuthenticatedBillsBillIdRoute
   '/_authenticated/bills_/new': typeof AuthenticatedBillsNewRoute
+  '/_authenticated/composite-items_/$id': typeof AuthenticatedCompositeItemsIdRoute
+  '/_authenticated/composite-items_/new': typeof AuthenticatedCompositeItemsNewRoute
   '/_authenticated/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
   '/_authenticated/customers/new': typeof AuthenticatedCustomersNewRoute
   '/_authenticated/invoices_/$invoiceId': typeof AuthenticatedInvoicesInvoiceIdRoute
@@ -568,6 +598,7 @@ export interface FileRouteTypes {
     | '/banking'
     | '/bills'
     | '/chart-of-accounts'
+    | '/composite-items'
     | '/dashboard'
     | '/inventory-adjustments'
     | '/invoices'
@@ -583,6 +614,8 @@ export interface FileRouteTypes {
     | '/banking/$accountId'
     | '/bills/$billId'
     | '/bills/new'
+    | '/composite-items/$id'
+    | '/composite-items/new'
     | '/customers/$customerId'
     | '/customers/new'
     | '/invoices/$invoiceId'
@@ -625,6 +658,7 @@ export interface FileRouteTypes {
     | '/banking'
     | '/bills'
     | '/chart-of-accounts'
+    | '/composite-items'
     | '/dashboard'
     | '/inventory-adjustments'
     | '/invoices'
@@ -640,6 +674,8 @@ export interface FileRouteTypes {
     | '/banking/$accountId'
     | '/bills/$billId'
     | '/bills/new'
+    | '/composite-items/$id'
+    | '/composite-items/new'
     | '/customers/$customerId'
     | '/customers/new'
     | '/invoices/$invoiceId'
@@ -683,6 +719,7 @@ export interface FileRouteTypes {
     | '/_authenticated/banking'
     | '/_authenticated/bills'
     | '/_authenticated/chart-of-accounts'
+    | '/_authenticated/composite-items'
     | '/_authenticated/dashboard'
     | '/_authenticated/inventory-adjustments'
     | '/_authenticated/invoices'
@@ -698,6 +735,8 @@ export interface FileRouteTypes {
     | '/_authenticated/banking_/$accountId'
     | '/_authenticated/bills_/$billId'
     | '/_authenticated/bills_/new'
+    | '/_authenticated/composite-items_/$id'
+    | '/_authenticated/composite-items_/new'
     | '/_authenticated/customers/$customerId'
     | '/_authenticated/customers/new'
     | '/_authenticated/invoices_/$invoiceId'
@@ -852,6 +891,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/composite-items': {
+      id: '/_authenticated/composite-items'
+      path: '/composite-items'
+      fullPath: '/composite-items'
+      preLoaderRoute: typeof AuthenticatedCompositeItemsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/chart-of-accounts': {
@@ -1057,6 +1103,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCustomersCustomerIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/composite-items_/new': {
+      id: '/_authenticated/composite-items_/new'
+      path: '/composite-items/new'
+      fullPath: '/composite-items/new'
+      preLoaderRoute: typeof AuthenticatedCompositeItemsNewRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/composite-items_/$id': {
+      id: '/_authenticated/composite-items_/$id'
+      path: '/composite-items/$id'
+      fullPath: '/composite-items/$id'
+      preLoaderRoute: typeof AuthenticatedCompositeItemsIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/bills_/new': {
       id: '/_authenticated/bills_/new'
       path: '/bills/new'
@@ -1142,6 +1202,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedBankingRoute: typeof AuthenticatedBankingRoute
   AuthenticatedBillsRoute: typeof AuthenticatedBillsRoute
   AuthenticatedChartOfAccountsRoute: typeof AuthenticatedChartOfAccountsRoute
+  AuthenticatedCompositeItemsRoute: typeof AuthenticatedCompositeItemsRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedInventoryAdjustmentsRoute: typeof AuthenticatedInventoryAdjustmentsRoute
   AuthenticatedInvoicesRoute: typeof AuthenticatedInvoicesRoute
@@ -1157,6 +1218,8 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedBankingAccountIdRoute: typeof AuthenticatedBankingAccountIdRoute
   AuthenticatedBillsBillIdRoute: typeof AuthenticatedBillsBillIdRoute
   AuthenticatedBillsNewRoute: typeof AuthenticatedBillsNewRoute
+  AuthenticatedCompositeItemsIdRoute: typeof AuthenticatedCompositeItemsIdRoute
+  AuthenticatedCompositeItemsNewRoute: typeof AuthenticatedCompositeItemsNewRoute
   AuthenticatedCustomersCustomerIdRoute: typeof AuthenticatedCustomersCustomerIdRoute
   AuthenticatedCustomersNewRoute: typeof AuthenticatedCustomersNewRoute
   AuthenticatedInvoicesInvoiceIdRoute: typeof AuthenticatedInvoicesInvoiceIdRoute
@@ -1197,6 +1260,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedBankingRoute: AuthenticatedBankingRoute,
   AuthenticatedBillsRoute: AuthenticatedBillsRoute,
   AuthenticatedChartOfAccountsRoute: AuthenticatedChartOfAccountsRoute,
+  AuthenticatedCompositeItemsRoute: AuthenticatedCompositeItemsRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedInventoryAdjustmentsRoute:
     AuthenticatedInventoryAdjustmentsRoute,
@@ -1213,6 +1277,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedBankingAccountIdRoute: AuthenticatedBankingAccountIdRoute,
   AuthenticatedBillsBillIdRoute: AuthenticatedBillsBillIdRoute,
   AuthenticatedBillsNewRoute: AuthenticatedBillsNewRoute,
+  AuthenticatedCompositeItemsIdRoute: AuthenticatedCompositeItemsIdRoute,
+  AuthenticatedCompositeItemsNewRoute: AuthenticatedCompositeItemsNewRoute,
   AuthenticatedCustomersCustomerIdRoute: AuthenticatedCustomersCustomerIdRoute,
   AuthenticatedCustomersNewRoute: AuthenticatedCustomersNewRoute,
   AuthenticatedInvoicesInvoiceIdRoute: AuthenticatedInvoicesInvoiceIdRoute,
