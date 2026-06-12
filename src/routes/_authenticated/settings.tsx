@@ -72,7 +72,7 @@ const SECTIONS: Section[] = [
       [{
         title: "Taxes & Compliance", icon: Receipt, tone: "sky",
         items: [
-          { label: "VAT" },
+          { label: "VAT", to: "/settings/vat" },
           { label: "Withholding Tax" },
           { label: "e-Invoicing" },
         ],
