@@ -51,6 +51,7 @@ import { Route as AuthenticatedCustomersCustomerIdRouteImport } from './routes/_
 import { Route as AuthenticatedBillsNewRouteImport } from './routes/_authenticated/bills_.new'
 import { Route as AuthenticatedBillsBillIdRouteImport } from './routes/_authenticated/bills_.$billId'
 import { Route as AuthenticatedSuppliersSupplierIdEditRouteImport } from './routes/_authenticated/suppliers.$supplierId_.edit'
+import { Route as AuthenticatedSalesOrdersSoIdEditRouteImport } from './routes/_authenticated/sales-orders_.$soId_.edit'
 import { Route as AuthenticatedQuotesQuoteIdEditRouteImport } from './routes/_authenticated/quotes_.$quoteId_.edit'
 import { Route as AuthenticatedItemsItemIdEditRouteImport } from './routes/_authenticated/items_.$itemId_.edit'
 import { Route as AuthenticatedInvoicesInvoiceIdEditRouteImport } from './routes/_authenticated/invoices_.$invoiceId_.edit'
@@ -291,6 +292,12 @@ const AuthenticatedSuppliersSupplierIdEditRoute =
     path: '/suppliers/$supplierId/edit',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedSalesOrdersSoIdEditRoute =
+  AuthenticatedSalesOrdersSoIdEditRouteImport.update({
+    id: '/sales-orders_/$soId_/edit',
+    path: '/sales-orders/$soId/edit',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedQuotesQuoteIdEditRoute =
   AuthenticatedQuotesQuoteIdEditRouteImport.update({
     id: '/quotes_/$quoteId_/edit',
@@ -361,6 +368,7 @@ export interface FileRoutesByFullPath {
   '/invoices/$invoiceId/edit': typeof AuthenticatedInvoicesInvoiceIdEditRoute
   '/items/$itemId/edit': typeof AuthenticatedItemsItemIdEditRoute
   '/quotes/$quoteId/edit': typeof AuthenticatedQuotesQuoteIdEditRoute
+  '/sales-orders/$soId/edit': typeof AuthenticatedSalesOrdersSoIdEditRoute
   '/suppliers/$supplierId/edit': typeof AuthenticatedSuppliersSupplierIdEditRoute
 }
 export interface FileRoutesByTo {
@@ -408,6 +416,7 @@ export interface FileRoutesByTo {
   '/invoices/$invoiceId/edit': typeof AuthenticatedInvoicesInvoiceIdEditRoute
   '/items/$itemId/edit': typeof AuthenticatedItemsItemIdEditRoute
   '/quotes/$quoteId/edit': typeof AuthenticatedQuotesQuoteIdEditRoute
+  '/sales-orders/$soId/edit': typeof AuthenticatedSalesOrdersSoIdEditRoute
   '/suppliers/$supplierId/edit': typeof AuthenticatedSuppliersSupplierIdEditRoute
 }
 export interface FileRoutesById {
@@ -457,6 +466,7 @@ export interface FileRoutesById {
   '/_authenticated/invoices_/$invoiceId_/edit': typeof AuthenticatedInvoicesInvoiceIdEditRoute
   '/_authenticated/items_/$itemId_/edit': typeof AuthenticatedItemsItemIdEditRoute
   '/_authenticated/quotes_/$quoteId_/edit': typeof AuthenticatedQuotesQuoteIdEditRoute
+  '/_authenticated/sales-orders_/$soId_/edit': typeof AuthenticatedSalesOrdersSoIdEditRoute
   '/_authenticated/suppliers/$supplierId_/edit': typeof AuthenticatedSuppliersSupplierIdEditRoute
 }
 export interface FileRouteTypes {
@@ -506,6 +516,7 @@ export interface FileRouteTypes {
     | '/invoices/$invoiceId/edit'
     | '/items/$itemId/edit'
     | '/quotes/$quoteId/edit'
+    | '/sales-orders/$soId/edit'
     | '/suppliers/$supplierId/edit'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -553,6 +564,7 @@ export interface FileRouteTypes {
     | '/invoices/$invoiceId/edit'
     | '/items/$itemId/edit'
     | '/quotes/$quoteId/edit'
+    | '/sales-orders/$soId/edit'
     | '/suppliers/$supplierId/edit'
   id:
     | '__root__'
@@ -601,6 +613,7 @@ export interface FileRouteTypes {
     | '/_authenticated/invoices_/$invoiceId_/edit'
     | '/_authenticated/items_/$itemId_/edit'
     | '/_authenticated/quotes_/$quoteId_/edit'
+    | '/_authenticated/sales-orders_/$soId_/edit'
     | '/_authenticated/suppliers/$supplierId_/edit'
   fileRoutesById: FileRoutesById
 }
@@ -907,6 +920,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSuppliersSupplierIdEditRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/sales-orders_/$soId_/edit': {
+      id: '/_authenticated/sales-orders_/$soId_/edit'
+      path: '/sales-orders/$soId/edit'
+      fullPath: '/sales-orders/$soId/edit'
+      preLoaderRoute: typeof AuthenticatedSalesOrdersSoIdEditRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/quotes_/$quoteId_/edit': {
       id: '/_authenticated/quotes_/$quoteId_/edit'
       path: '/quotes/$quoteId/edit'
@@ -992,6 +1012,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedInvoicesInvoiceIdEditRoute: typeof AuthenticatedInvoicesInvoiceIdEditRoute
   AuthenticatedItemsItemIdEditRoute: typeof AuthenticatedItemsItemIdEditRoute
   AuthenticatedQuotesQuoteIdEditRoute: typeof AuthenticatedQuotesQuoteIdEditRoute
+  AuthenticatedSalesOrdersSoIdEditRoute: typeof AuthenticatedSalesOrdersSoIdEditRoute
   AuthenticatedSuppliersSupplierIdEditRoute: typeof AuthenticatedSuppliersSupplierIdEditRoute
 }
 
@@ -1041,6 +1062,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
     AuthenticatedInvoicesInvoiceIdEditRoute,
   AuthenticatedItemsItemIdEditRoute: AuthenticatedItemsItemIdEditRoute,
   AuthenticatedQuotesQuoteIdEditRoute: AuthenticatedQuotesQuoteIdEditRoute,
+  AuthenticatedSalesOrdersSoIdEditRoute: AuthenticatedSalesOrdersSoIdEditRoute,
   AuthenticatedSuppliersSupplierIdEditRoute:
     AuthenticatedSuppliersSupplierIdEditRoute,
 }
