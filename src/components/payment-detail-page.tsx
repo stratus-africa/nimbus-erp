@@ -9,6 +9,7 @@ import {
   ArrowLeft, Edit, Send, Printer, MoreHorizontal, Paperclip,
   MessageSquare, X, Plus, Search, ChevronDown, RotateCcw,
 } from "lucide-react";
+import { DocActionsMenu } from "@/components/doc-actions-menu";
 import type { PaymentsModuleConfig } from "@/components/payments-listing";
 
 export function PaymentDetailPage({ config }: { config: PaymentsModuleConfig }) {
@@ -216,9 +217,21 @@ export function PaymentDetailPage({ config }: { config: PaymentsModuleConfig }) 
           <Button variant="ghost" size="sm" className="h-8 gap-1.5 text-rose-700 hover:bg-rose-50">
             <RotateCcw className="h-4 w-4" /> Refund
           </Button>
-          <Button variant="ghost" size="icon" className="h-8 w-8">
-            <MoreHorizontal className="h-4 w-4" />
-          </Button>
+          <DocActionsMenu
+            docId={paymentId}
+            invalidateKeys={[config.table, `${config.table}-sidebar`]}
+            config={{
+              docTable: config.table,
+              numberField: "reference",
+              dateField: "payment_date",
+              listRoute: isReceived ? "/payments-received" : "/payments-made",
+              detailRoute: isReceived ? "/payments-received/$paymentId" : "/payments-made/$paymentId",
+              detailParamKey: "paymentId",
+              label: isReceived ? "Payment Received" : "Payment Made",
+              hasLines: false,
+              softDelete: false,
+            }}
+          />
         </div>
 
         {/* Receipt body */}
