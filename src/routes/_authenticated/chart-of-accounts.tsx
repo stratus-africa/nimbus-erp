@@ -93,7 +93,7 @@ function CoAPage() {
                 <TableRow key={a.id}>
                   <TableCell className="font-mono">{a.code}</TableCell>
                   <TableCell className="font-medium">{a.name}</TableCell>
-                  <TableCell><Badge variant="outline" className={TYPE_COLORS[a.account_type] ?? ""}>{a.account_type}</Badge></TableCell>
+                  <TableCell><Badge variant="outline" className={TYPE_COLORS[a.account_type] ?? ""}>{a.account_subtype ?? a.account_type}</Badge></TableCell>
                   <TableCell className="text-right tabular-nums">{Number(a.opening_balance ?? 0).toFixed(2)}</TableCell>
                   <TableCell className="text-right">
                     <div className="inline-flex items-center gap-1">
