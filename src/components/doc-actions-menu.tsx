@@ -30,20 +30,21 @@ export type DocActionsConfig = {
   fkLinesField?: string;
   numberField: string;
   numberingDocType?: string;
-  // Field names whose values should NOT be copied when cloning (status/payments/etc.)
   cloneOmitFields?: string[];
-  // Date field to reset to today on clone
   dateField?: string;
-  // Field on parent row that references linked source (e.g. source_quote_id) — cleared on clone
   sourceRefFields?: string[];
-  listRoute: string; // e.g. "/quotes"
-  detailRoute: string; // e.g. "/quotes/$quoteId"
-  detailParamKey: string; // e.g. "quoteId"
-  label: string; // e.g. "Quote"
-  // For payments without lines
+  listRoute: string;
+  detailRoute: string;
+  detailParamKey: string;
+  label: string;
   hasLines?: boolean;
-  // Use soft-delete via deleted_at
   softDelete?: boolean;
+  // Optional richer confirmation copy + bullet list of cascade impacts
+  deleteConfirm?: {
+    title?: string;
+    description?: string;
+    impacts?: string[];
+  };
 };
 
 export function DocActionsMenu({
@@ -180,9 +181,23 @@ export function DocActionsMenu({
       <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete this {config.label.toLowerCase()}?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone.
+            <AlertDialogTitle>
+              {config.deleteConfirm?.title ?? `Delete this ${config.label.toLowerCase()}?`}
+            </AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-2 text-sm">
+                <p>
+                  {config.deleteConfirm?.description ??
+                    "This action cannot be undone."}
+                </p>
+                {config.deleteConfirm?.impacts && config.deleteConfirm.impacts.length > 0 && (
+                  <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
+                    {config.deleteConfirm.impacts.map((line, i) => (
+                      <li key={i}>{line}</li>
+                    ))}
+                  </ul>
+                )}
+              </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
