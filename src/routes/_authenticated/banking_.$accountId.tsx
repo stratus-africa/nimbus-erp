@@ -315,7 +315,27 @@ function BankAccountDetailPage() {
                     <div className="text-sm">{formatDate(t.txn_date)}</div>
                     <div className="text-sm">{t.reference ?? "—"}</div>
                     <div className="text-sm">
-                      <div>{t.description ?? "—"}</div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span>{t.description ?? "—"}</span>
+                        {t.source_type === "invoice_payments" && t.source_id && (
+                          <Link
+                            to="/payments-received/$paymentId"
+                            params={{ paymentId: t.source_id }}
+                            className="text-xs text-primary hover:underline"
+                          >
+                            View payment ›
+                          </Link>
+                        )}
+                        {t.source_type === "bill_payments" && t.source_id && (
+                          <Link
+                            to="/payments-made/$paymentId"
+                            params={{ paymentId: t.source_id }}
+                            className="text-xs text-primary hover:underline"
+                          >
+                            View payment ›
+                          </Link>
+                        )}
+                      </div>
                       {t.from_account && (
                         <div className="text-xs text-muted-foreground">
                           From Account: {t.from_account.name}
