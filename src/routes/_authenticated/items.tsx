@@ -59,15 +59,50 @@ function ItemsPage() {
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     return (rows ?? []).filter((r: any) => {
+      if (filter === "archived") {
+        if (!r.archived_at) return false;
+      } else if (r.archived_at) {
+        return false; // hide archived from all other filters
+      }
       if (filter === "inventory" && r.item_type !== "inventory") return false;
       if (filter === "service" && r.item_type !== "service") return false;
       if (filter === "low" && !(r.item_type === "inventory" && Number(r.stock_on_hand ?? 0) <= Number(r.reorder_level ?? 0))) return false;
       if (filter === "inactive" && r.is_active !== false) return false;
       if (filter === "active" && r.is_active === false) return false;
       if (!q) return true;
-      return [r.name, r.sku, r.description].some((v) => v && String(v).toLowerCase().includes(q));
+      return [r.name, r.sku, r.description, r.barcode].some((v) => v && String(v).toLowerCase().includes(q));
     });
   }, [rows, filter, query]);
+
+  const archive = useMutation({
+    mutationFn: async ({ id, restore }: { id: string; restore: boolean }) => {
+      const { error } = await supabase
+        .from("items")
+        .update({ archived_at: restore ? null : new Date().toISOString() })
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: (_d, v) => {
+      qc.invalidateQueries({ queryKey: ["items"] });
+      toast.success(v.restore ? "Item unarchived" : "Item archived");
+    },
+    onError: (e: any) => toast.error(e.message ?? "Failed"),
+  });
+
+  const del = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from("items").update({ deleted_at: new Date().toISOString() }).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["items"] });
+      toast.success("Item deleted");
+    },
+    onError: (e: any) => toast.error(e.message ?? "Delete failed"),
+  });
+
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const allChecked = filtered.length > 0 && filtered.every((r: any) => selected.has(r.id));
   const toggleAll = () => setSelected(allChecked ? new Set() : new Set(filtered.map((r: any) => r.id)));
