@@ -63,7 +63,7 @@ const TYPE_ICON = {
 } as const;
 
 function BankAccountDetailPage() {
-  const { accountId } = useParams({ from: "/_authenticated/banking/$accountId" });
+  const { accountId } = useParams({ from: "/_authenticated/banking_/$accountId" });
   const navigate = useNavigate();
   const qc = useQueryClient();
   const { data: profile } = useProfile();
