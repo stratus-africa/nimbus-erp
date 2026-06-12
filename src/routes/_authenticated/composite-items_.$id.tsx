@@ -13,7 +13,7 @@ import { calculateCompositeAvailability, calculateCompositeCost } from "@/lib/co
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/composite-items_/$id")({
-  head: () => ({ meta: [{ title: "Composite Item — Nimbus ERP" }] }),
+  head: () => ({ meta: [{ title: "Production Item — Nimbus ERP" }] }),
   component: CompositeDetail,
 });
 
@@ -49,7 +49,7 @@ function CompositeDetail() {
   const margin = Number(parent?.selling_price ?? 0) - totalCost;
 
   const remove = async () => {
-    if (!confirm("Delete this composite item?")) return;
+    if (!confirm("Delete this production item?")) return;
     const { error } = await supabase.from("composite_items").delete().eq("id", id);
     if (error) return toast.error(error.message);
     toast.success("Deleted");

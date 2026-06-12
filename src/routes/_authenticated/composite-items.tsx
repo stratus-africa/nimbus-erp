@@ -58,17 +58,17 @@ function CompositeItemsPage() {
         </Button>
         <div className="relative flex-1 max-w-xl">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search composite items" className="h-9 pl-9 bg-muted/40 border-transparent focus-visible:bg-background" />
+          <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search production items" className="h-9 pl-9 bg-muted/40 border-transparent focus-visible:bg-background" />
         </div>
       </div>
 
       <div className="flex items-center justify-between px-6 py-4">
         <div className="flex items-center gap-2">
           <Boxes className="h-5 w-5 text-muted-foreground" />
-          <h1 className="text-xl font-semibold">Composite Items</h1>
+          <h1 className="text-xl font-semibold">Production Items</h1>
         </div>
         <Button onClick={() => navigate({ to: "/composite-items/new" })} className="h-9 gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white">
-          <Plus className="h-4 w-4" /> New Composite Item
+          <Plus className="h-4 w-4" /> New Production Item
         </Button>
       </div>
 
@@ -89,7 +89,7 @@ function CompositeItemsPage() {
             {isLoading ? (
               <TableRow><TableCell colSpan={7} className="py-10 text-center text-muted-foreground">Loading…</TableCell></TableRow>
             ) : !filtered.length ? (
-              <TableRow><TableCell colSpan={7} className="py-10 text-center text-muted-foreground">No composite items yet.</TableCell></TableRow>
+              <TableRow><TableCell colSpan={7} className="py-10 text-center text-muted-foreground">No production items yet.</TableCell></TableRow>
             ) : filtered.map((c: any) => {
               const comps = (c.composite_item_components ?? []).map((cc: any) => ({
                 quantity: Number(cc.quantity),
