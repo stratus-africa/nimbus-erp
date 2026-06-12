@@ -59,6 +59,15 @@ function CoAPage() {
     onError: (e: any) => toast.error(e.message),
   });
 
+  const remove = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("chart_of_accounts").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["coa"] }); toast.success("Account deleted"); },
+    onError: (e: any) => toast.error(e.message),
+  });
+
   return (
     <div>
       <PageHeader title="Chart of Accounts" description="Your accounting structure." action={<NewButton onClick={() => dlg.openFor({ code: "", name: "", account_type: "asset" })} label="New account" />} />
