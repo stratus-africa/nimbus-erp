@@ -26,6 +26,7 @@ import {
   BookOpen,
   NotebookPen,
   BarChart3,
+  Landmark,
   Settings,
   ShieldCheck,
   LogOut,
