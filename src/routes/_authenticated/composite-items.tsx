@@ -12,7 +12,7 @@ import { formatCurrency } from "@/lib/format";
 import { calculateCompositeAvailability } from "@/lib/composite-utils";
 
 export const Route = createFileRoute("/_authenticated/composite-items")({
-  head: () => ({ meta: [{ title: "Composite Items — Nimbus ERP" }] }),
+  head: () => ({ meta: [{ title: "Production Items — Nimbus ERP" }] }),
   component: CompositeItemsPage,
 });
 
