@@ -33,7 +33,7 @@ const SECTIONS: Section[] = [
           { label: "Profile" },
           { label: "Branding" },
           { label: "Custom Domain" },
-          { label: "Locations" },
+          { label: "Locations", to: "/settings/locations" },
           { label: "AI Integration" },
           { label: "Manage Subscription" },
         ],
