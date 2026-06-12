@@ -28,7 +28,10 @@ import {
   X,
   CheckCircle2,
   CalendarIcon,
+  AlertTriangle,
 } from "lucide-react";
+import { useCreditLimitCheck } from "@/hooks/use-credit-limit-check";
+import { applyCompositeExplosion } from "@/lib/composite-explode";
 
 export const Route = createFileRoute("/_authenticated/quotes_/new")({
   head: () => ({ meta: [{ title: "New Quote — Nimbus ERP" }] }),
