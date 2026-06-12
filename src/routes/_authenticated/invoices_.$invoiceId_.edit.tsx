@@ -11,7 +11,7 @@ export const Route = createFileRoute("/_authenticated/invoices_/$invoiceId_/edit
 });
 
 function EditInvoicePage() {
-  const { invoiceId } = useParams({ from: "/_authenticated/invoices_/$invoiceId/edit" });
+  const { invoiceId } = useParams({ from: "/_authenticated/invoices_/$invoiceId_/edit" });
   const { data: profile } = useProfile();
   const navigate = useNavigate();
   void navigate;
