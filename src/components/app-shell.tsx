@@ -59,13 +59,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-const NAV_GROUPS = [
-  {
-    label: "Overview",
-    items: [{ title: "Dashboard", url: "/dashboard", icon: LayoutDashboard }],
-  },
+type NavItem = { title: string; url: string; icon: any };
+type NavGroup = { label: string; icon: any; url?: string; items?: NavItem[] };
+
+const NAV_GROUPS: NavGroup[] = [
+  { label: "Dashboard", icon: LayoutDashboard, url: "/dashboard" },
   {
     label: "Sales",
+    icon: ShoppingBag,
     items: [
       { title: "Customers", url: "/customers", icon: Users },
       { title: "Quotes", url: "/quotes", icon: FileText },
@@ -77,6 +78,7 @@ const NAV_GROUPS = [
   },
   {
     label: "Purchases",
+    icon: ShoppingCart,
     items: [
       { title: "Suppliers", url: "/suppliers", icon: Truck },
       { title: "Purchase Orders", url: "/purchase-orders", icon: ShoppingCart },
@@ -87,6 +89,7 @@ const NAV_GROUPS = [
   },
   {
     label: "Inventory",
+    icon: Boxes,
     items: [
       { title: "Items", url: "/items", icon: Boxes },
       { title: "Production", url: "/assembly-orders", icon: ClipboardList },
@@ -96,12 +99,10 @@ const NAV_GROUPS = [
       { title: "Transfer Orders", url: "/transfer-orders", icon: ClipboardList },
     ],
   },
-  {
-    label: "Banking",
-    items: [{ title: "Banking", url: "/banking", icon: Landmark }],
-  },
+  { label: "Banking", icon: Wallet, url: "/banking" },
   {
     label: "Accountant",
+    icon: Calculator,
     items: [
       { title: "Manual Journals", url: "/journals", icon: NotebookPen },
       { title: "Tax Payments", url: "/tax-payments", icon: ReceiptText },
@@ -109,10 +110,7 @@ const NAV_GROUPS = [
       { title: "Fixed Assets", url: "/fixed-assets", icon: Landmark },
     ],
   },
-  {
-    label: "Insights",
-    items: [{ title: "Reports", url: "/reports", icon: BarChart3 }],
-  },
+  { label: "Reports", icon: BarChart3, url: "/reports" },
 ];
 
 export function AppShell({ children }: { children: ReactNode }) {
