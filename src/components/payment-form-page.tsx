@@ -520,6 +520,8 @@ export function PaymentFormPage({ config }: { config: PaymentsModuleConfig }) {
       qc.invalidateQueries({ queryKey: [config.docTable] });
       qc.invalidateQueries({ queryKey: ["audit_logs"] });
       qc.invalidateQueries({ queryKey: ["journal_entries"] });
+      qc.invalidateQueries({ queryKey: ["bank_accounts"] });
+      qc.invalidateQueries({ queryKey: ["bank_transactions"] });
       navigate({ to: isReceived ? "/payments-received" : "/payments-made" });
     },
     onError: (e: any) => toast.error(e.message ?? "Failed to record payment"),
