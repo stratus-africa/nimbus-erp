@@ -83,7 +83,43 @@ export function TransactionFormPage({
     },
   });
 
-  const { data: items } = useQuery({
+  const isCustomerDoc = config.partyTable === "customers";
+  const enforcesCredit = isCustomerDoc && (config.kind === "invoice" || config.kind === "sales_order");
+  const { settings: cvSettings } = useCVSettings();
+
+  const { data: customerCredit } = useQuery({
+    enabled: enforcesCredit && !!partyId && !!cvSettings?.customerCreditLimitEnabled,
+    queryKey: ["customer-credit-exposure", tenantId, partyId, !!cvSettings?.includeSalesOrdersInCreditLimit, initial?.id ?? null],
+    queryFn: async () => {
+      const { data: c } = await supabase
+        .from("customers").select("credit_limit, name").eq("id", partyId).maybeSingle();
+      const limit = Number(c?.credit_limit ?? 0);
+      let openInvoices = 0;
+      {
+        let q = (supabase as any).from("invoices").select("balance_due, id")
+          .eq("tenant_id", tenantId).eq("customer_id", partyId)
+          .not("status", "in", "(paid,cancelled,draft)");
+        if (initial?.id && config.kind === "invoice") q = q.neq("id", initial.id);
+        const { data } = await q;
+        openInvoices = (data ?? []).reduce((s: number, r: any) => s + Number(r.balance_due ?? 0), 0);
+      }
+      let openSOs = 0;
+      if (cvSettings?.includeSalesOrdersInCreditLimit) {
+        let q = (supabase as any).from("sales_orders").select("total, id, status")
+          .eq("tenant_id", tenantId).eq("customer_id", partyId)
+          .not("status", "in", "(cancelled,closed,draft)");
+        if (initial?.id && config.kind === "sales_order") q = q.neq("id", initial.id);
+        const { data } = await q;
+        openSOs = (data ?? []).reduce((s: number, r: any) => s + Number(r.total ?? 0), 0);
+      }
+      return { limit, exposure: openInvoices + openSOs, name: c?.name ?? "" };
+    },
+  });
+
+  const projectedExposure = (customerCredit?.exposure ?? 0) + Number(total || 0);
+  const creditLimitValue = customerCredit?.limit ?? 0;
+  const exceedsCredit = !!cvSettings?.customerCreditLimitEnabled && enforcesCredit && creditLimitValue > 0 && projectedExposure > creditLimitValue;
+  void Plus; void Trash2;
     queryKey: ["items-pick", tenantId],
     queryFn: async () => {
       const { data } = await supabase
