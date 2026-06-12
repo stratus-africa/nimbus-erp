@@ -141,17 +141,26 @@ export function AppShell({ children }: { children: ReactNode }) {
   );
 }
 
-function AppSidebar() {
+function AppSidebar({
+  groupPrefs,
+  onGroupToggle,
+}: {
+  groupPrefs: Record<string, boolean>;
+  onGroupToggle: (label: string, open: boolean) => void;
+}) {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { data: profile } = useProfile();
 
   return (
-    <Sidebar collapsible="icon">
+    <Sidebar collapsible="icon" aria-label="Primary">
       <SidebarContent>
         <div className="flex h-14 items-center gap-2 px-4 font-semibold">
-          <div className="grid h-7 w-7 shrink-0 place-items-center rounded-md bg-primary text-primary-foreground">
+          <div
+            className="grid h-7 w-7 shrink-0 place-items-center rounded-md bg-primary text-primary-foreground"
+            aria-hidden="true"
+          >
             <Sparkles className="h-4 w-4" />
           </div>
           {!collapsed && <span>Nimbus</span>}
@@ -166,9 +175,13 @@ function AppSidebar() {
                   return (
                     <SidebarMenuItem key={g.label}>
                       <SidebarMenuButton asChild isActive={active} tooltip={g.label}>
-                        <Link to={g.url!} className="flex items-center gap-2">
-                          <Icon className="h-4 w-4" />
-                          {!collapsed && <span>{g.label}</span>}
+                        <Link
+                          to={g.url!}
+                          className="flex items-center gap-2"
+                          aria-current={active ? "page" : undefined}
+                        >
+                          <Icon className="h-4 w-4" aria-hidden="true" />
+                          <span className={collapsed ? "sr-only" : undefined}>{g.label}</span>
                         </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
@@ -177,33 +190,43 @@ function AppSidebar() {
                 const groupActive = g.items.some(
                   (i) => pathname === i.url || pathname.startsWith(i.url + "/"),
                 );
+                const stored = groupPrefs[g.label];
+                const isOpen = stored ?? groupActive;
                 return (
                   <Collapsible
                     key={g.label}
-                    defaultOpen={groupActive}
+                    open={isOpen}
+                    onOpenChange={(v) => onGroupToggle(g.label, v)}
                     className="group/collapsible"
                   >
                     <SidebarMenuItem>
                       <CollapsibleTrigger asChild>
-                        <SidebarMenuButton tooltip={g.label} isActive={groupActive}>
-                          <Icon className="h-4 w-4" />
+                        <SidebarMenuButton
+                          tooltip={g.label}
+                          isActive={groupActive}
+                          aria-label={`${g.label} menu`}
+                        >
+                          <Icon className="h-4 w-4" aria-hidden="true" />
                           {!collapsed && (
                             <>
                               <span>{g.label}</span>
-                              <ChevronRight className="ml-auto h-4 w-4 transition-transform group-data-[state=open]/collapsible:rotate-90" />
+                              <ChevronRight
+                                className="ml-auto h-4 w-4 transition-transform group-data-[state=open]/collapsible:rotate-90"
+                                aria-hidden="true"
+                              />
                             </>
                           )}
                         </SidebarMenuButton>
                       </CollapsibleTrigger>
                       {!collapsed && (
                         <CollapsibleContent>
-                          <SidebarMenuSub>
+                          <SidebarMenuSub aria-label={`${g.label} submenu`}>
                             {g.items.map((item) => {
                               const active = pathname === item.url || pathname.startsWith(item.url + "/");
                               return (
                                 <SidebarMenuSubItem key={item.url}>
                                   <SidebarMenuSubButton asChild isActive={active}>
-                                    <Link to={item.url}>
+                                    <Link to={item.url} aria-current={active ? "page" : undefined}>
                                       <span>{item.title}</span>
                                     </Link>
                                   </SidebarMenuSubButton>
@@ -226,19 +249,27 @@ function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={pathname.startsWith("/settings")}>
-                  <Link to="/settings" className="flex items-center gap-2">
-                    <Settings className="h-4 w-4" />
-                    {!collapsed && <span>Settings</span>}
+                <SidebarMenuButton asChild isActive={pathname.startsWith("/settings")} tooltip="Settings">
+                  <Link
+                    to="/settings"
+                    className="flex items-center gap-2"
+                    aria-current={pathname.startsWith("/settings") ? "page" : undefined}
+                  >
+                    <Settings className="h-4 w-4" aria-hidden="true" />
+                    <span className={collapsed ? "sr-only" : undefined}>Settings</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               {profile?.isSuperAdmin && (
                 <SidebarMenuItem>
-                  <SidebarMenuButton asChild isActive={pathname.startsWith("/admin")}>
-                    <Link to="/admin" className="flex items-center gap-2">
-                      <ShieldCheck className="h-4 w-4" />
-                      {!collapsed && <span>Super Admin</span>}
+                  <SidebarMenuButton asChild isActive={pathname.startsWith("/admin")} tooltip="Super Admin">
+                    <Link
+                      to="/admin"
+                      className="flex items-center gap-2"
+                      aria-current={pathname.startsWith("/admin") ? "page" : undefined}
+                    >
+                      <ShieldCheck className="h-4 w-4" aria-hidden="true" />
+                      <span className={collapsed ? "sr-only" : undefined}>Super Admin</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
