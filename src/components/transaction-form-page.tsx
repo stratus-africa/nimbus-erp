@@ -286,11 +286,12 @@ export function TransactionFormPage({
       if (le) throw le;
 
       // Auto-explode any composite (kit) items into component reservations / deductions.
-      if (docId && (config.kind === "invoice" || config.kind === "quote" || config.kind === "sales_order")) {
+      const k = config.kind as string;
+      if (docId && (k === "invoice" || k === "quote" || k === "sales_order")) {
         try {
           await applyCompositeExplosion(
             tenantId,
-            config.kind as "invoice" | "quote" | "sales_order",
+            k as "invoice" | "quote" | "sales_order",
             docId,
             lines.map((l) => ({ item_id: l.item_id ?? null, quantity: l.quantity })),
           );
