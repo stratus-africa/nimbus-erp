@@ -308,13 +308,16 @@ export function PaymentFormPage({ config }: { config: PaymentsModuleConfig }) {
 
       // Post journal & excess credit only when finalising
       if (!asDraft) {
-        // Resolve accounts
-        const depCode = DEPOSIT_CODE[depositTo] ?? "1000";
-        const depositAcct = await getOrCreateAccount(
-          depCode,
-          depositTo,
-          "asset",
-        );
+        // Resolve accounts — depositTo is now a bank_accounts.id linked to a CoA ledger
+        if (!selectedBankAcct) throw new Error(`Select a ${depositLabel.toLowerCase()} account`);
+        let depositAcct = (selectedBankAcct as any).coa_account_id as string | null;
+        if (!depositAcct) {
+          depositAcct = await getOrCreateAccount(
+            (selectedBankAcct as any).account_type === "cash" ? "1000" : "1010",
+            (selectedBankAcct as any).account_name,
+            "asset",
+          );
+        }
         const contraCode = isReceived ? "1200" : "2000";
         const contraName = isReceived ? "Accounts Receivable" : "Accounts Payable";
         const contraType: "asset" | "liability" = isReceived ? "asset" : "liability";
