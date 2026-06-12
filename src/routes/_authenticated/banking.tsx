@@ -106,12 +106,17 @@ function BankingPage() {
 
   const remove = useMutation({
     mutationFn: async (id: string) => {
+      const acct = accounts.find((a) => a.id === id);
       const { error } = await supabase.from("bank_accounts" as any).delete().eq("id", id);
       if (error) throw error;
+      if ((acct as any)?.coa_account_id) {
+        await supabase.from("chart_of_accounts").delete().eq("id", (acct as any).coa_account_id);
+      }
     },
     onSuccess: () => {
       toast.success("Account deleted");
       qc.invalidateQueries({ queryKey: ["bank_accounts", tenantId] });
+      qc.invalidateQueries({ queryKey: ["coa"] });
     },
     onError: (e: any) => toast.error(e.message),
   });
