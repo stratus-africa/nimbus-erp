@@ -52,26 +52,32 @@ function todayIso() {
   return new Date().toISOString().slice(0, 10);
 }
 
-function NewQuotePage() {
+export function QuoteFormPage({
+  editId,
+  initial,
+}: { editId?: string; initial?: any } = {}) {
   const navigate = useNavigate();
   const { data: profile } = useProfile();
   const tenantId = profile?.currentTenant?.id;
   const currency = profile?.currentTenant?.base_currency ?? "KES";
   const qc = useQueryClient();
+  const isEdit = !!editId;
 
-  const [customerId, setCustomerId] = useState("");
+  const [customerId, setCustomerId] = useState(initial?.customer_id ?? "");
   const [location, setLocation] = useState("Head Office");
-  const [quoteNumber, setQuoteNumber] = useState("");
-  const [reference, setReference] = useState("");
-  const [quoteDate, setQuoteDate] = useState(todayIso());
-  const [expiryDate, setExpiryDate] = useState("");
+  const [quoteNumber, setQuoteNumber] = useState(initial?.quote_number ?? "");
+  const [reference, setReference] = useState(initial?.reference ?? "");
+  const [quoteDate, setQuoteDate] = useState(initial?.quote_date ?? todayIso());
+  const [expiryDate, setExpiryDate] = useState(initial?.expiry_date ?? "");
   const [salesperson, setSalesperson] = useState("");
   const [description, setDescription] = useState("");
-  const [notes, setNotes] = useState(DEFAULT_NOTES);
+  const [notes, setNotes] = useState(initial?.notes ?? DEFAULT_NOTES);
   const [terms, setTerms] = useState(DEFAULT_TERMS);
-  const [lines, setLines] = useState<Line[]>([
-    { item_id: null, description: "", quantity: 1, rate: 0, tax_rate: 0 },
-  ]);
+  const [lines, setLines] = useState<Line[]>(
+    initial?.lines?.length
+      ? initial.lines
+      : [{ item_id: null, description: "", quantity: 1, rate: 0, tax_rate: 0 }],
+  );
 
   const { data: customers } = useQuery({
     enabled: !!tenantId,
