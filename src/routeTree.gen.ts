@@ -59,6 +59,7 @@ import { Route as AuthenticatedQuotesQuoteIdEditRouteImport } from './routes/_au
 import { Route as AuthenticatedItemsItemIdEditRouteImport } from './routes/_authenticated/items_.$itemId_.edit'
 import { Route as AuthenticatedInvoicesInvoiceIdEditRouteImport } from './routes/_authenticated/invoices_.$invoiceId_.edit'
 import { Route as AuthenticatedCustomersCustomerIdEditRouteImport } from './routes/_authenticated/customers.$customerId_.edit'
+import { Route as AuthenticatedSettingsLocationsLocationIdEditRouteImport } from './routes/_authenticated/settings_.locations_.$locationId_.edit'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
@@ -343,6 +344,12 @@ const AuthenticatedCustomersCustomerIdEditRoute =
     path: '/customers/$customerId/edit',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedSettingsLocationsLocationIdEditRoute =
+  AuthenticatedSettingsLocationsLocationIdEditRouteImport.update({
+    id: '/settings_/locations_/$locationId_/edit',
+    path: '/settings/locations/$locationId/edit',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -394,6 +401,7 @@ export interface FileRoutesByFullPath {
   '/sales-orders/$soId/edit': typeof AuthenticatedSalesOrdersSoIdEditRoute
   '/settings/locations/new': typeof AuthenticatedSettingsLocationsNewRoute
   '/suppliers/$supplierId/edit': typeof AuthenticatedSuppliersSupplierIdEditRoute
+  '/settings/locations/$locationId/edit': typeof AuthenticatedSettingsLocationsLocationIdEditRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -445,6 +453,7 @@ export interface FileRoutesByTo {
   '/sales-orders/$soId/edit': typeof AuthenticatedSalesOrdersSoIdEditRoute
   '/settings/locations/new': typeof AuthenticatedSettingsLocationsNewRoute
   '/suppliers/$supplierId/edit': typeof AuthenticatedSuppliersSupplierIdEditRoute
+  '/settings/locations/$locationId/edit': typeof AuthenticatedSettingsLocationsLocationIdEditRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -498,6 +507,7 @@ export interface FileRoutesById {
   '/_authenticated/sales-orders_/$soId_/edit': typeof AuthenticatedSalesOrdersSoIdEditRoute
   '/_authenticated/settings_/locations_/new': typeof AuthenticatedSettingsLocationsNewRoute
   '/_authenticated/suppliers/$supplierId_/edit': typeof AuthenticatedSuppliersSupplierIdEditRoute
+  '/_authenticated/settings_/locations_/$locationId_/edit': typeof AuthenticatedSettingsLocationsLocationIdEditRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -551,6 +561,7 @@ export interface FileRouteTypes {
     | '/sales-orders/$soId/edit'
     | '/settings/locations/new'
     | '/suppliers/$supplierId/edit'
+    | '/settings/locations/$locationId/edit'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -602,6 +613,7 @@ export interface FileRouteTypes {
     | '/sales-orders/$soId/edit'
     | '/settings/locations/new'
     | '/suppliers/$supplierId/edit'
+    | '/settings/locations/$locationId/edit'
   id:
     | '__root__'
     | '/'
@@ -654,6 +666,7 @@ export interface FileRouteTypes {
     | '/_authenticated/sales-orders_/$soId_/edit'
     | '/_authenticated/settings_/locations_/new'
     | '/_authenticated/suppliers/$supplierId_/edit'
+    | '/_authenticated/settings_/locations_/$locationId_/edit'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -1015,6 +1028,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCustomersCustomerIdEditRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/settings_/locations_/$locationId_/edit': {
+      id: '/_authenticated/settings_/locations_/$locationId_/edit'
+      path: '/settings/locations/$locationId/edit'
+      fullPath: '/settings/locations/$locationId/edit'
+      preLoaderRoute: typeof AuthenticatedSettingsLocationsLocationIdEditRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -1077,6 +1097,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSalesOrdersSoIdEditRoute: typeof AuthenticatedSalesOrdersSoIdEditRoute
   AuthenticatedSettingsLocationsNewRoute: typeof AuthenticatedSettingsLocationsNewRoute
   AuthenticatedSuppliersSupplierIdEditRoute: typeof AuthenticatedSuppliersSupplierIdEditRoute
+  AuthenticatedSettingsLocationsLocationIdEditRoute: typeof AuthenticatedSettingsLocationsLocationIdEditRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -1132,6 +1153,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
     AuthenticatedSettingsLocationsNewRoute,
   AuthenticatedSuppliersSupplierIdEditRoute:
     AuthenticatedSuppliersSupplierIdEditRoute,
+  AuthenticatedSettingsLocationsLocationIdEditRoute:
+    AuthenticatedSettingsLocationsLocationIdEditRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
