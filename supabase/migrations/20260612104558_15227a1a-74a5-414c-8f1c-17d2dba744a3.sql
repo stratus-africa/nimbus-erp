@@ -1,0 +1,12 @@
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.tenant_settings TO authenticated;
+GRANT ALL ON public.tenant_settings TO service_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.custom_fields TO authenticated;
+GRANT ALL ON public.custom_fields TO service_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.validation_rules TO authenticated;
+GRANT ALL ON public.validation_rules TO service_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.record_locks TO authenticated;
+GRANT ALL ON public.record_locks TO service_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.custom_buttons TO authenticated;
+GRANT ALL ON public.custom_buttons TO service_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.related_lists TO authenticated;
+GRANT ALL ON public.related_lists TO service_role;
