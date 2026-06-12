@@ -146,8 +146,23 @@ export function PaymentsListing({
 
       {/* header */}
       <div className="flex items-center justify-between gap-3 border-b bg-card px-5 py-3">
-        <h1 className="text-lg font-semibold">{config.title}</h1>
+        <div className="flex items-center gap-3">
+          <h1 className="text-lg font-semibold">{config.title}</h1>
+          {unallocated && (
+            <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800">
+              Unused credits only
+            </span>
+          )}
+        </div>
         <div className="flex items-center gap-2">
+          {unallocated && (
+            <Button
+              variant="outline" size="sm" className="h-8"
+              onClick={() => navigate({ to: config.newRoute.replace("/new", "") as any })}
+            >
+              Show all payments
+            </Button>
+          )}
           <Button
             size="sm"
             className="h-8 gap-1 bg-emerald-600 text-white hover:bg-emerald-700"
@@ -178,51 +193,55 @@ export function PaymentsListing({
           <thead className="sticky top-0 z-10 border-b bg-card">
             <tr className="text-[11px] uppercase tracking-wide text-muted-foreground">
               <th className="px-4 py-2.5 text-left font-medium">Date</th>
+              <th className="px-3 py-2.5 text-left font-medium">{config.partyLabel}</th>
               <th className="px-3 py-2.5 text-left font-medium">
-                {config.partyLabel}
-              </th>
-              <th className="px-3 py-2.5 text-left font-medium">
-                {config.docTable === "invoices" ? "Invoice #" : "Bill #"}
+                {unallocated ? "Credit #" : config.docTable === "invoices" ? "Invoice #" : "Bill #"}
               </th>
               <th className="px-3 py-2.5 text-left font-medium">Reference</th>
-              <th className="px-3 py-2.5 text-left font-medium">Method</th>
-              <th className="px-3 py-2.5 text-right font-medium">Amount</th>
+              <th className="px-3 py-2.5 text-left font-medium">
+                {unallocated ? "Source" : "Method"}
+              </th>
+              <th className="px-3 py-2.5 text-right font-medium">
+                {unallocated ? "Balance" : "Amount"}
+              </th>
             </tr>
           </thead>
           <tbody>
             {isLoading ? (
-              <tr>
-                <td colSpan={6} className="px-4 py-10 text-center text-muted-foreground">
-                  Loading…
-                </td>
-              </tr>
+              <tr><td colSpan={6} className="px-4 py-10 text-center text-muted-foreground">Loading…</td></tr>
             ) : filtered.length === 0 ? (
               <tr>
                 <td colSpan={6} className="px-4 py-10 text-center text-muted-foreground">
-                  No payments recorded yet.
+                  {unallocated ? "No unused credits." : "No payments recorded yet."}
                 </td>
               </tr>
+            ) : unallocated ? (
+              filtered.map((r: any) => {
+                const party = r[config.partyTable];
+                return (
+                  <tr key={r.id} className="border-b transition-colors hover:bg-muted/40">
+                    <td className="px-4 py-3 align-middle whitespace-nowrap">{formatDate(r.issue_date)}</td>
+                    <td className="px-3 py-3 align-middle font-medium">{party?.name ?? "—"}</td>
+                    <td className="px-3 py-3 align-middle">{r.credit_number ?? "—"}</td>
+                    <td className="px-3 py-3 align-middle text-muted-foreground">{r.reference ?? "—"}</td>
+                    <td className="px-3 py-3 align-middle capitalize">{r.source ?? "—"}</td>
+                    <td className="px-3 py-3 align-middle text-right tabular-nums font-medium text-amber-700">
+                      {formatCurrency(Number(r.balance ?? 0), currency)}
+                    </td>
+                  </tr>
+                );
+              })
             ) : (
               filtered.map((r: any) => {
                 const doc = r[config.docTable];
                 const party = doc?.[config.partyTable];
                 return (
                   <tr key={r.id} className="border-b transition-colors hover:bg-muted/40">
-                    <td className="px-4 py-3 align-middle whitespace-nowrap">
-                      {formatDate(r.payment_date)}
-                    </td>
-                    <td className="px-3 py-3 align-middle font-medium">
-                      {party?.name ?? "—"}
-                    </td>
-                    <td className="px-3 py-3 align-middle">
-                      {doc?.[config.docNumberField] ?? "—"}
-                    </td>
-                    <td className="px-3 py-3 align-middle text-muted-foreground">
-                      {r.reference ?? "—"}
-                    </td>
-                    <td className="px-3 py-3 align-middle capitalize">
-                      {r.method ?? "—"}
-                    </td>
+                    <td className="px-4 py-3 align-middle whitespace-nowrap">{formatDate(r.payment_date)}</td>
+                    <td className="px-3 py-3 align-middle font-medium">{party?.name ?? "—"}</td>
+                    <td className="px-3 py-3 align-middle">{doc?.[config.docNumberField] ?? "—"}</td>
+                    <td className="px-3 py-3 align-middle text-muted-foreground">{r.reference ?? "—"}</td>
+                    <td className="px-3 py-3 align-middle capitalize">{r.method ?? "—"}</td>
                     <td className="px-3 py-3 align-middle text-right tabular-nums font-medium">
                       {formatCurrency(Number(r.amount ?? 0), currency)}
                     </td>
