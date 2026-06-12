@@ -52,12 +52,36 @@ export function PaymentsListing({
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
 
-  const queryKey = [config.table, "list", tenantId] as const;
+  const creditsTable = config.partyTable === "customers" ? "customer_credits" : "supplier_credits";
+  const partyFk = config.partyTable === "customers" ? "customer_id" : "supplier_id";
+
+  const queryKey = [
+    unallocated ? creditsTable : config.table,
+    "list",
+    tenantId,
+    unallocated ? "unallocated" : "all",
+    partyId ?? "",
+  ] as const;
 
   const { data: rows, isLoading } = useQuery({
     enabled: !!tenantId,
     queryKey,
     queryFn: async () => {
+      if (unallocated) {
+        const partyJoin =
+          config.partyTable === "customers" ? "customers(name)" : "suppliers(name)";
+        let q = supabase
+          .from(creditsTable)
+          .select(`*, ${partyJoin}`)
+          .eq("tenant_id", tenantId!)
+          .gt("balance", 0)
+          .is("deleted_at", null)
+          .order("issue_date", { ascending: false });
+        if (partyId) q = q.eq(partyFk, partyId);
+        const { data, error } = await q;
+        if (error) throw error;
+        return data ?? [];
+      }
       const partyJoin =
         config.partyTable === "customers" ? "customers(name)" : "suppliers(name)";
       const docJoin =
@@ -79,6 +103,14 @@ export function PaymentsListing({
     const q = search.trim().toLowerCase();
     if (!q) return list;
     return list.filter((r) => {
+      if (unallocated) {
+        const party = r[config.partyTable];
+        return (
+          party?.name?.toLowerCase().includes(q) ||
+          r.reference?.toLowerCase().includes(q) ||
+          r.credit_number?.toLowerCase().includes(q)
+        );
+      }
       const doc = r[config.docTable];
       const party = doc?.[config.partyTable];
       return (
