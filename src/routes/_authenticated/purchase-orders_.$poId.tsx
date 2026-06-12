@@ -202,7 +202,7 @@ function PurchaseOrderDetailPage() {
   const status = (po.status ?? "draft") as string;
   const statusLabel = status.charAt(0).toUpperCase() + status.slice(1).replace("_", " ");
   const supplierName = (po.suppliers as any)?.name ?? "—";
-  const billing = (po.suppliers as any)?.billing_address ?? "—";
+  const billing = (po.suppliers as any)?.address ?? "—";
   const actorName = createdByProfile?.full_name ?? createdByProfile?.email ?? "System";
   const activity = buildActivity(po, convertedBill, actorName);
 
