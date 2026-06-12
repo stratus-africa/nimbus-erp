@@ -24,7 +24,8 @@ import {
 import type { DocConfig } from "@/components/transactions-module";
 import { formatCurrency } from "@/lib/format";
 import { toast } from "sonner";
-import { FileText, Plus, Settings, Trash2, X } from "lucide-react";
+import { FileText, Plus, Settings, Trash2, X, AlertTriangle } from "lucide-react";
+import { useCVSettings } from "@/hooks/use-cv-settings";
 
 type Line = {
   id?: string;
@@ -80,6 +81,37 @@ export function TransactionFormPage({
     },
   });
 
+  const isCustomerDoc = config.partyTable === "customers";
+  const enforcesCredit = isCustomerDoc && config.kind === "invoice";
+  const { settings: cvSettings } = useCVSettings();
+
+  const { data: customerCredit } = useQuery({
+    enabled: enforcesCredit && !!partyId && !!cvSettings?.customerCreditLimitEnabled,
+    queryKey: ["customer-credit-exposure", tenantId, partyId, !!cvSettings?.includeSalesOrdersInCreditLimit, initial?.id ?? null],
+    queryFn: async () => {
+      const { data: c } = await supabase
+        .from("customers").select("credit_limit, name").eq("id", partyId).maybeSingle();
+      const limit = Number((c as any)?.credit_limit ?? 0);
+      let openInvoices = 0;
+      {
+        let q = (supabase as any).from("invoices").select("balance_due, id")
+          .eq("tenant_id", tenantId).eq("customer_id", partyId)
+          .not("status", "in", "(paid,cancelled,draft)");
+        if (initial?.id && config.kind === "invoice") q = q.neq("id", initial.id);
+        const { data } = await q;
+        openInvoices = (data ?? []).reduce((s: number, r: any) => s + Number(r.balance_due ?? 0), 0);
+      }
+      let openSOs = 0;
+      if (cvSettings?.includeSalesOrdersInCreditLimit) {
+        const { data } = await (supabase as any).from("sales_orders").select("total, status")
+          .eq("tenant_id", tenantId).eq("customer_id", partyId)
+          .not("status", "in", "(cancelled,closed,draft)");
+        openSOs = (data ?? []).reduce((s: number, r: any) => s + Number(r.total ?? 0), 0);
+      }
+      return { limit, exposure: openInvoices + openSOs, name: (c as any)?.name ?? "" };
+    },
+  });
+
   const { data: items } = useQuery({
     queryKey: ["items-pick", tenantId],
     queryFn: async () => {
@@ -126,6 +158,16 @@ export function TransactionFormPage({
   );
   const total = subtotal + tax;
 
+  const creditLimit = Number(customerCredit?.limit ?? 0);
+  const existingDocAmount = enforcesCredit && initial?.id ? Number(initial?.balance_due ?? initial?.total ?? 0) : 0;
+  const projectedExposure = (customerCredit?.exposure ?? 0) - existingDocAmount + Number(total || 0);
+  const exceedsCredit =
+    !!cvSettings?.customerCreditLimitEnabled &&
+    enforcesCredit &&
+    creditLimit > 0 &&
+    projectedExposure > creditLimit;
+  const creditAction = cvSettings?.creditLimitExceededAction ?? "warn";
+
   const addLine = () =>
     setLines((ls) => [
       ...ls,
@@ -157,6 +199,18 @@ export function TransactionFormPage({
     if (!partyId)
       return toast.error(`Please select a ${config.partyLabel.toLowerCase()}`);
     if (lines.length === 0) return toast.error("Add at least one line");
+    if (exceedsCredit) {
+      const overBy = projectedExposure - creditLimit;
+      if (creditAction === "restrict") {
+        return toast.error(
+          `Credit limit exceeded by ${overBy.toFixed(2)} ${currency}. Cannot save this invoice.`,
+        );
+      }
+      const ok = window.confirm(
+        `${customerCredit?.name ?? "Customer"} will exceed their credit limit of ${creditLimit.toFixed(2)} ${currency} by ${overBy.toFixed(2)} ${currency}. Continue?`,
+      );
+      if (!ok) return;
+    }
     setSaving(true);
     try {
       let docId = initial?.id as string | undefined;
@@ -278,6 +332,24 @@ export function TransactionFormPage({
                 </SelectContent>
               </Select>
             </div>
+            {enforcesCredit && cvSettings?.customerCreditLimitEnabled && customerCredit && creditLimit > 0 && (
+              <div className={`mt-3 flex items-start gap-2 rounded-md border px-3 py-2 text-xs ${exceedsCredit ? "border-rose-300 bg-rose-50 text-rose-800" : "border-amber-200 bg-amber-50/70 text-amber-900"}`}>
+                <AlertTriangle className="h-3.5 w-3.5 mt-0.5 shrink-0" />
+                <div className="space-y-0.5">
+                  <div>
+                    Credit limit <span className="font-medium">{creditLimit.toFixed(2)} {currency}</span> ·
+                    Open balance <span className="font-medium">{(customerCredit.exposure - existingDocAmount).toFixed(2)} {currency}</span> ·
+                    This invoice <span className="font-medium">{total.toFixed(2)} {currency}</span>
+                  </div>
+                  {exceedsCredit && (
+                    <div className="font-semibold">
+                      Projected exposure {projectedExposure.toFixed(2)} {currency} exceeds limit by {(projectedExposure - creditLimit).toFixed(2)} {currency}.
+                      {creditAction === "restrict" ? " Save blocked." : " You'll be asked to confirm on save."}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-[180px_1fr_180px_1fr] sm:items-center">
