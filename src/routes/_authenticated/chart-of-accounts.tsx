@@ -82,7 +82,30 @@ function CoAPage() {
                   <TableCell className="font-medium">{a.name}</TableCell>
                   <TableCell><Badge variant="outline" className={TYPE_COLORS[a.account_type] ?? ""}>{a.account_type}</Badge></TableCell>
                   <TableCell className="text-right tabular-nums">{Number(a.opening_balance ?? 0).toFixed(2)}</TableCell>
-                  <TableCell className="text-right"><Button variant="ghost" size="sm" onClick={() => dlg.openFor(a)}>Edit</Button></TableCell>
+                  <TableCell className="text-right">
+                    <div className="inline-flex items-center gap-1">
+                      <Button variant="ghost" size="sm" onClick={() => dlg.openFor(a)}>Edit</Button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => dlg.openFor(a)}>Edit</DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            className="text-destructive focus:text-destructive"
+                            onClick={() => {
+                              if (confirm(`Delete account "${a.name}"? This may fail if the account is in use.`)) remove.mutate(a.id);
+                            }}
+                          >
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  </TableCell>
                 </TableRow>
               ))}
           </TableBody>
