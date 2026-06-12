@@ -184,16 +184,10 @@ export function QuoteFormPage({
       if (!customerId) throw new Error("Please select a customer");
       if (lines.length === 0) throw new Error("Add at least one line");
 
-      const { data: num, error: ne } = await supabase.rpc("next_doc_number", {
-        _tenant: tenantId,
-        _doc_type: "quote",
-      });
-      if (ne) throw ne;
-
-      const payload: any = {
+      let quoteId: string;
+      const basePayload: any = {
         tenant_id: tenantId,
         customer_id: customerId,
-        quote_number: num ?? quoteNumber,
         quote_date: quoteDate,
         expiry_date: expiryDate || null,
         status: sendAfter ? "sent" : "draft",
@@ -203,15 +197,31 @@ export function QuoteFormPage({
         notes: [description, notes, terms].filter(Boolean).join("\n\n"),
       };
 
-      const { data: inserted, error } = await supabase
-        .from("quotes")
-        .insert(payload)
-        .select("id")
-        .single();
-      if (error) throw error;
+      if (isEdit && editId) {
+        const { error: ue } = await supabase
+          .from("quotes")
+          .update({ ...basePayload, quote_number: quoteNumber })
+          .eq("id", editId);
+        if (ue) throw ue;
+        await supabase.from("quote_lines").delete().eq("quote_id", editId);
+        quoteId = editId;
+      } else {
+        const { data: num, error: ne } = await supabase.rpc("next_doc_number", {
+          _tenant: tenantId,
+          _doc_type: "quote",
+        });
+        if (ne) throw ne;
+        const { data: inserted, error } = await supabase
+          .from("quotes")
+          .insert({ ...basePayload, quote_number: num ?? quoteNumber })
+          .select("id")
+          .single();
+        if (error) throw error;
+        quoteId = inserted.id;
+      }
 
       const lineRows = lines.map((l, i) => ({
-        quote_id: inserted.id,
+        quote_id: quoteId,
         item_id: l.item_id,
         description: l.description || null,
         quantity: l.quantity,
@@ -222,12 +232,13 @@ export function QuoteFormPage({
       }));
       const { error: le } = await supabase.from("quote_lines").insert(lineRows);
       if (le) throw le;
-      return inserted.id;
+      return quoteId;
     },
-    onSuccess: () => {
-      toast.success("Quote saved");
+    onSuccess: (id) => {
+      toast.success(isEdit ? "Quote updated" : "Quote saved");
       qc.invalidateQueries({ queryKey: ["quotes-list"] });
-      navigate({ to: "/quotes" });
+      qc.invalidateQueries({ queryKey: ["quote", id] });
+      navigate(isEdit ? { to: "/quotes/$quoteId", params: { quoteId: id } } : { to: "/quotes" });
     },
     onError: (e: any) => toast.error(e.message ?? "Failed to save"),
   });
