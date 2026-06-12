@@ -36,7 +36,15 @@ export type PaymentsModuleConfig = {
   newRoute: "/payments-received/new" | "/payments-made/new";
 };
 
-export function PaymentsListing({ config }: { config: PaymentsModuleConfig }) {
+export function PaymentsListing({
+  config,
+  unallocated = false,
+  partyId,
+}: {
+  config: PaymentsModuleConfig;
+  unallocated?: boolean;
+  partyId?: string;
+}) {
   const { data: profile } = useProfile();
   const tenantId = profile?.currentTenant?.id;
   const currency = profile?.currentTenant?.base_currency ?? "KES";
