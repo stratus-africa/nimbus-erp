@@ -109,29 +109,43 @@ function ItemViewPage() {
     },
   });
 
-  // Transactions: invoice lines, PO lines, adjustment lines for this item, tenant-scoped via RLS.
+  // Transactions: pulled from every document type that can reference an item.
   const { data: txData } = useQuery({
     enabled: !!item && !!tenantId,
     queryKey: ["item-transactions", itemId, tenantId],
     queryFn: async () => {
       const tid = tenantId!;
-      const [inv, po, adj] = await Promise.all([
+      const [quote, so, inv, bill, po, adj] = await Promise.all([
+        supabase.from("quote_lines")
+          .select("id, quantity, rate, line_total, quotes!inner(id, quote_number, quote_date, status, tenant_id, customers(name))")
+          .eq("item_id", itemId).eq("quotes.tenant_id", tid),
+        supabase.from("sales_order_lines")
+          .select("id, quantity, rate, line_total, sales_orders!inner(id, so_number, so_date, status, tenant_id, customers(name))")
+          .eq("item_id", itemId).eq("sales_orders.tenant_id", tid),
         supabase.from("invoice_lines")
-          .select("id, qty, unit_price, line_total, invoices!inner(id, invoice_number, invoice_date, status, tenant_id, customers(name))")
+          .select("id, quantity, rate, line_total, invoices!inner(id, invoice_number, invoice_date, status, tenant_id, customers(name))")
           .eq("item_id", itemId).eq("invoices.tenant_id", tid),
+        supabase.from("bill_lines")
+          .select("id, quantity, rate, line_total, bills!inner(id, bill_number, bill_date, status, tenant_id, suppliers(name))")
+          .eq("item_id", itemId).eq("bills.tenant_id", tid),
         supabase.from("purchase_order_lines")
-          .select("id, qty, unit_price, line_total, purchase_orders!inner(id, po_number, order_date, status, tenant_id, suppliers(name))")
+          .select("id, quantity, rate, line_total, purchase_orders!inner(id, po_number, po_date, status, tenant_id, suppliers(name))")
           .eq("item_id", itemId).eq("purchase_orders.tenant_id", tid),
         supabase.from("inventory_adjustment_lines")
           .select("id, qty_before, qty_after, variance, inventory_adjustments!inner(id, adjustment_number, adjustment_date, adjustment_type, reason, tenant_id, created_by)")
           .eq("item_id", itemId).eq("inventory_adjustments.tenant_id", tid),
       ]);
-      if (inv.error) throw inv.error;
-      if (po.error) throw po.error;
-      if (adj.error) throw adj.error;
-      return { invoices: inv.data ?? [], pos: po.data ?? [], adjustments: adj.data ?? [] };
+      return {
+        quotes: (quote.data as any[]) ?? [],
+        salesOrders: (so.data as any[]) ?? [],
+        invoices: (inv.data as any[]) ?? [],
+        bills: (bill.data as any[]) ?? [],
+        pos: (po.data as any[]) ?? [],
+        adjustments: (adj.data as any[]) ?? [],
+      };
     },
   });
+
 
   // Actor names for the timeline.
   const actorIds = Array.from(new Set([item?.created_by, ...(txData?.adjustments ?? []).map((a: any) => a.inventory_adjustments?.created_by)].filter(Boolean))) as string[];
@@ -409,13 +423,9 @@ function ItemViewPage() {
 
         {/* TRANSACTIONS */}
         <TabsContent value="transactions" className="flex-1 m-0 p-6 overflow-auto">
-          <TransactionsList
-            invoices={txData?.invoices ?? []}
-            pos={txData?.pos ?? []}
-            adjustments={txData?.adjustments ?? []}
-            currency={currency}
-          />
+          <TransactionsList data={txData} currency={currency} />
         </TabsContent>
+
 
         {/* ACTIVITY */}
         <TabsContent value="history" className="flex-1 m-0 p-6 overflow-auto">
@@ -449,65 +459,153 @@ function ItemViewPage() {
   );
 }
 
-function TransactionsList({
-  invoices, pos, adjustments, currency,
-}: {
-  invoices: any[]; pos: any[]; adjustments: any[]; currency: string;
-}) {
-  type Row = { ts: string; type: string; doc: string; party: string; qty: string; amount: string; status: string; icon: any };
-  const rows: Row[] = [];
-  invoices.forEach((l: any) => {
-    const inv = l.invoices;
-    rows.push({
-      ts: inv.invoice_date, type: "Invoice", doc: inv.invoice_number ?? "—",
-      party: inv.customers?.name ?? "—",
-      qty: `${Number(l.qty ?? 0).toFixed(2)}`,
-      amount: formatCurrency(Number(l.line_total ?? 0), currency),
-      status: inv.status ?? "—", icon: FileText,
-    });
-  });
-  pos.forEach((l: any) => {
-    const po = l.purchase_orders;
-    rows.push({
-      ts: po.order_date, type: "Purchase Order", doc: po.po_number ?? "—",
-      party: po.suppliers?.name ?? "—",
-      qty: `${Number(l.qty ?? 0).toFixed(2)}`,
-      amount: formatCurrency(Number(l.line_total ?? 0), currency),
-      status: po.status ?? "—", icon: ShoppingCart,
-    });
-  });
-  adjustments.forEach((l: any) => {
-    const a = l.inventory_adjustments;
-    const v = Number(l.variance ?? 0);
-    rows.push({
-      ts: a.adjustment_date, type: "Adjustment", doc: a.adjustment_number ?? "—",
-      party: a.reason ?? a.adjustment_type ?? "—",
-      qty: `${v >= 0 ? "+" : ""}${v.toFixed(2)}`,
-      amount: "—", status: a.adjustment_type ?? "—", icon: ArrowLeftRight,
-    });
-  });
-  rows.sort((a, b) => new Date(b.ts).getTime() - new Date(a.ts).getTime());
+type TxData = {
+  quotes: any[]; salesOrders: any[]; invoices: any[];
+  bills: any[]; pos: any[]; adjustments: any[];
+};
 
-  if (rows.length === 0) {
-    return <EmptyState icon={FileText} title="No transactions yet" description="Invoices, purchase orders, and stock adjustments referencing this item will appear here." />;
-  }
+const FILTER_OPTIONS = [
+  "Quotes", "Sales Orders", "Invoices", "Credit Notes", "Packages", "Shipments",
+  "Purchase Orders", "Purchase Receives", "Bills", "Supplier Credits",
+  "Transfer Orders", "Inventory Adjustments", "Production",
+] as const;
+type FilterOption = (typeof FILTER_OPTIONS)[number];
+
+function TransactionsList({ data, currency }: { data: TxData | undefined; currency: string }) {
+  const [filter, setFilter] = useState<FilterOption>("Quotes");
+  const [status, setStatus] = useState<string>("All");
+
+  type Row = { ts: string; doc: string; party: string; qty: string; amount: string; status: string; icon: any };
+  const rowsForFilter = (): Row[] => {
+    if (!data) return [];
+    switch (filter) {
+      case "Quotes":
+        return (data.quotes ?? []).map((l) => ({
+          ts: l.quotes?.quote_date, doc: l.quotes?.quote_number ?? "—",
+          party: l.quotes?.customers?.name ?? "—",
+          qty: Number(l.quantity ?? 0).toFixed(2),
+          amount: formatCurrency(Number(l.line_total ?? 0), currency),
+          status: l.quotes?.status ?? "—", icon: FileText,
+        }));
+      case "Sales Orders":
+        return (data.salesOrders ?? []).map((l) => ({
+          ts: l.sales_orders?.so_date, doc: l.sales_orders?.so_number ?? "—",
+          party: l.sales_orders?.customers?.name ?? "—",
+          qty: Number(l.quantity ?? 0).toFixed(2),
+          amount: formatCurrency(Number(l.line_total ?? 0), currency),
+          status: l.sales_orders?.status ?? "—", icon: FileText,
+        }));
+      case "Invoices":
+        return (data.invoices ?? []).map((l) => ({
+          ts: l.invoices?.invoice_date, doc: l.invoices?.invoice_number ?? "—",
+          party: l.invoices?.customers?.name ?? "—",
+          qty: Number(l.quantity ?? 0).toFixed(2),
+          amount: formatCurrency(Number(l.line_total ?? 0), currency),
+          status: l.invoices?.status ?? "—", icon: FileText,
+        }));
+      case "Purchase Orders":
+        return (data.pos ?? []).map((l) => ({
+          ts: l.purchase_orders?.po_date, doc: l.purchase_orders?.po_number ?? "—",
+          party: l.purchase_orders?.suppliers?.name ?? "—",
+          qty: Number(l.quantity ?? 0).toFixed(2),
+          amount: formatCurrency(Number(l.line_total ?? 0), currency),
+          status: l.purchase_orders?.status ?? "—", icon: ShoppingCart,
+        }));
+      case "Bills":
+        return (data.bills ?? []).map((l) => ({
+          ts: l.bills?.bill_date, doc: l.bills?.bill_number ?? "—",
+          party: l.bills?.suppliers?.name ?? "—",
+          qty: Number(l.quantity ?? 0).toFixed(2),
+          amount: formatCurrency(Number(l.line_total ?? 0), currency),
+          status: l.bills?.status ?? "—", icon: ShoppingCart,
+        }));
+      case "Inventory Adjustments":
+        return (data.adjustments ?? []).map((l) => {
+          const v = Number(l.variance ?? 0);
+          return {
+            ts: l.inventory_adjustments?.adjustment_date,
+            doc: l.inventory_adjustments?.adjustment_number ?? "—",
+            party: l.inventory_adjustments?.reason ?? l.inventory_adjustments?.adjustment_type ?? "—",
+            qty: `${v >= 0 ? "+" : ""}${v.toFixed(2)}`, amount: "—",
+            status: l.inventory_adjustments?.adjustment_type ?? "—", icon: ArrowLeftRight,
+          };
+        });
+      default:
+        return [];
+    }
+  };
+
+  const allRows = rowsForFilter().sort((a, b) => new Date(b.ts).getTime() - new Date(a.ts).getTime());
+  const statuses = ["All", ...Array.from(new Set(allRows.map((r) => r.status).filter((s) => s && s !== "—")))];
+  const rows = status === "All" ? allRows : allRows.filter((r) => r.status === status);
+  const emptyLabel = filter.toLowerCase();
+
   return (
-    <div className="rounded-md border">
-      <div className="grid grid-cols-[140px_140px_1.2fr_1fr_120px_140px_100px] gap-4 border-b bg-muted/40 px-4 py-2.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-        <span>Date</span><span>Type</span><span>Reference</span><span>Party</span>
-        <span className="text-right">Qty</span><span className="text-right">Amount</span><span>Status</span>
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-center gap-3">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm" className="h-9 gap-2">
+              <span className="text-muted-foreground">Filter By:</span>
+              <span className="font-medium">{filter}</span>
+              <ChevronRight className="h-3.5 w-3.5 rotate-90 text-muted-foreground" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="w-56">
+            {FILTER_OPTIONS.map((opt) => (
+              <DropdownMenuItem
+                key={opt}
+                onClick={() => { setFilter(opt); setStatus("All"); }}
+                className={filter === opt ? "bg-primary/10 text-primary" : ""}
+              >
+                {opt}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm" className="h-9 gap-2">
+              <span className="text-muted-foreground">Status:</span>
+              <span className="font-medium capitalize">{status}</span>
+              <ChevronRight className="h-3.5 w-3.5 rotate-90 text-muted-foreground" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="w-44">
+            {statuses.map((s) => (
+              <DropdownMenuItem key={s} onClick={() => setStatus(s)} className={`capitalize ${status === s ? "bg-primary/10 text-primary" : ""}`}>
+                {s}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
-      {rows.map((r, i) => (
-        <div key={i} className="grid grid-cols-[140px_140px_1.2fr_1fr_120px_140px_100px] gap-4 border-b px-4 py-2.5 text-sm last:border-b-0">
-          <span className="text-muted-foreground">{r.ts ? format(new Date(r.ts), "MMM d, yyyy") : "—"}</span>
-          <span className="inline-flex items-center gap-1.5"><r.icon className="h-3.5 w-3.5 text-muted-foreground" />{r.type}</span>
-          <span className="font-medium text-primary truncate">{r.doc}</span>
-          <span className="truncate text-muted-foreground">{r.party}</span>
-          <span className="text-right tabular-nums">{r.qty}</span>
-          <span className="text-right tabular-nums">{r.amount}</span>
-          <span className="capitalize text-muted-foreground">{r.status}</span>
+
+      {rows.length === 0 ? (
+        <div className="grid place-items-center py-24 text-sm text-muted-foreground">
+          There are no {emptyLabel}
         </div>
-      ))}
+      ) : (
+        <div className="rounded-md border">
+          <div className="grid grid-cols-[140px_1.2fr_1fr_120px_140px_120px] gap-4 border-b bg-muted/40 px-4 py-2.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            <span>Date</span><span>Reference</span><span>Party</span>
+            <span className="text-right">Qty</span><span className="text-right">Amount</span><span>Status</span>
+          </div>
+          {rows.map((r, i) => (
+            <div key={i} className="grid grid-cols-[140px_1.2fr_1fr_120px_140px_120px] gap-4 border-b px-4 py-2.5 text-sm last:border-b-0">
+              <span className="text-muted-foreground">{r.ts ? format(new Date(r.ts), "MMM d, yyyy") : "—"}</span>
+              <span className="font-medium text-primary truncate inline-flex items-center gap-1.5">
+                <r.icon className="h-3.5 w-3.5 text-muted-foreground" />{r.doc}
+              </span>
+              <span className="truncate text-muted-foreground">{r.party}</span>
+              <span className="text-right tabular-nums">{r.qty}</span>
+              <span className="text-right tabular-nums">{r.amount}</span>
+              <span className="capitalize text-muted-foreground">{r.status}</span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
