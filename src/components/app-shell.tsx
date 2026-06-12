@@ -26,6 +26,7 @@ import {
   BookOpen,
   NotebookPen,
   BarChart3,
+  Landmark,
   Settings,
   ShieldCheck,
   LogOut,
@@ -84,6 +85,7 @@ const NAV_GROUPS = [
   {
     label: "Accounting",
     items: [
+      { title: "Banking", url: "/banking", icon: Landmark },
       { title: "Chart of Accounts", url: "/chart-of-accounts", icon: BookOpen },
       { title: "Manual Journals", url: "/journals", icon: NotebookPen },
     ],

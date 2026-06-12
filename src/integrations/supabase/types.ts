@@ -61,6 +61,74 @@ export type Database = {
           },
         ]
       }
+      bank_accounts: {
+        Row: {
+          account_name: string
+          account_number: string | null
+          account_type: Database["public"]["Enums"]["bank_account_type"]
+          bank_name: string | null
+          created_at: string
+          currency: string
+          current_balance: number
+          description: string | null
+          iban: string | null
+          id: string
+          is_active: boolean
+          is_primary: boolean
+          opening_balance: number
+          routing_number: string | null
+          swift_code: string | null
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          account_name: string
+          account_number?: string | null
+          account_type?: Database["public"]["Enums"]["bank_account_type"]
+          bank_name?: string | null
+          created_at?: string
+          currency?: string
+          current_balance?: number
+          description?: string | null
+          iban?: string | null
+          id?: string
+          is_active?: boolean
+          is_primary?: boolean
+          opening_balance?: number
+          routing_number?: string | null
+          swift_code?: string | null
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          account_name?: string
+          account_number?: string | null
+          account_type?: Database["public"]["Enums"]["bank_account_type"]
+          bank_name?: string | null
+          created_at?: string
+          currency?: string
+          current_balance?: number
+          description?: string | null
+          iban?: string | null
+          id?: string
+          is_active?: boolean
+          is_primary?: boolean
+          opening_balance?: number
+          routing_number?: string | null
+          swift_code?: string | null
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bank_accounts_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bill_lines: {
         Row: {
           account_id: string | null
@@ -1865,6 +1933,7 @@ export type Database = {
         | "purchasing"
         | "inventory"
         | "readonly"
+      bank_account_type: "cash" | "bank" | "credit_card" | "payment_clearing"
       bill_status:
         | "draft"
         | "open"
@@ -2036,6 +2105,7 @@ export const Constants = {
         "inventory",
         "readonly",
       ],
+      bank_account_type: ["cash", "bank", "credit_card", "payment_clearing"],
       bill_status: [
         "draft",
         "open",
