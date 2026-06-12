@@ -61,6 +61,8 @@ import { Route as AuthenticatedCompositeItemsIdRouteImport } from './routes/_aut
 import { Route as AuthenticatedBillsNewRouteImport } from './routes/_authenticated/bills_.new'
 import { Route as AuthenticatedBillsBillIdRouteImport } from './routes/_authenticated/bills_.$billId'
 import { Route as AuthenticatedBankingAccountIdRouteImport } from './routes/_authenticated/banking_.$accountId'
+import { Route as AuthenticatedAssemblyOrdersNewRouteImport } from './routes/_authenticated/assembly-orders_.new'
+import { Route as AuthenticatedAssemblyOrdersIdRouteImport } from './routes/_authenticated/assembly-orders_.$id'
 import { Route as AuthenticatedSuppliersSupplierIdEditRouteImport } from './routes/_authenticated/suppliers.$supplierId_.edit'
 import { Route as AuthenticatedSettingsLocationsNewRouteImport } from './routes/_authenticated/settings_.locations_.new'
 import { Route as AuthenticatedSalesOrdersSoIdEditRouteImport } from './routes/_authenticated/sales-orders_.$soId_.edit'
@@ -364,6 +366,18 @@ const AuthenticatedBankingAccountIdRoute =
     path: '/banking/$accountId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAssemblyOrdersNewRoute =
+  AuthenticatedAssemblyOrdersNewRouteImport.update({
+    id: '/assembly-orders_/new',
+    path: '/assembly-orders/new',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAssemblyOrdersIdRoute =
+  AuthenticatedAssemblyOrdersIdRouteImport.update({
+    id: '/assembly-orders_/$id',
+    path: '/assembly-orders/$id',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedSuppliersSupplierIdEditRoute =
   AuthenticatedSuppliersSupplierIdEditRouteImport.update({
     id: '/suppliers/$supplierId_/edit',
@@ -435,6 +449,8 @@ export interface FileRoutesByFullPath {
   '/reports': typeof AuthenticatedReportsRoute
   '/sales-orders': typeof AuthenticatedSalesOrdersRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/assembly-orders/$id': typeof AuthenticatedAssemblyOrdersIdRoute
+  '/assembly-orders/new': typeof AuthenticatedAssemblyOrdersNewRoute
   '/banking/$accountId': typeof AuthenticatedBankingAccountIdRoute
   '/bills/$billId': typeof AuthenticatedBillsBillIdRoute
   '/bills/new': typeof AuthenticatedBillsNewRoute
@@ -496,6 +512,8 @@ export interface FileRoutesByTo {
   '/reports': typeof AuthenticatedReportsRoute
   '/sales-orders': typeof AuthenticatedSalesOrdersRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/assembly-orders/$id': typeof AuthenticatedAssemblyOrdersIdRoute
+  '/assembly-orders/new': typeof AuthenticatedAssemblyOrdersNewRoute
   '/banking/$accountId': typeof AuthenticatedBankingAccountIdRoute
   '/bills/$billId': typeof AuthenticatedBillsBillIdRoute
   '/bills/new': typeof AuthenticatedBillsNewRoute
@@ -559,6 +577,8 @@ export interface FileRoutesById {
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
   '/_authenticated/sales-orders': typeof AuthenticatedSalesOrdersRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
+  '/_authenticated/assembly-orders_/$id': typeof AuthenticatedAssemblyOrdersIdRoute
+  '/_authenticated/assembly-orders_/new': typeof AuthenticatedAssemblyOrdersNewRoute
   '/_authenticated/banking_/$accountId': typeof AuthenticatedBankingAccountIdRoute
   '/_authenticated/bills_/$billId': typeof AuthenticatedBillsBillIdRoute
   '/_authenticated/bills_/new': typeof AuthenticatedBillsNewRoute
@@ -622,6 +642,8 @@ export interface FileRouteTypes {
     | '/reports'
     | '/sales-orders'
     | '/settings'
+    | '/assembly-orders/$id'
+    | '/assembly-orders/new'
     | '/banking/$accountId'
     | '/bills/$billId'
     | '/bills/new'
@@ -683,6 +705,8 @@ export interface FileRouteTypes {
     | '/reports'
     | '/sales-orders'
     | '/settings'
+    | '/assembly-orders/$id'
+    | '/assembly-orders/new'
     | '/banking/$accountId'
     | '/bills/$billId'
     | '/bills/new'
@@ -745,6 +769,8 @@ export interface FileRouteTypes {
     | '/_authenticated/reports'
     | '/_authenticated/sales-orders'
     | '/_authenticated/settings'
+    | '/_authenticated/assembly-orders_/$id'
+    | '/_authenticated/assembly-orders_/new'
     | '/_authenticated/banking_/$accountId'
     | '/_authenticated/bills_/$billId'
     | '/_authenticated/bills_/new'
@@ -1158,6 +1184,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedBankingAccountIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/assembly-orders_/new': {
+      id: '/_authenticated/assembly-orders_/new'
+      path: '/assembly-orders/new'
+      fullPath: '/assembly-orders/new'
+      preLoaderRoute: typeof AuthenticatedAssemblyOrdersNewRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/assembly-orders_/$id': {
+      id: '/_authenticated/assembly-orders_/$id'
+      path: '/assembly-orders/$id'
+      fullPath: '/assembly-orders/$id'
+      preLoaderRoute: typeof AuthenticatedAssemblyOrdersIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/suppliers/$supplierId_/edit': {
       id: '/_authenticated/suppliers/$supplierId_/edit'
       path: '/suppliers/$supplierId/edit'
@@ -1236,6 +1276,8 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
   AuthenticatedSalesOrdersRoute: typeof AuthenticatedSalesOrdersRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
+  AuthenticatedAssemblyOrdersIdRoute: typeof AuthenticatedAssemblyOrdersIdRoute
+  AuthenticatedAssemblyOrdersNewRoute: typeof AuthenticatedAssemblyOrdersNewRoute
   AuthenticatedBankingAccountIdRoute: typeof AuthenticatedBankingAccountIdRoute
   AuthenticatedBillsBillIdRoute: typeof AuthenticatedBillsBillIdRoute
   AuthenticatedBillsNewRoute: typeof AuthenticatedBillsNewRoute
@@ -1296,6 +1338,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedReportsRoute: AuthenticatedReportsRoute,
   AuthenticatedSalesOrdersRoute: AuthenticatedSalesOrdersRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
+  AuthenticatedAssemblyOrdersIdRoute: AuthenticatedAssemblyOrdersIdRoute,
+  AuthenticatedAssemblyOrdersNewRoute: AuthenticatedAssemblyOrdersNewRoute,
   AuthenticatedBankingAccountIdRoute: AuthenticatedBankingAccountIdRoute,
   AuthenticatedBillsBillIdRoute: AuthenticatedBillsBillIdRoute,
   AuthenticatedBillsNewRoute: AuthenticatedBillsNewRoute,
@@ -1356,3 +1400,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
