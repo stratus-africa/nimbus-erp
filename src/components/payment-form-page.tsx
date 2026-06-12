@@ -30,15 +30,6 @@ import type { PaymentsModuleConfig } from "@/components/payments-listing";
 import { cn } from "@/lib/utils";
 
 const METHODS = ["Cash", "Bank Transfer", "Card", "MPESA", "Cheque", "Other"];
-const DEPOSIT_ACCOUNTS = ["MPESA", "Bank Account", "Cash", "Petty Cash"];
-
-// Maps Deposit-To selection -> Chart of Accounts code
-const DEPOSIT_CODE: Record<string, string> = {
-  MPESA: "1020",
-  "Bank Account": "1010",
-  Cash: "1000",
-  "Petty Cash": "1030",
-};
 
 export function PaymentFormPage({ config }: { config: PaymentsModuleConfig }) {
   const navigate = useNavigate();
@@ -64,11 +55,36 @@ export function PaymentFormPage({ config }: { config: PaymentsModuleConfig }) {
   const [date, setDate] = useState<string>(new Date().toISOString().slice(0, 10));
   const [paymentNo, setPaymentNo] = useState<string>("");
   const [method, setMethod] = useState<string>("Cash");
-  const [depositTo, setDepositTo] = useState<string>("MPESA");
+  const [depositTo, setDepositTo] = useState<string>(""); // bank_accounts.id
   const [reference, setReference] = useState("");
   const [allocations, setAllocations] = useState<Record<string, string>>({});
   const [prefilledDocId, setPrefilledDocId] = useState<string | undefined>(search.docId);
   const [excessConfirm, setExcessConfirm] = useState<null | { asDraft: boolean }>(null);
+
+  // Cash/Bank accounts from the Banking module (synced with Chart of Accounts)
+  const { data: bankAccounts = [] } = useQuery({
+    enabled: !!tenantId,
+    queryKey: ["bank_accounts_for_payment", tenantId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("bank_accounts" as any)
+        .select("id, account_name, account_type, currency, coa_account_id, current_balance, is_active")
+        .eq("tenant_id", tenantId!)
+        .eq("is_active", true)
+        .in("account_type", ["cash", "bank"])
+        .order("account_name");
+      if (error) throw error;
+      return (data as any[]) ?? [];
+    },
+  });
+  useEffect(() => {
+    if (!depositTo && bankAccounts.length > 0) setDepositTo(bankAccounts[0].id);
+  }, [bankAccounts, depositTo]);
+  const selectedBankAcct = useMemo(
+    () => bankAccounts.find((b: any) => b.id === depositTo),
+    [bankAccounts, depositTo],
+  );
+  const depositLabel = isReceived ? "Deposit To" : "Paid Through";
 
   // Draft payment number
   const { data: nextNumber } = useQuery({
@@ -244,7 +260,7 @@ export function PaymentFormPage({ config }: { config: PaymentsModuleConfig }) {
       const noteHeader =
         `Payment #${paymentNo}` +
         (location ? ` • Location: ${location}` : "") +
-        (depositTo ? ` • Deposit to: ${depositTo}` : "") +
+        (selectedBankAcct ? ` • ${depositLabel}: ${(selectedBankAcct as any).account_name}` : "") +
         (bankCharges ? ` • Bank charges: ${bankCharges}` : "") +
         (asDraft ? " • DRAFT" : "");
 
@@ -292,13 +308,16 @@ export function PaymentFormPage({ config }: { config: PaymentsModuleConfig }) {
 
       // Post journal & excess credit only when finalising
       if (!asDraft) {
-        // Resolve accounts
-        const depCode = DEPOSIT_CODE[depositTo] ?? "1000";
-        const depositAcct = await getOrCreateAccount(
-          depCode,
-          depositTo,
-          "asset",
-        );
+        // Resolve accounts — depositTo is now a bank_accounts.id linked to a CoA ledger
+        if (!selectedBankAcct) throw new Error(`Select a ${depositLabel.toLowerCase()} account`);
+        let depositAcct = (selectedBankAcct as any).coa_account_id as string | null;
+        if (!depositAcct) {
+          depositAcct = await getOrCreateAccount(
+            (selectedBankAcct as any).account_type === "cash" ? "1000" : "1010",
+            (selectedBankAcct as any).account_name,
+            "asset",
+          );
+        }
         const contraCode = isReceived ? "1200" : "2000";
         const contraName = isReceived ? "Accounts Receivable" : "Accounts Payable";
         const contraType: "asset" | "liability" = isReceived ? "asset" : "liability";
@@ -349,7 +368,7 @@ export function PaymentFormPage({ config }: { config: PaymentsModuleConfig }) {
           lines.push({
             entry_id: journalId,
             account_id: depositAcct,
-            description: `Receipt to ${depositTo}`,
+            description: `Receipt to ${selectedBankAcct?.account_name ?? ""}`,
             debit: amountReceived,
             credit: 0,
             position: 0,
@@ -395,7 +414,7 @@ export function PaymentFormPage({ config }: { config: PaymentsModuleConfig }) {
           lines.push({
             entry_id: journalId,
             account_id: depositAcct,
-            description: `Paid from ${depositTo}`,
+            description: `Paid from ${selectedBankAcct?.account_name ?? ""}`,
             debit: 0,
             credit: amountReceived,
             position: 2,
@@ -403,6 +422,36 @@ export function PaymentFormPage({ config }: { config: PaymentsModuleConfig }) {
         }
         const { error: lineErr } = await supabase.from("journal_lines").insert(lines);
         if (lineErr) throw lineErr;
+
+        // Record a bank transaction (deposit for received, withdrawal for made)
+        // and update the bank account's running balance.
+        const bankTxnPayload: any = {
+          tenant_id: tenantId,
+          bank_account_id: (selectedBankAcct as any).id,
+          txn_date: date,
+          reference: reference || paymentNo,
+          description: `${isReceived ? "Payment received from" : "Payment made to"} ${partyName} — #${paymentNo}`,
+          txn_type: isReceived ? "payment_received" : "payment_made",
+          status: "posted",
+          branch: location || null,
+          from_account_id: depositAcct,
+          deposit: isReceived ? amountReceived : 0,
+          withdrawal: isReceived ? 0 : amountReceived,
+          created_by: uid ?? null,
+        };
+        const { error: btErr } = await supabase
+          .from("bank_transactions" as any)
+          .insert(bankTxnPayload);
+        if (btErr) throw btErr;
+
+        const delta = isReceived ? amountReceived : -amountReceived;
+        const newBalance =
+          Number((selectedBankAcct as any).current_balance || 0) + delta;
+        const { error: balErr } = await supabase
+          .from("bank_accounts" as any)
+          .update({ current_balance: newBalance })
+          .eq("id", (selectedBankAcct as any).id);
+        if (balErr) throw balErr;
 
         // Excess → credits
         if (amountExcess > 0.001) {
@@ -447,7 +496,8 @@ export function PaymentFormPage({ config }: { config: PaymentsModuleConfig }) {
           allocated: amountUsed,
           excess: amountExcess,
           method,
-          deposit_to: depositTo,
+          deposit_to: (selectedBankAcct as any)?.account_name ?? null,
+          deposit_to_account_id: (selectedBankAcct as any)?.id ?? null,
           location,
           bank_charges: Number(bankCharges) || 0,
           reference: reference || null,
@@ -470,6 +520,8 @@ export function PaymentFormPage({ config }: { config: PaymentsModuleConfig }) {
       qc.invalidateQueries({ queryKey: [config.docTable] });
       qc.invalidateQueries({ queryKey: ["audit_logs"] });
       qc.invalidateQueries({ queryKey: ["journal_entries"] });
+      qc.invalidateQueries({ queryKey: ["bank_accounts"] });
+      qc.invalidateQueries({ queryKey: ["bank_transactions"] });
       navigate({ to: isReceived ? "/payments-received" : "/payments-made" });
     },
     onError: (e: any) => toast.error(e.message ?? "Failed to record payment"),
@@ -601,15 +653,26 @@ export function PaymentFormPage({ config }: { config: PaymentsModuleConfig }) {
               </SelectContent>
             </Select>
 
-            <Label className="text-rose-600">Deposit To*</Label>
+            <Label className="text-rose-600">{depositLabel}*</Label>
             <Select value={depositTo} onValueChange={setDepositTo}>
               <SelectTrigger className="max-w-md">
-                <SelectValue />
+                <SelectValue placeholder={`Select ${depositLabel.toLowerCase()} account`} />
               </SelectTrigger>
               <SelectContent>
-                {DEPOSIT_ACCOUNTS.map((a) => (
-                  <SelectItem key={a} value={a}>{a}</SelectItem>
-                ))}
+                {bankAccounts.length === 0 ? (
+                  <div className="px-3 py-2 text-xs text-muted-foreground">
+                    No Bank/Cash accounts. Add one in Chart of Accounts.
+                  </div>
+                ) : (
+                  bankAccounts.map((a: any) => (
+                    <SelectItem key={a.id} value={a.id}>
+                      {a.account_name}
+                      <span className="text-xs text-muted-foreground ml-2">
+                        ({a.account_type === "cash" ? "Cash" : "Bank"})
+                      </span>
+                    </SelectItem>
+                  ))
+                )}
               </SelectContent>
             </Select>
 
