@@ -423,6 +423,36 @@ export function PaymentFormPage({ config }: { config: PaymentsModuleConfig }) {
         const { error: lineErr } = await supabase.from("journal_lines").insert(lines);
         if (lineErr) throw lineErr;
 
+        // Record a bank transaction (deposit for received, withdrawal for made)
+        // and update the bank account's running balance.
+        const bankTxnPayload: any = {
+          tenant_id: tenantId,
+          bank_account_id: (selectedBankAcct as any).id,
+          txn_date: date,
+          reference: reference || paymentNo,
+          description: `${isReceived ? "Payment received from" : "Payment made to"} ${partyName} — #${paymentNo}`,
+          txn_type: isReceived ? "payment_received" : "payment_made",
+          status: "posted",
+          branch: location || null,
+          from_account_id: depositAcct,
+          deposit: isReceived ? amountReceived : 0,
+          withdrawal: isReceived ? 0 : amountReceived,
+          created_by: uid ?? null,
+        };
+        const { error: btErr } = await supabase
+          .from("bank_transactions" as any)
+          .insert(bankTxnPayload);
+        if (btErr) throw btErr;
+
+        const delta = isReceived ? amountReceived : -amountReceived;
+        const newBalance =
+          Number((selectedBankAcct as any).current_balance || 0) + delta;
+        const { error: balErr } = await supabase
+          .from("bank_accounts" as any)
+          .update({ current_balance: newBalance })
+          .eq("id", (selectedBankAcct as any).id);
+        if (balErr) throw balErr;
+
         // Excess → credits
         if (amountExcess > 0.001) {
           const creditTable = isReceived ? "customer_credits" : "supplier_credits";
