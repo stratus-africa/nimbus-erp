@@ -2,16 +2,11 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import { Search, X, Info, AlertTriangle, Settings2 } from "lucide-react";
+import { Search, X, Settings2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { toast } from "sonner";
+import { ItemsGeneralTab } from "@/components/settings/items-general-tab";
+import { ItemsMiniList } from "@/components/settings/items-mini-list";
+import { CustomizationCrudTab } from "@/components/settings/customization-crud-tab";
 
 export const Route = createFileRoute("/_authenticated/settings_/items")({
   head: () => ({ meta: [{ title: "Items Settings — Nimbus ERP" }] }),
@@ -28,44 +23,15 @@ const TABS = [
 ] as const;
 type Tab = (typeof TABS)[number];
 
+const ENTITY = "items";
+
 function ItemsSettingsPage() {
   const navigate = useNavigate();
   const [tab, setTab] = useState<Tab>("General");
   const [query, setQuery] = useState("");
 
-  // Form state — UI only
-  const [decimals, setDecimals] = useState("2");
-  const [dimensionUnit, setDimensionUnit] = useState("cm");
-  const [weightUnit, setWeightUnit] = useState("kg");
-  const [barcodeField, setBarcodeField] = useState("SKU");
-  const [valuationMethod, setValuationMethod] = useState("FIFO (First In, First Out)");
-  const [allowDuplicateNames, setAllowDuplicateNames] = useState(false);
-  const [enhancedSearch, setEnhancedSearch] = useState(false);
-  const [hsCodes, setHsCodes] = useState(true);
-  const [priceLists, setPriceLists] = useState(true);
-  const [priceListLineLevel, setPriceListLineLevel] = useState(false);
-  const [compositeItems, setCompositeItems] = useState(true);
-  const [inventoryTracking, setInventoryTracking] = useState(true);
-  const [serialTracking, setSerialTracking] = useState(false);
-  const [batchTracking, setBatchTracking] = useState(true);
-  const [allowDupBatch, setAllowDupBatch] = useState(true);
-  const [returnsSoldBatch, setReturnsSoldBatch] = useState(false);
-  const [batchSellingPrice, setBatchSellingPrice] = useState(false);
-  const [preventNegativeStock, setPreventNegativeStock] = useState(true);
-  const [stockLevel, setStockLevel] = useState<"branch" | "warehouse">("branch");
-  const [outOfStockWarn, setOutOfStockWarn] = useState(true);
-  const [reorderNotify, setReorderNotify] = useState(true);
-  const [notifyEmail, setNotifyEmail] = useState("procure@organix-agro.com");
-  const [trackLandedCost, setTrackLandedCost] = useState(true);
-  const [replenishments, setReplenishments] = useState(false);
-
-  const handleSave = () => {
-    toast.success("Items settings saved");
-  };
-
   return (
     <div className="-m-6 min-h-[calc(100vh-3.5rem)] bg-muted/30">
-      {/* Top bar */}
       <div className="flex items-center gap-4 border-b bg-card px-6 py-3">
         <div className="flex-1 flex justify-center">
           <div className="relative w-full max-w-xl">
@@ -78,12 +44,7 @@ function ItemsSettingsPage() {
             />
           </div>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          className="h-9 gap-2"
-          onClick={() => navigate({ to: "/settings" })}
-        >
+        <Button variant="outline" size="sm" className="h-9 gap-2" onClick={() => navigate({ to: "/settings" })}>
           Close Settings <X className="h-4 w-4 text-rose-500" />
         </Button>
       </div>
@@ -93,17 +54,15 @@ function ItemsSettingsPage() {
           <Settings2 className="h-5 w-5 text-primary" />
           <h1 className="text-lg font-semibold">Items</h1>
         </div>
-
-        {/* Tabs */}
         <div className="border-b px-6">
-          <div className="flex gap-6">
+          <div className="flex gap-6 overflow-x-auto">
             {TABS.map((t) => (
               <button
                 key={t}
                 type="button"
                 onClick={() => setTab(t)}
                 className={cn(
-                  "py-2.5 text-sm border-b-2 -mb-px transition-colors",
+                  "py-2.5 text-sm border-b-2 -mb-px transition-colors whitespace-nowrap",
                   tab === t
                     ? "border-primary text-primary font-medium"
                     : "border-transparent text-muted-foreground hover:text-foreground",
@@ -117,258 +76,181 @@ function ItemsSettingsPage() {
       </div>
 
       <div className="bg-card">
-        <div className="max-w-4xl px-6 py-6 space-y-6 text-sm">
-          {tab !== "General" ? (
-            <div className="rounded-md border bg-muted/30 p-12 text-center text-muted-foreground">
-              {tab} — coming soon.
+        <div className="max-w-5xl px-6 py-6">
+          {tab === "General" && (
+            <div className="space-y-8">
+              <ItemsGeneralTab />
+              <div className="border-t pt-6">
+                <ItemsMiniList />
+              </div>
             </div>
-          ) : (
-            <>
-              {/* Top fields */}
-              <div className="space-y-3">
-                <Row label="Set a decimal rate for your item quantity">
-                  <SmallSelect value={decimals} onChange={setDecimals} options={["0", "2", "3", "4"]} />
-                </Row>
-                <Row label="Measure item dimensions in:">
-                  <SmallSelect value={dimensionUnit} onChange={setDimensionUnit} options={["cm", "in", "m", "ft"]} />
-                </Row>
-                <Row label="Measure item weights in:">
-                  <SmallSelect value={weightUnit} onChange={setWeightUnit} options={["kg", "g", "lb", "oz"]} />
-                </Row>
-                <Row
-                  label={
-                    <span className="inline-flex items-center gap-1">
-                      Select items when barcodes are scanned using:
-                      <Info className="h-3.5 w-3.5 text-muted-foreground" />
-                    </span>
-                  }
-                >
-                  <SmallSelect value={barcodeField} onChange={setBarcodeField} options={["SKU", "Barcode", "Item Name"]} />
-                </Row>
-              </div>
+          )}
 
-              <Divider />
+          {tab === "Field Customization" && (
+            <CustomizationCrudTab
+              title="Custom Fields"
+              description="Add custom fields shown on the item create/edit form."
+              table="custom_fields"
+              entity={ENTITY}
+              columns={[
+                { key: "label", label: "Label" },
+                { key: "field_key", label: "Key" },
+                { key: "data_type", label: "Type" },
+                { key: "required", label: "Required", render: (r) => r.required ? "Yes" : "No" },
+                { key: "is_active", label: "Active", render: (r) => r.is_active ? "Yes" : "No" },
+              ]}
+              fields={[
+                { name: "label", label: "Label", type: "text", required: true },
+                { name: "field_key", label: "Field key", type: "text", required: true, helpText: "Lowercase, no spaces. Used in code/API." },
+                { name: "data_type", label: "Data type", type: "select", required: true, options: ["text","number","date","boolean","select"] },
+                { name: "required", label: "Required", type: "boolean" },
+                { name: "default_value", label: "Default value", type: "text" },
+                { name: "is_active", label: "Active", type: "boolean" },
+              ]}
+              defaultRow={{ data_type: "text", required: false, is_active: true, options: [] }}
+              validate={(r) => {
+                if (!r.label?.trim()) return "Label is required";
+                if (!r.field_key?.trim()) return "Field key is required";
+                if (!/^[a-z][a-z0-9_]*$/.test(r.field_key)) return "Field key must be lowercase letters/numbers/underscores";
+                return null;
+              }}
+            />
+          )}
 
-              <section>
-                <h2 className="font-semibold mb-1">Default Inventory Valuation Method</h2>
-                <p className="text-xs text-muted-foreground mb-3">
-                  This valuation method will be used by default when creating items, variants and composite items.
-                </p>
-                <Row label="Inventory Valuation Method">
-                  <Select value={valuationMethod} onValueChange={setValuationMethod}>
-                    <SelectTrigger className="h-8 w-64"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="FIFO (First In, First Out)">FIFO (First In, First Out)</SelectItem>
-                      <SelectItem value="LIFO (Last In, First Out)">LIFO (Last In, First Out)</SelectItem>
-                      <SelectItem value="Weighted Average">Weighted Average</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </Row>
-              </section>
+          {tab === "Validation Rules" && (
+            <CustomizationCrudTab
+              title="Validation Rules"
+              description="Block saves that violate these rules."
+              table="validation_rules"
+              entity={ENTITY}
+              columns={[
+                { key: "name", label: "Name" },
+                { key: "field_key", label: "Field" },
+                { key: "operator", label: "Operator" },
+                { key: "error_message", label: "Message" },
+                { key: "is_active", label: "Active", render: (r) => r.is_active ? "Yes" : "No" },
+              ]}
+              fields={[
+                { name: "name", label: "Name", type: "text", required: true },
+                { name: "field_key", label: "Field", type: "text", required: true, helpText: "e.g. selling_price, sku" },
+                { name: "operator", label: "Operator", type: "select", required: true,
+                  options: ["required","eq","neq","gt","lt","gte","lte","between","regex","min_length","max_length"] },
+                { name: "value", label: "Value", type: "text", helpText: "JSON value or plain text/number" },
+                { name: "error_message", label: "Error message", type: "textarea", required: true },
+                { name: "is_active", label: "Active", type: "boolean" },
+              ]}
+              defaultRow={{ operator: "required", is_active: true, value: null }}
+              validate={(r) => {
+                if (!r.name?.trim()) return "Name is required";
+                if (!r.field_key?.trim()) return "Field is required";
+                if (!r.error_message?.trim()) return "Error message is required";
+                if (r.value !== null && r.value !== undefined && typeof r.value === "string") {
+                  try { r.value = JSON.parse(r.value); } catch { /* keep as string */ }
+                }
+                return null;
+              }}
+            />
+          )}
 
-              <Divider />
+          {tab === "Record Locking" && (
+            <CustomizationCrudTab
+              title="Record Locks"
+              description="Lock fields on records that match a condition."
+              table="record_locks"
+              entity={ENTITY}
+              columns={[
+                { key: "name", label: "Name" },
+                { key: "condition", label: "Condition", render: (r) => <code className="text-xs">{JSON.stringify(r.condition)}</code> },
+                { key: "lock_fields", label: "Locked fields", render: (r) => Array.isArray(r.lock_fields) ? r.lock_fields.join(", ") : "" },
+                { key: "is_active", label: "Active", render: (r) => r.is_active ? "Yes" : "No" },
+              ]}
+              fields={[
+                { name: "name", label: "Name", type: "text", required: true },
+                { name: "condition", label: "Condition (JSON)", type: "textarea", required: true, helpText: 'e.g. {"status":"archived"}' },
+                { name: "lock_fields", label: "Locked fields (comma separated)", type: "text", required: true },
+                { name: "roles_allowed", label: "Roles allowed to bypass (comma separated)", type: "text", helpText: "e.g. company_admin" },
+                { name: "is_active", label: "Active", type: "boolean" },
+              ]}
+              defaultRow={{ is_active: true, condition: {}, lock_fields: [], roles_allowed: [] }}
+              validate={(r) => {
+                if (!r.name?.trim()) return "Name is required";
+                try {
+                  if (typeof r.condition === "string") r.condition = JSON.parse(r.condition);
+                } catch { return "Condition must be valid JSON"; }
+                if (typeof r.lock_fields === "string") r.lock_fields = r.lock_fields.split(",").map((s: string) => s.trim()).filter(Boolean);
+                if (!Array.isArray(r.lock_fields) || !r.lock_fields.length) return "Add at least one locked field";
+                if (typeof r.roles_allowed === "string") r.roles_allowed = r.roles_allowed.split(",").map((s: string) => s.trim()).filter(Boolean);
+                return null;
+              }}
+            />
+          )}
 
-              <section>
-                <h2 className="font-semibold mb-2">Duplicate Item Name</h2>
-                <CheckRow checked={allowDuplicateNames} onChange={setAllowDuplicateNames} label="Allow duplicate item names" />
-                <p className="ml-6 text-xs text-muted-foreground">
-                  If you allow duplicate item names, all imports involving items will use SKU as the primary field for mapping.
-                </p>
-                <div className="mt-3 flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-900 p-3 text-xs">
-                  <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5" />
-                  <span>
-                    Before you enable this option, make{" "}
-                    <a className="text-primary underline">the SKU field active and mandatory.</a>
-                  </span>
-                </div>
-              </section>
+          {tab === "Custom Buttons" && (
+            <CustomizationCrudTab
+              title="Custom Buttons"
+              description="Add buttons to the item detail or list view."
+              table="custom_buttons"
+              entity={ENTITY}
+              columns={[
+                { key: "label", label: "Label" },
+                { key: "placement", label: "Placement" },
+                { key: "action_type", label: "Action" },
+                { key: "action_config", label: "Config", render: (r) => <code className="text-xs">{JSON.stringify(r.action_config)}</code> },
+                { key: "is_active", label: "Active", render: (r) => r.is_active ? "Yes" : "No" },
+              ]}
+              fields={[
+                { name: "label", label: "Button label", type: "text", required: true },
+                { name: "placement", label: "Placement", type: "select", required: true, options: ["detail","list","both"] },
+                { name: "action_type", label: "Action type", type: "select", required: true, options: ["url","webhook","copy"] },
+                { name: "action_config", label: "Action config (JSON)", type: "textarea", required: true, helpText: 'e.g. {"url":"https://example.com/items/{{id}}"}' },
+                { name: "icon", label: "Icon name", type: "text" },
+                { name: "is_active", label: "Active", type: "boolean" },
+              ]}
+              defaultRow={{ placement: "detail", action_type: "url", is_active: true, action_config: {} }}
+              validate={(r) => {
+                if (!r.label?.trim()) return "Label is required";
+                try { if (typeof r.action_config === "string") r.action_config = JSON.parse(r.action_config); }
+                catch { return "Action config must be valid JSON"; }
+                if (r.action_type === "url" && !r.action_config?.url) return "URL action requires a 'url' in config";
+                if (r.action_type === "webhook" && !r.action_config?.url) return "Webhook requires a 'url' in config";
+                return null;
+              }}
+            />
+          )}
 
-              <Divider />
-
-              <section>
-                <h2 className="font-semibold mb-2">Enhanced Item Search</h2>
-                <CheckRow checked={enhancedSearch} onChange={setEnhancedSearch} label="Enable Enhanced Item Search" />
-                <div className="mt-3 flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-900 p-3 text-xs">
-                  <Info className="h-4 w-4 text-amber-600 mt-0.5" />
-                  <span>Enabling this option makes it easier to find any item using relevant keywords in any order.</span>
-                </div>
-              </section>
-
-              <Divider />
-
-              <section>
-                <h2 className="font-semibold mb-2">HS Code</h2>
-                <CheckRow checked={hsCodes} onChange={setHsCodes} label="Enable HS Codes for Item" />
-              </section>
-
-              <Divider />
-
-              <section>
-                <h2 className="font-semibold mb-1 inline-flex items-center gap-1">
-                  Price Lists <Info className="h-3.5 w-3.5 text-primary" />
-                </h2>
-                <CheckRow checked={priceLists} onChange={setPriceLists} label="Enable Price Lists" />
-                <p className="ml-6 text-xs text-muted-foreground">
-                  Price Lists enables you to customise the rates of the items in your sales and purchase transactions.
-                </p>
-                {priceLists && (
-                  <div className="mt-3 ml-6 rounded-md border bg-muted/30 p-3">
-                    <CheckRow checked={priceListLineLevel} onChange={setPriceListLineLevel} label="Apply price list at line item level" />
-                    <p className="ml-6 text-xs text-muted-foreground">
-                      Select this option if you want to apply different price lists for each line item.
-                    </p>
-                  </div>
-                )}
-              </section>
-
-              <Divider />
-
-              <section>
-                <h2 className="font-semibold mb-2">Composite Items</h2>
-                <CheckRow checked={compositeItems} onChange={setCompositeItems} label="Enable Composite Items" />
-              </section>
-
-              <Divider />
-
-              <section>
-                <h2 className="font-semibold mb-2">Inventory</h2>
-                <CheckRow checked={inventoryTracking} onChange={setInventoryTracking} label="Enable Inventory Tracking" />
-                {inventoryTracking && (
-                  <div className="ml-6 mt-2 text-xs">
-                    <span className="text-rose-500 font-medium">Inventory Start Date*</span>
-                    <Info className="inline h-3 w-3 ml-1 text-muted-foreground" />
-                    {" : "}
-                    <span>30 Jun 2022</span>{" "}
-                    <button type="button" className="text-primary underline">Change</button>
-                  </div>
-                )}
-              </section>
-
-              <Divider />
-
-              <section>
-                <h2 className="font-semibold mb-2">Advanced Inventory Tracking</h2>
-                <CheckRow checked={serialTracking} onChange={setSerialTracking} label="Enable Serial Number Tracking" />
-                <CheckRow checked={batchTracking} onChange={setBatchTracking} label="Enable Batch Tracking" />
-                {batchTracking && (
-                  <div className="ml-6 mt-1 space-y-1.5 border-l-2 border-muted pl-4">
-                    <CheckRow checked={allowDupBatch} onChange={setAllowDupBatch} label="Allow duplicate batch numbers" />
-                    <CheckRow checked={returnsSoldBatch} onChange={setReturnsSoldBatch} label="Allow returns only to the sold batch" />
-                    <CheckRow checked={batchSellingPrice} onChange={setBatchSellingPrice} label="Allow different Selling price for each Batch Tracked Items" />
-                  </div>
-                )}
-                <div className="mt-4 rounded-md border border-amber-200 bg-amber-50/60 dark:bg-amber-950/20 dark:border-amber-900 p-4 grid grid-cols-3 gap-4 text-xs">
-                  <div>
-                    <div className="text-muted-foreground">Tracked in:</div>
-                    <div className="font-medium mt-0.5">Invoices, Bills & Credit Notes</div>
-                  </div>
-                  <div>
-                    <div className="text-muted-foreground">Mandatory?</div>
-                    <div className="font-medium mt-0.5">No</div>
-                  </div>
-                  <div className="text-right">
-                    <button type="button" className="text-primary inline-flex items-center gap-1">
-                      <Settings2 className="h-3.5 w-3.5" /> Configure
-                    </button>
-                  </div>
-                </div>
-              </section>
-
-              <Divider />
-
-              <section className="space-y-2">
-                <CheckRow checked={preventNegativeStock} onChange={setPreventNegativeStock} label="Prevent stock from going below zero" />
-                {preventNegativeStock && (
-                  <RadioGroup
-                    value={stockLevel}
-                    onValueChange={(v) => setStockLevel(v as "branch" | "warehouse")}
-                    className="ml-6 space-y-1"
-                  >
-                    <div className="flex items-center gap-2">
-                      <RadioGroupItem id="branch" value="branch" />
-                      <Label htmlFor="branch" className="font-normal inline-flex items-center gap-1">
-                        Branch level <Info className="h-3 w-3 text-muted-foreground" />
-                      </Label>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <RadioGroupItem id="warehouse" value="warehouse" />
-                      <Label htmlFor="warehouse" className="font-normal inline-flex items-center gap-1">
-                        Warehouse level <Info className="h-3 w-3 text-muted-foreground" />
-                      </Label>
-                    </div>
-                  </RadioGroup>
-                )}
-                <CheckRow checked={outOfStockWarn} onChange={setOutOfStockWarn} label={<>Show an Out of Stock warning when an item's stock drops below zero <Info className="inline h-3 w-3 text-muted-foreground ml-1" /></>} />
-                <CheckRow checked={reorderNotify} onChange={setReorderNotify} label="Notify me if an item's quantity reaches the reorder point" />
-                {reorderNotify && (
-                  <div className="ml-6 mt-1 max-w-xs">
-                    <Label className="text-xs"><span className="text-rose-500">Notify to*</span></Label>
-                    <Input
-                      value={notifyEmail}
-                      onChange={(e) => setNotifyEmail(e.target.value)}
-                      className="h-8 mt-1"
-                    />
-                  </div>
-                )}
-                <CheckRow checked={trackLandedCost} onChange={setTrackLandedCost} label="Track landed cost on items" />
-              </section>
-
-              <Divider />
-
-              <section className="flex items-center justify-between">
-                <h2 className="font-semibold">Replenishments</h2>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-muted-foreground">{replenishments ? "Enabled" : "Disabled"}</span>
-                  <Switch checked={replenishments} onCheckedChange={setReplenishments} />
-                </div>
-              </section>
-
-              <div className="pt-4">
-                <Button onClick={handleSave} className="bg-orange-500 hover:bg-orange-600 text-white">
-                  Save
-                </Button>
-              </div>
-            </>
+          {tab === "Related Lists" && (
+            <CustomizationCrudTab
+              title="Related Lists"
+              description="Show related records on the item detail page."
+              table="related_lists"
+              entity={ENTITY}
+              columns={[
+                { key: "label", label: "Label" },
+                { key: "related_entity", label: "Related entity" },
+                { key: "filter", label: "Filter", render: (r) => <code className="text-xs">{JSON.stringify(r.filter)}</code> },
+                { key: "is_active", label: "Active", render: (r) => r.is_active ? "Yes" : "No" },
+              ]}
+              fields={[
+                { name: "label", label: "Label", type: "text", required: true },
+                { name: "related_entity", label: "Related entity", type: "select", required: true,
+                  options: ["invoices","bills","sales_orders","purchase_orders","quotes","inventory_adjustments"] },
+                { name: "filter", label: "Filter (JSON)", type: "textarea", helpText: 'e.g. {"status":"open"}' },
+                { name: "columns", label: "Columns (comma separated)", type: "text" },
+                { name: "is_active", label: "Active", type: "boolean" },
+              ]}
+              defaultRow={{ is_active: true, filter: {}, columns: [] }}
+              validate={(r) => {
+                if (!r.label?.trim()) return "Label is required";
+                if (!r.related_entity) return "Related entity is required";
+                try { if (typeof r.filter === "string" && r.filter) r.filter = JSON.parse(r.filter); }
+                catch { return "Filter must be valid JSON"; }
+                if (typeof r.columns === "string") r.columns = r.columns.split(",").map((s: string) => s.trim()).filter(Boolean);
+                return null;
+              }}
+            />
           )}
         </div>
       </div>
     </div>
   );
-}
-
-function Row({ label, children }: { label: React.ReactNode; children: React.ReactNode }) {
-  return (
-    <div className="grid grid-cols-[280px_1fr] items-center gap-4">
-      <div className="text-foreground/80">{label}</div>
-      <div>{children}</div>
-    </div>
-  );
-}
-
-function SmallSelect({
-  value, onChange, options,
-}: { value: string; onChange: (v: string) => void; options: string[] }) {
-  return (
-    <Select value={value} onValueChange={onChange}>
-      <SelectTrigger className="h-8 w-32"><SelectValue /></SelectTrigger>
-      <SelectContent>
-        {options.map((o) => <SelectItem key={o} value={o}>{o}</SelectItem>)}
-      </SelectContent>
-    </Select>
-  );
-}
-
-function CheckRow({
-  checked, onChange, label,
-}: { checked: boolean; onChange: (v: boolean) => void; label: React.ReactNode }) {
-  return (
-    <label className="flex items-start gap-2 cursor-pointer py-0.5">
-      <Checkbox checked={checked} onCheckedChange={(v) => onChange(!!v)} className="mt-0.5" />
-      <span className="text-foreground/90">{label}</span>
-    </label>
-  );
-}
-
-function Divider() {
-  return <div className="border-t" />;
 }

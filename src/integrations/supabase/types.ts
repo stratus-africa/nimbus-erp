@@ -545,6 +545,115 @@ export type Database = {
           },
         ]
       }
+      custom_buttons: {
+        Row: {
+          action_config: Json
+          action_type: string
+          created_at: string
+          entity: string
+          icon: string | null
+          id: string
+          is_active: boolean
+          label: string
+          placement: string
+          position: number
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          action_config?: Json
+          action_type: string
+          created_at?: string
+          entity: string
+          icon?: string | null
+          id?: string
+          is_active?: boolean
+          label: string
+          placement?: string
+          position?: number
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          action_config?: Json
+          action_type?: string
+          created_at?: string
+          entity?: string
+          icon?: string | null
+          id?: string
+          is_active?: boolean
+          label?: string
+          placement?: string
+          position?: number
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "custom_buttons_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      custom_fields: {
+        Row: {
+          created_at: string
+          data_type: string
+          default_value: string | null
+          entity: string
+          field_key: string
+          id: string
+          is_active: boolean
+          label: string
+          options: Json
+          position: number
+          required: boolean
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          data_type: string
+          default_value?: string | null
+          entity: string
+          field_key: string
+          id?: string
+          is_active?: boolean
+          label: string
+          options?: Json
+          position?: number
+          required?: boolean
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          data_type?: string
+          default_value?: string | null
+          entity?: string
+          field_key?: string
+          id?: string
+          is_active?: boolean
+          label?: string
+          options?: Json
+          position?: number
+          required?: boolean
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "custom_fields_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       customer_credits: {
         Row: {
           amount: number
@@ -979,6 +1088,7 @@ export type Database = {
       }
       items: {
         Row: {
+          archived_at: string | null
           barcode: string | null
           category: string | null
           cost_price: number | null
@@ -1000,6 +1110,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          archived_at?: string | null
           barcode?: string | null
           category?: string | null
           cost_price?: number | null
@@ -1021,6 +1132,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          archived_at?: string | null
           barcode?: string | null
           category?: string | null
           cost_price?: number | null
@@ -1533,6 +1645,103 @@ export type Database = {
           },
         ]
       }
+      record_locks: {
+        Row: {
+          condition: Json
+          created_at: string
+          entity: string
+          id: string
+          is_active: boolean
+          lock_fields: Json
+          name: string
+          roles_allowed: string[]
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          condition?: Json
+          created_at?: string
+          entity: string
+          id?: string
+          is_active?: boolean
+          lock_fields?: Json
+          name: string
+          roles_allowed?: string[]
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          condition?: Json
+          created_at?: string
+          entity?: string
+          id?: string
+          is_active?: boolean
+          lock_fields?: Json
+          name?: string
+          roles_allowed?: string[]
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "record_locks_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      related_lists: {
+        Row: {
+          columns: Json
+          created_at: string
+          entity: string
+          filter: Json
+          id: string
+          is_active: boolean
+          label: string
+          position: number
+          related_entity: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          columns?: Json
+          created_at?: string
+          entity: string
+          filter?: Json
+          id?: string
+          is_active?: boolean
+          label: string
+          position?: number
+          related_entity: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          columns?: Json
+          created_at?: string
+          entity?: string
+          filter?: Json
+          id?: string
+          is_active?: boolean
+          label?: string
+          position?: number
+          related_entity?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "related_lists_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sales_order_lines: {
         Row: {
           description: string | null
@@ -1900,6 +2109,41 @@ export type Database = {
           },
         ]
       }
+      tenant_settings: {
+        Row: {
+          created_at: string
+          id: string
+          namespace: string
+          settings: Json
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          namespace: string
+          settings?: Json
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          namespace?: string
+          settings?: Json
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tenant_settings_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tenants: {
         Row: {
           address: string | null
@@ -1984,6 +2228,56 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "user_roles_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      validation_rules: {
+        Row: {
+          created_at: string
+          entity: string
+          error_message: string
+          field_key: string
+          id: string
+          is_active: boolean
+          name: string
+          operator: string
+          tenant_id: string
+          updated_at: string
+          value: Json
+        }
+        Insert: {
+          created_at?: string
+          entity: string
+          error_message: string
+          field_key: string
+          id?: string
+          is_active?: boolean
+          name: string
+          operator: string
+          tenant_id: string
+          updated_at?: string
+          value?: Json
+        }
+        Update: {
+          created_at?: string
+          entity?: string
+          error_message?: string
+          field_key?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          operator?: string
+          tenant_id?: string
+          updated_at?: string
+          value?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "validation_rules_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"

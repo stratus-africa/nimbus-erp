@@ -1,5 +1,5 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "@/hooks/use-profile";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -7,17 +7,22 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useMemo, useState } from "react";
-import { ChevronDown, Plus, MoreHorizontal, SlidersHorizontal, Search, RefreshCw, ImageIcon } from "lucide-react";
+import { ChevronDown, Plus, MoreHorizontal, SlidersHorizontal, Search, RefreshCw, ImageIcon, Pencil, Archive, ArchiveRestore, Trash2 } from "lucide-react";
 import { formatCurrency } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/items")({
   head: () => ({ meta: [{ title: "Items — Nimbus ERP" }] }),
   component: ItemsPage,
 });
 
-type FilterKey = "all" | "active" | "inactive" | "inventory" | "service" | "low";
+type FilterKey = "all" | "active" | "inactive" | "inventory" | "service" | "low" | "archived";
 const FILTERS: { key: FilterKey; label: string }[] = [
   { key: "all", label: "All Items" },
   { key: "active", label: "Active Items" },
@@ -25,6 +30,7 @@ const FILTERS: { key: FilterKey; label: string }[] = [
   { key: "inventory", label: "Inventory Items" },
   { key: "service", label: "Service Items" },
   { key: "low", label: "Low Stock Items" },
+  { key: "archived", label: "Archived Items" },
 ];
 
 function ItemsPage() {
@@ -53,15 +59,50 @@ function ItemsPage() {
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     return (rows ?? []).filter((r: any) => {
+      if (filter === "archived") {
+        if (!r.archived_at) return false;
+      } else if (r.archived_at) {
+        return false; // hide archived from all other filters
+      }
       if (filter === "inventory" && r.item_type !== "inventory") return false;
       if (filter === "service" && r.item_type !== "service") return false;
       if (filter === "low" && !(r.item_type === "inventory" && Number(r.stock_on_hand ?? 0) <= Number(r.reorder_level ?? 0))) return false;
       if (filter === "inactive" && r.is_active !== false) return false;
       if (filter === "active" && r.is_active === false) return false;
       if (!q) return true;
-      return [r.name, r.sku, r.description].some((v) => v && String(v).toLowerCase().includes(q));
+      return [r.name, r.sku, r.description, r.barcode].some((v) => v && String(v).toLowerCase().includes(q));
     });
   }, [rows, filter, query]);
+
+  const archive = useMutation({
+    mutationFn: async ({ id, restore }: { id: string; restore: boolean }) => {
+      const { error } = await supabase
+        .from("items")
+        .update({ archived_at: restore ? null : new Date().toISOString() })
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: (_d, v) => {
+      qc.invalidateQueries({ queryKey: ["items"] });
+      toast.success(v.restore ? "Item unarchived" : "Item archived");
+    },
+    onError: (e: any) => toast.error(e.message ?? "Failed"),
+  });
+
+  const del = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from("items").update({ deleted_at: new Date().toISOString() }).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["items"] });
+      toast.success("Item deleted");
+    },
+    onError: (e: any) => toast.error(e.message ?? "Delete failed"),
+  });
+
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const allChecked = filtered.length > 0 && filtered.every((r: any) => selected.has(r.id));
   const toggleAll = () => setSelected(allChecked ? new Set() : new Set(filtered.map((r: any) => r.id)));
@@ -155,9 +196,7 @@ function ItemsPage() {
               <TableHead className="uppercase text-xs tracking-wide text-right">Rate</TableHead>
               <TableHead className="uppercase text-xs tracking-wide text-right">Stock on Hand</TableHead>
               <TableHead className="uppercase text-xs tracking-wide">Usage Unit</TableHead>
-              <TableHead className="pr-6 text-right">
-                <Search className="ml-auto h-4 w-4 text-muted-foreground" />
-              </TableHead>
+              <TableHead className="pr-6 text-right uppercase text-xs tracking-wide">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -168,7 +207,7 @@ function ItemsPage() {
             ) : filtered.map((i: any) => (
               <TableRow
                 key={i.id}
-                className={cn("group", selected.has(i.id) && "bg-primary/5")}
+                className={cn("group", selected.has(i.id) && "bg-primary/5", i.archived_at && "opacity-60")}
               >
                 <TableCell className="pl-6"></TableCell>
                 <TableCell>
@@ -182,9 +221,10 @@ function ItemsPage() {
                 <TableCell>
                   <button
                     onClick={() => navigate({ to: "/items/$itemId", params: { itemId: i.id } })}
-                    className="text-primary hover:underline font-normal text-left"
+                    className="text-primary hover:underline font-normal text-left inline-flex items-center gap-2"
                   >
                     {i.name}
+                    {i.archived_at && <span className="text-[10px] rounded bg-muted px-1.5 py-0.5">Archived</span>}
                   </button>
                 </TableCell>
                 <TableCell className="text-muted-foreground">{i.sku ?? ""}</TableCell>
@@ -202,14 +242,57 @@ function ItemsPage() {
                   {i.item_type === "inventory" ? Number(i.stock_on_hand ?? 0) : ""}
                 </TableCell>
                 <TableCell className="text-muted-foreground">{i.unit ?? ""}</TableCell>
-                <TableCell className="pr-6"></TableCell>
+                <TableCell className="pr-6 text-right">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-7 w-7"><MoreHorizontal className="h-4 w-4" /></Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem asChild>
+                        <Link to="/items/$itemId/edit" params={{ itemId: i.id }}>
+                          <Pencil className="h-4 w-4 mr-2" /> Edit
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => archive.mutate({ id: i.id, restore: !!i.archived_at })}>
+                        {i.archived_at ? <><ArchiveRestore className="h-4 w-4 mr-2" /> Unarchive</> : <><Archive className="h-4 w-4 mr-2" /> Archive</>}
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onClick={() => setDeleteId(i.id)}
+                        className="text-rose-500 focus:text-rose-500"
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" /> Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
       </div>
 
+      <AlertDialog open={!!deleteId} onOpenChange={(o) => !o && setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this item?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This soft-deletes the item. Existing invoices and bills referencing it are unaffected.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => { if (deleteId) { del.mutate(deleteId); setDeleteId(null); } }}
+              className="bg-rose-600 hover:bg-rose-700"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
+
 
