@@ -14,6 +14,8 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
+  Line,
+  LineChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -81,10 +83,29 @@ function monthsBetween(from: string, to: string) {
   return out;
 }
 
+/** Returns the 12 months of the current financial year starting at fyStartMonth (1-12). */
+function fiscalYearMonths(fyStartMonth: number) {
+  const today = new Date();
+  const startMonthIdx = Math.max(1, Math.min(12, fyStartMonth || 1)) - 1;
+  // If today is before this calendar year's FY start, FY began last year.
+  const fyStartYear = today.getMonth() >= startMonthIdx ? today.getFullYear() : today.getFullYear() - 1;
+  const out: { year: number; month: number; label: string }[] = [];
+  for (let i = 0; i < 12; i++) {
+    const d = new Date(fyStartYear, startMonthIdx + i, 1);
+    out.push({
+      year: d.getFullYear(),
+      month: d.getMonth(),
+      label: d.toLocaleString("en-US", { month: "short" }),
+    });
+  }
+  return out;
+}
+
 function Dashboard() {
   const { data: profile } = useProfile();
   const currency = profile?.currentTenant?.base_currency ?? "USD";
   const tenantId = profile?.currentTenant?.id;
+  const fyStartMonth = (profile?.currentTenant as any)?.fiscal_year_start ?? 1;
   const search = Route.useSearch();
   const { from, to } = useMemo(() => resolveRange(search), [search]);
 
@@ -189,6 +210,29 @@ function Dashboard() {
       })),
     ].sort((a, b) => String(b.created).localeCompare(String(a.created)));
 
+    // Always-on Financial Year series (independent of range filter)
+    const fyMonths = fiscalYearMonths(fyStartMonth);
+    const fyStartDate = new Date(fyMonths[0].year, fyMonths[0].month, 1);
+    const fyEndDate = new Date(fyMonths[11].year, fyMonths[11].month + 1, 0);
+    const fyFrom = iso(fyStartDate);
+    const fyTo = iso(fyEndDate);
+    const fyInvoices = (data?.invoices ?? []).filter((r: any) => inRange(r.invoice_date, fyFrom, fyTo));
+    const fyBills = (data?.bills ?? []).filter((r: any) => inRange(r.bill_date, fyFrom, fyTo));
+    const fySeries = fyMonths.map((m) => {
+      const income = (fyInvoices as any[])
+        .filter((r) => r.invoice_date && new Date(r.invoice_date).getFullYear() === m.year && new Date(r.invoice_date).getMonth() === m.month)
+        .reduce((s, r) => s + Number(r.total ?? 0), 0);
+      const expense = (fyBills as any[])
+        .filter((r) => r.bill_date && new Date(r.bill_date).getFullYear() === m.year && new Date(r.bill_date).getMonth() === m.month)
+        .reduce((s, r) => s + Number(r.total ?? 0), 0);
+      return { name: m.label, income, expense };
+    });
+    const fyTotalIncome = fySeries.reduce((s, m) => s + m.income, 0);
+    const fyTotalExpense = fySeries.reduce((s, m) => s + m.expense, 0);
+    const fyLabel = fyStartDate.getFullYear() === fyEndDate.getFullYear()
+      ? `FY ${fyStartDate.getFullYear()}`
+      : `FY ${fyStartDate.getFullYear()}–${String(fyEndDate.getFullYear()).slice(-2)}`;
+
     return {
       recCurrent, recOverdue, payCurrent, payOverdue,
       series, totalIncome, totalExpense,
@@ -197,8 +241,9 @@ function Dashboard() {
       recentInvoices: invoices.slice(0, 6),
       recentBills: bills.slice(0, 6),
       timeline: events.slice(0, 10),
+      fySeries, fyTotalIncome, fyTotalExpense, fyLabel,
     };
-  }, [data, from, to, today]);
+  }, [data, from, to, today, fyStartMonth]);
 
   return (
     <div className="space-y-6">
@@ -279,17 +324,17 @@ function Dashboard() {
             <CardHeader className="border-b bg-muted/30">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-base font-semibold">Income and Expense</CardTitle>
-                <span className="text-xs text-muted-foreground">{formatDate(from)} — {formatDate(to)}</span>
+                <span className="text-xs text-muted-foreground">{computed.fyLabel}</span>
               </div>
             </CardHeader>
             <CardContent className="p-6">
               <div className="mb-4 flex flex-wrap items-center gap-6 text-sm">
-                <Legend dot="bg-success" label="Total Income" value={formatCurrency(computed.totalIncome, currency)} />
-                <Legend dot="bg-destructive" label="Total Expenses" value={formatCurrency(computed.totalExpense, currency)} />
+                <Legend dot="bg-success" label="Total Income" value={formatCurrency(computed.fyTotalIncome, currency)} />
+                <Legend dot="bg-destructive" label="Total Expenses" value={formatCurrency(computed.fyTotalExpense, currency)} />
               </div>
               <div className="h-60">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={computed.series} barGap={4}>
+                  <LineChart data={computed.fySeries} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                     <CartesianGrid vertical={false} strokeDasharray="3 3" className="stroke-border" />
                     <XAxis dataKey="name" tick={{ fontSize: 11 }} tickLine={false} axisLine={false} interval={0} />
                     <YAxis tick={{ fontSize: 11 }} tickLine={false} axisLine={false} tickFormatter={(v) => `${Math.round(Number(v) / 1000)} K`} />
@@ -297,9 +342,9 @@ function Dashboard() {
                       formatter={(v: any) => formatCurrency(v, currency)}
                       contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 }}
                     />
-                    <Bar dataKey="income" fill="hsl(var(--success))" radius={[3, 3, 0, 0]} />
-                    <Bar dataKey="expense" fill="hsl(var(--destructive))" radius={[3, 3, 0, 0]} />
-                  </BarChart>
+                    <Line type="monotone" dataKey="income" stroke="hsl(var(--success))" strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 5 }} />
+                    <Line type="monotone" dataKey="expense" stroke="hsl(var(--destructive))" strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 5 }} />
+                  </LineChart>
                 </ResponsiveContainer>
               </div>
             </CardContent>

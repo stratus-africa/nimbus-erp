@@ -14,7 +14,7 @@ export function useProfile() {
         .maybeSingle();
       const { data: memberships } = await supabase
         .from("tenant_members")
-        .select("tenant_id, tenants(id, name, slug, base_currency, status)")
+        .select("tenant_id, tenants(id, name, slug, base_currency, status, fiscal_year_start)")
         .eq("user_id", u.user.id);
       const { data: roles } = await supabase
         .from("user_roles")
