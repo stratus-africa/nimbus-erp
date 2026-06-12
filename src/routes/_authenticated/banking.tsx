@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "@/hooks/use-profile";
@@ -65,6 +65,7 @@ function BankingPage() {
   const tenantId = profile?.currentTenant?.id;
   const baseCurrency = profile?.currentTenant?.base_currency ?? "KES";
   const qc = useQueryClient();
+  const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
 
@@ -105,12 +106,17 @@ function BankingPage() {
 
   const remove = useMutation({
     mutationFn: async (id: string) => {
+      const acct = accounts.find((a) => a.id === id);
       const { error } = await supabase.from("bank_accounts" as any).delete().eq("id", id);
       if (error) throw error;
+      if ((acct as any)?.coa_account_id) {
+        await supabase.from("chart_of_accounts").delete().eq("id", (acct as any).coa_account_id);
+      }
     },
     onSuccess: () => {
       toast.success("Account deleted");
       qc.invalidateQueries({ queryKey: ["bank_accounts", tenantId] });
+      qc.invalidateQueries({ queryKey: ["coa"] });
     },
     onError: (e: any) => toast.error(e.message),
   });
@@ -223,8 +229,9 @@ function BankingPage() {
             {filtered.map((a) => (
               <div
                 key={a.id}
+                onClick={() => navigate({ to: "/banking/$accountId", params: { accountId: a.id } })}
                 className={cn(
-                  "grid grid-cols-[1.5fr_1fr_1fr_1fr_40px] items-center gap-3 px-5 py-3 hover:bg-muted/30",
+                  "grid grid-cols-[1.5fr_1fr_1fr_1fr_40px] items-center gap-3 px-5 py-3 hover:bg-muted/30 cursor-pointer",
                   !a.is_active && "opacity-60",
                 )}
               >
@@ -260,7 +267,7 @@ function BankingPage() {
                 <div className="text-right text-sm tabular-nums">
                   {formatMoney(Number(a.current_balance || 0), a.currency)}
                 </div>
-                <div className="text-right">
+                <div className="text-right" onClick={(e) => e.stopPropagation()}>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="icon" className="h-8 w-8">
@@ -338,6 +345,35 @@ function AddAccountDialog({
       if (!tenantId) throw new Error("No tenant");
       if (!form.account_name.trim()) throw new Error("Account name is required");
       const ob = Number(form.opening_balance) || 0;
+
+      // 1) Create matching ledger in Chart of Accounts
+      const coaType = form.account_type === "credit_card" ? "liability" : "asset";
+      // pick a free code in range
+      const codeRange = form.account_type === "credit_card" ? [2200, 2299]
+        : form.account_type === "cash" ? [1000, 1099]
+        : form.account_type === "payment_clearing" ? [1100, 1199]
+        : [1010, 1199];
+      const { data: usedCodes } = await supabase
+        .from("chart_of_accounts")
+        .select("code")
+        .eq("tenant_id", tenantId)
+        .gte("code", String(codeRange[0]))
+        .lte("code", String(codeRange[1]));
+      const used = new Set((usedCodes ?? []).map((r: any) => r.code));
+      let nextCode = codeRange[0];
+      while (used.has(String(nextCode)) && nextCode <= codeRange[1]) nextCode++;
+
+      const { data: coa, error: coaErr } = await supabase.from("chart_of_accounts").insert({
+        tenant_id: tenantId,
+        code: String(nextCode),
+        name: form.account_name.trim(),
+        account_type: coaType,
+        description: form.description.trim() || `${form.account_type} account`,
+        opening_balance: ob,
+      } as any).select("id").single();
+      if (coaErr) throw coaErr;
+
+      // 2) Create bank account linked to COA ledger
       const { error } = await supabase.from("bank_accounts" as any).insert({
         tenant_id: tenantId,
         account_name: form.account_name.trim(),
@@ -348,12 +384,14 @@ function AddAccountDialog({
         opening_balance: ob,
         current_balance: ob,
         description: form.description.trim() || null,
+        coa_account_id: coa?.id ?? null,
       });
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("Account added");
+      toast.success("Account added and linked to Chart of Accounts");
       qc.invalidateQueries({ queryKey: ["bank_accounts", tenantId] });
+      qc.invalidateQueries({ queryKey: ["coa"] });
       onClose();
     },
     onError: (e: any) => toast.error(e.message),
