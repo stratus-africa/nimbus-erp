@@ -17,6 +17,7 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { cn } from "@/lib/utils";
+import { useCVSettings } from "@/hooks/use-cv-settings";
 
 export const Route = createFileRoute("/_authenticated/customers/new")({
   head: () => ({ meta: [{ title: "New Customer — Nimbus ERP" }] }),
@@ -53,6 +54,7 @@ const schema = z.object({
   enable_portal: z.boolean(),
   billing_address: z.string().max(500, "Max 500 characters").optional().or(z.literal("")),
   shipping_address: z.string().max(500, "Max 500 characters").optional().or(z.literal("")),
+  credit_limit: z.string().regex(/^\d*(\.\d{0,2})?$/, "Invalid amount").optional().or(z.literal("")),
   remarks: z.string().max(1000, "Max 1000 characters").optional().or(z.literal("")),
 }).superRefine((val, ctx) => {
   if (val.vat_treatment === "VAT Registered") {
@@ -93,6 +95,7 @@ const defaults: FormValues = {
   enable_portal: false,
   billing_address: "",
   shipping_address: "",
+  credit_limit: "",
   remarks: "",
 };
 
@@ -134,6 +137,8 @@ export function CustomerFormPage({ customerId, initial }: { customerId?: string;
   const { data: profile } = useProfile();
   const tenantId = profile?.currentTenant?.id;
   const isEdit = !!customerId;
+  const { settings: cvSettings } = useCVSettings();
+  const creditLimitEnabled = !!cvSettings?.customerCreditLimitEnabled;
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
@@ -204,6 +209,7 @@ export function CustomerFormPage({ customerId, initial }: { customerId?: string;
           ? 0
           : Number(values.payment_terms.replace(/\D/g, "")) || 30,
         notes: values.remarks || null,
+        credit_limit: creditLimitEnabled && values.credit_limit ? Number(values.credit_limit) : 0,
       };
       if (isEdit && customerId) {
         const { data, error } = await supabase
