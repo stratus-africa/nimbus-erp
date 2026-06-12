@@ -23,7 +23,20 @@ export const Route = createFileRoute("/_authenticated/chart-of-accounts")({
   component: CoAPage,
 });
 
-type Account = { id?: string; code: string; name: string; account_type: "asset" | "liability" | "equity" | "income" | "expense"; description?: string | null; opening_balance?: number };
+type Account = { id?: string; code: string; name: string; account_type: "asset" | "liability" | "equity" | "income" | "expense"; account_subtype?: string | null; description?: string | null; opening_balance?: number };
+
+const SUBTYPES: { type: Account["account_type"]; label: string; subtypes: string[] }[] = [
+  { type: "asset", label: "Asset", subtypes: ["Other Asset", "Other Current Asset", "Cash", "Bank", "Fixed Asset", "Accounts Receivable", "Stock", "Payment Clearing Account", "Input Tax", "Intangible Asset", "Non Current Asset", "Deferred Tax Asset"] },
+  { type: "liability", label: "Liability", subtypes: ["Other Current Liability", "Credit Card", "Non Current Liability", "Other Liability", "Accounts Payable", "Output Tax", "Deferred Tax Liability"] },
+  { type: "equity", label: "Equity", subtypes: ["Equity"] },
+  { type: "income", label: "Income", subtypes: ["Income", "Other Income"] },
+  { type: "expense", label: "Expense", subtypes: ["Expense", "Cost of Goods Sold", "Other Expense"] },
+];
+
+function findTypeForSubtype(sub: string): Account["account_type"] {
+  for (const g of SUBTYPES) if (g.subtypes.includes(sub)) return g.type;
+  return "asset";
+}
 
 const TYPE_COLORS: Record<string, string> = {
   asset: "bg-info/10 text-info",
