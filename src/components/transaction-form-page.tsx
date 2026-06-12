@@ -82,8 +82,7 @@ export function TransactionFormPage({
   });
 
   const isCustomerDoc = config.partyTable === "customers";
-  const enforcesCredit =
-    isCustomerDoc && (config.kind === "invoice" || config.kind === "quote" || config.kind === "sales_order");
+  const enforcesCredit = isCustomerDoc && config.kind === "invoice";
   const { settings: cvSettings } = useCVSettings();
   const includeSOs = !!cvSettings?.includeSalesOrdersInCreditLimit;
 
@@ -102,7 +101,7 @@ export function TransactionFormPage({
         .from("customers").select("credit_limit, name").eq("id", partyId).maybeSingle();
       const limit = Number((c as any)?.credit_limit ?? 0);
 
-      // Open invoices (always part of exposure)
+      // Open invoices (always count toward exposure)
       let openInvoices = 0;
       {
         let q = (supabase as any).from("invoices").select("balance_due, id")
@@ -116,11 +115,9 @@ export function TransactionFormPage({
       // Open sales orders (only when the tenant setting includes them)
       let openSOs = 0;
       if (includeSOs) {
-        let q = (supabase as any).from("sales_orders").select("total, id")
+        const { data } = await (supabase as any).from("sales_orders").select("total, id")
           .eq("tenant_id", tenantId).eq("customer_id", partyId)
           .not("status", "in", "(cancelled,closed,draft)");
-        if (initial?.id && config.kind === "sales_order") q = q.neq("id", initial.id);
-        const { data } = await q;
         openSOs = (data ?? []).reduce((s: number, r: any) => s + Number(r.total ?? 0), 0);
       }
       return { limit, exposure: openInvoices + openSOs, name: (c as any)?.name ?? "" };
