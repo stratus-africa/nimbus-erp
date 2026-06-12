@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { z } from "zod";
 import { PaymentsListing, type PaymentsModuleConfig } from "@/components/payments-listing";
 
 const config: PaymentsModuleConfig = {
@@ -13,9 +14,20 @@ const config: PaymentsModuleConfig = {
   newRoute: "/payments-received/new",
 };
 
+const searchSchema = z.object({
+  unallocated: z.coerce.boolean().optional(),
+  partyId: z.string().optional(),
+});
+
 export const Route = createFileRoute("/_authenticated/payments-received")({
   head: () => ({ meta: [{ title: "Payments Received — Nimbus ERP" }] }),
-  component: () => <PaymentsListing config={config} />,
+  validateSearch: searchSchema,
+  component: PaymentsReceivedPage,
 });
+
+function PaymentsReceivedPage() {
+  const { unallocated, partyId } = Route.useSearch();
+  return <PaymentsListing config={config} unallocated={!!unallocated} partyId={partyId} />;
+}
 
 export { config as paymentsReceivedConfig };

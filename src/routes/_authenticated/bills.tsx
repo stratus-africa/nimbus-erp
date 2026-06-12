@@ -14,6 +14,7 @@ function BillsPage() {
       numberLabel="Bill Number"
       config={billConfig}
       onNew={() => navigate({ to: "/bills/new" })}
+      onRowClick={(r) => navigate({ to: "/bills/$billId", params: { billId: r.id } })}
     />
   );
 }
