@@ -326,7 +326,25 @@ function SalesOrderDetailPage() {
           </Button>
           <Button variant="ghost" size="sm" className="h-8 gap-1.5"><Share2 className="h-4 w-4" /> Share</Button>
           <Button variant="ghost" size="sm" className="h-8 gap-1.5"><Printer className="h-4 w-4" /> PDF/Print</Button>
-          <Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal className="h-4 w-4" /></Button>
+          <DocActionsMenu
+            docId={soId}
+            invalidateKeys={["sales-orders", "sales-orders-sidebar", "sales-order-detail"]}
+            config={{
+              docTable: "sales_orders",
+              linesTable: "sales_order_lines",
+              fkLinesField: "sales_order_id",
+              numberField: "so_number",
+              numberingDocType: "sales_order",
+              dateField: "so_date",
+              sourceRefFields: ["source_quote_id"],
+              listRoute: "/sales-orders",
+              detailRoute: "/sales-orders/$soId",
+              detailParamKey: "soId",
+              label: "Sales Order",
+              hasLines: true,
+              softDelete: true,
+            }}
+          />
         </div>
 
         <div className="flex-1 overflow-auto">

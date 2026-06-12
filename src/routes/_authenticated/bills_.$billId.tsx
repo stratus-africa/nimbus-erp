@@ -271,7 +271,26 @@ function BillDetailPage() {
           ><Wallet className="h-4 w-4" /> Record Payment</Button>
           <Button variant="ghost" size="sm" className="h-8 gap-1.5"><Share2 className="h-4 w-4" /> Share</Button>
           <Button variant="ghost" size="sm" className="h-8 gap-1.5"><Printer className="h-4 w-4" /> PDF/Print</Button>
-          <Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal className="h-4 w-4" /></Button>
+          <DocActionsMenu
+            docId={billId}
+            invalidateKeys={["bills", "bills-sidebar", "bill-detail"]}
+            config={{
+              docTable: "bills",
+              linesTable: "bill_lines",
+              fkLinesField: "bill_id",
+              numberField: "bill_number",
+              numberingDocType: "bill",
+              dateField: "bill_date",
+              sourceRefFields: ["source_po_id"],
+              cloneOmitFields: ["amount_paid"],
+              listRoute: "/bills",
+              detailRoute: "/bills/$billId",
+              detailParamKey: "billId",
+              label: "Bill",
+              hasLines: true,
+              softDelete: true,
+            }}
+          />
         </div>
 
         <div className="flex-1 overflow-auto">
