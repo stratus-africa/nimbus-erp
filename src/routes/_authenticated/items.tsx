@@ -196,9 +196,7 @@ function ItemsPage() {
               <TableHead className="uppercase text-xs tracking-wide text-right">Rate</TableHead>
               <TableHead className="uppercase text-xs tracking-wide text-right">Stock on Hand</TableHead>
               <TableHead className="uppercase text-xs tracking-wide">Usage Unit</TableHead>
-              <TableHead className="pr-6 text-right">
-                <Search className="ml-auto h-4 w-4 text-muted-foreground" />
-              </TableHead>
+              <TableHead className="pr-6 text-right uppercase text-xs tracking-wide">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -209,7 +207,7 @@ function ItemsPage() {
             ) : filtered.map((i: any) => (
               <TableRow
                 key={i.id}
-                className={cn("group", selected.has(i.id) && "bg-primary/5")}
+                className={cn("group", selected.has(i.id) && "bg-primary/5", i.archived_at && "opacity-60")}
               >
                 <TableCell className="pl-6"></TableCell>
                 <TableCell>
@@ -223,9 +221,10 @@ function ItemsPage() {
                 <TableCell>
                   <button
                     onClick={() => navigate({ to: "/items/$itemId", params: { itemId: i.id } })}
-                    className="text-primary hover:underline font-normal text-left"
+                    className="text-primary hover:underline font-normal text-left inline-flex items-center gap-2"
                   >
                     {i.name}
+                    {i.archived_at && <span className="text-[10px] rounded bg-muted px-1.5 py-0.5">Archived</span>}
                   </button>
                 </TableCell>
                 <TableCell className="text-muted-foreground">{i.sku ?? ""}</TableCell>
@@ -243,14 +242,57 @@ function ItemsPage() {
                   {i.item_type === "inventory" ? Number(i.stock_on_hand ?? 0) : ""}
                 </TableCell>
                 <TableCell className="text-muted-foreground">{i.unit ?? ""}</TableCell>
-                <TableCell className="pr-6"></TableCell>
+                <TableCell className="pr-6 text-right">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-7 w-7"><MoreHorizontal className="h-4 w-4" /></Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem asChild>
+                        <Link to="/items/$itemId/edit" params={{ itemId: i.id }}>
+                          <Pencil className="h-4 w-4 mr-2" /> Edit
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => archive.mutate({ id: i.id, restore: !!i.archived_at })}>
+                        {i.archived_at ? <><ArchiveRestore className="h-4 w-4 mr-2" /> Unarchive</> : <><Archive className="h-4 w-4 mr-2" /> Archive</>}
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onClick={() => setDeleteId(i.id)}
+                        className="text-rose-500 focus:text-rose-500"
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" /> Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
       </div>
 
+      <AlertDialog open={!!deleteId} onOpenChange={(o) => !o && setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this item?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This soft-deletes the item. Existing invoices and bills referencing it are unaffected.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => { if (deleteId) { del.mutate(deleteId); setDeleteId(null); } }}
+              className="bg-rose-600 hover:bg-rose-700"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
+
 
