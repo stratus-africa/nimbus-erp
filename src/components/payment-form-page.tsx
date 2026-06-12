@@ -30,15 +30,6 @@ import type { PaymentsModuleConfig } from "@/components/payments-listing";
 import { cn } from "@/lib/utils";
 
 const METHODS = ["Cash", "Bank Transfer", "Card", "MPESA", "Cheque", "Other"];
-const DEPOSIT_ACCOUNTS = ["MPESA", "Bank Account", "Cash", "Petty Cash"];
-
-// Maps Deposit-To selection -> Chart of Accounts code
-const DEPOSIT_CODE: Record<string, string> = {
-  MPESA: "1020",
-  "Bank Account": "1010",
-  Cash: "1000",
-  "Petty Cash": "1030",
-};
 
 export function PaymentFormPage({ config }: { config: PaymentsModuleConfig }) {
   const navigate = useNavigate();
