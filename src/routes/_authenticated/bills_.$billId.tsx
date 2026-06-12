@@ -12,6 +12,7 @@ import {
   Sparkles, Paperclip, MessageSquare, X, CheckCircle2, Clock, UserCircle2,
   FilePlus2, Plus, Search, ChevronDown, Wallet,
 } from "lucide-react";
+import { DocActionsMenu } from "@/components/doc-actions-menu";
 
 export const Route = createFileRoute("/_authenticated/bills_/$billId")({
   head: () => ({ meta: [{ title: "Bill — Nimbus ERP" }] }),
