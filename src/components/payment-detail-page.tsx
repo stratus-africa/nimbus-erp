@@ -219,7 +219,15 @@ export function PaymentDetailPage({ config }: { config: PaymentsModuleConfig }) 
           </Button>
           <DocActionsMenu
             docId={paymentId}
-            invalidateKeys={[config.table, `${config.table}-sidebar`]}
+            invalidateKeys={[
+              config.table,
+              `${config.table}-sidebar`,
+              config.docTable,
+              "bank_accounts",
+              "bank_transactions",
+              "journal_entries",
+              "audit_logs",
+            ]}
             config={{
               docTable: config.table,
               numberField: "reference",
@@ -230,6 +238,28 @@ export function PaymentDetailPage({ config }: { config: PaymentsModuleConfig }) 
               label: isReceived ? "Payment Received" : "Payment Made",
               hasLines: false,
               softDelete: false,
+              deleteConfirm: {
+                title: `Delete this ${isReceived ? "payment received" : "payment made"}?`,
+                description:
+                  "This action cannot be undone. The following will happen automatically:",
+                impacts: isReceived
+                  ? [
+                      "The linked invoice's amount paid will decrease and balance due will be restored.",
+                      "Invoice status will revert to Sent (or Partially Paid if other payments remain).",
+                      "The matching bank deposit row will be removed from the bank account.",
+                      "The associated ledger (journal) entry will be removed.",
+                      "The bank account's current balance will be recomputed automatically.",
+                      "An audit log entry will be written describing every change.",
+                    ]
+                  : [
+                      "The linked bill's amount paid will decrease and balance due will be restored.",
+                      "Bill status will revert to Open (or Partially Paid if other payments remain).",
+                      "The matching bank withdrawal row will be removed from the bank account.",
+                      "The associated ledger (journal) entry will be removed.",
+                      "The bank account's current balance will be recomputed automatically.",
+                      "An audit log entry will be written describing every change.",
+                    ],
+              },
             }}
           />
         </div>
