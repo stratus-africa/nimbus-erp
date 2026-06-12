@@ -53,6 +53,7 @@ import { Route as AuthenticatedCustomersNewRouteImport } from './routes/_authent
 import { Route as AuthenticatedCustomersCustomerIdRouteImport } from './routes/_authenticated/customers.$customerId'
 import { Route as AuthenticatedBillsNewRouteImport } from './routes/_authenticated/bills_.new'
 import { Route as AuthenticatedBillsBillIdRouteImport } from './routes/_authenticated/bills_.$billId'
+import { Route as AuthenticatedBankingAccountIdRouteImport } from './routes/_authenticated/banking_.$accountId'
 import { Route as AuthenticatedSuppliersSupplierIdEditRouteImport } from './routes/_authenticated/suppliers.$supplierId_.edit'
 import { Route as AuthenticatedSettingsLocationsNewRouteImport } from './routes/_authenticated/settings_.locations_.new'
 import { Route as AuthenticatedSalesOrdersSoIdEditRouteImport } from './routes/_authenticated/sales-orders_.$soId_.edit'
@@ -308,6 +309,12 @@ const AuthenticatedBillsBillIdRoute =
     path: '/bills/$billId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedBankingAccountIdRoute =
+  AuthenticatedBankingAccountIdRouteImport.update({
+    id: '/banking_/$accountId',
+    path: '/banking/$accountId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedSuppliersSupplierIdEditRoute =
   AuthenticatedSuppliersSupplierIdEditRouteImport.update({
     id: '/suppliers/$supplierId_/edit',
@@ -377,6 +384,7 @@ export interface FileRoutesByFullPath {
   '/reports': typeof AuthenticatedReportsRoute
   '/sales-orders': typeof AuthenticatedSalesOrdersRoute
   '/settings': typeof AuthenticatedSettingsRouteWithChildren
+  '/banking/$accountId': typeof AuthenticatedBankingAccountIdRoute
   '/bills/$billId': typeof AuthenticatedBillsBillIdRoute
   '/bills/new': typeof AuthenticatedBillsNewRoute
   '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
@@ -430,6 +438,7 @@ export interface FileRoutesByTo {
   '/reports': typeof AuthenticatedReportsRoute
   '/sales-orders': typeof AuthenticatedSalesOrdersRoute
   '/settings': typeof AuthenticatedSettingsRouteWithChildren
+  '/banking/$accountId': typeof AuthenticatedBankingAccountIdRoute
   '/bills/$billId': typeof AuthenticatedBillsBillIdRoute
   '/bills/new': typeof AuthenticatedBillsNewRoute
   '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
@@ -485,6 +494,7 @@ export interface FileRoutesById {
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
   '/_authenticated/sales-orders': typeof AuthenticatedSalesOrdersRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRouteWithChildren
+  '/_authenticated/banking_/$accountId': typeof AuthenticatedBankingAccountIdRoute
   '/_authenticated/bills_/$billId': typeof AuthenticatedBillsBillIdRoute
   '/_authenticated/bills_/new': typeof AuthenticatedBillsNewRoute
   '/_authenticated/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
@@ -540,6 +550,7 @@ export interface FileRouteTypes {
     | '/reports'
     | '/sales-orders'
     | '/settings'
+    | '/banking/$accountId'
     | '/bills/$billId'
     | '/bills/new'
     | '/customers/$customerId'
@@ -593,6 +604,7 @@ export interface FileRouteTypes {
     | '/reports'
     | '/sales-orders'
     | '/settings'
+    | '/banking/$accountId'
     | '/bills/$billId'
     | '/bills/new'
     | '/customers/$customerId'
@@ -647,6 +659,7 @@ export interface FileRouteTypes {
     | '/_authenticated/reports'
     | '/_authenticated/sales-orders'
     | '/_authenticated/settings'
+    | '/_authenticated/banking_/$accountId'
     | '/_authenticated/bills_/$billId'
     | '/_authenticated/bills_/new'
     | '/_authenticated/customers/$customerId'
@@ -998,6 +1011,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedBillsBillIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/banking_/$accountId': {
+      id: '/_authenticated/banking_/$accountId'
+      path: '/banking/$accountId'
+      fullPath: '/banking/$accountId'
+      preLoaderRoute: typeof AuthenticatedBankingAccountIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/suppliers/$supplierId_/edit': {
       id: '/_authenticated/suppliers/$supplierId_/edit'
       path: '/suppliers/$supplierId/edit'
@@ -1087,6 +1107,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
   AuthenticatedSalesOrdersRoute: typeof AuthenticatedSalesOrdersRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRouteWithChildren
+  AuthenticatedBankingAccountIdRoute: typeof AuthenticatedBankingAccountIdRoute
   AuthenticatedBillsBillIdRoute: typeof AuthenticatedBillsBillIdRoute
   AuthenticatedBillsNewRoute: typeof AuthenticatedBillsNewRoute
   AuthenticatedCustomersCustomerIdRoute: typeof AuthenticatedCustomersCustomerIdRoute
@@ -1138,6 +1159,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedReportsRoute: AuthenticatedReportsRoute,
   AuthenticatedSalesOrdersRoute: AuthenticatedSalesOrdersRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRouteWithChildren,
+  AuthenticatedBankingAccountIdRoute: AuthenticatedBankingAccountIdRoute,
   AuthenticatedBillsBillIdRoute: AuthenticatedBillsBillIdRoute,
   AuthenticatedBillsNewRoute: AuthenticatedBillsNewRoute,
   AuthenticatedCustomersCustomerIdRoute: AuthenticatedCustomersCustomerIdRoute,
