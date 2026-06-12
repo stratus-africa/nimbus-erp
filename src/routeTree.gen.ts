@@ -29,6 +29,7 @@ import { Route as AuthenticatedCompositeItemsRouteImport } from './routes/_authe
 import { Route as AuthenticatedChartOfAccountsRouteImport } from './routes/_authenticated/chart-of-accounts'
 import { Route as AuthenticatedBillsRouteImport } from './routes/_authenticated/bills'
 import { Route as AuthenticatedBankingRouteImport } from './routes/_authenticated/banking'
+import { Route as AuthenticatedAssemblyOrdersRouteImport } from './routes/_authenticated/assembly-orders'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedSuppliersIndexRouteImport } from './routes/_authenticated/suppliers.index'
 import { Route as AuthenticatedCustomersIndexRouteImport } from './routes/_authenticated/customers.index'
@@ -175,6 +176,12 @@ const AuthenticatedBankingRoute = AuthenticatedBankingRouteImport.update({
   path: '/banking',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAssemblyOrdersRoute =
+  AuthenticatedAssemblyOrdersRouteImport.update({
+    id: '/assembly-orders',
+    path: '/assembly-orders',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -411,6 +418,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/signup': typeof SignupRoute
   '/admin': typeof AuthenticatedAdminRoute
+  '/assembly-orders': typeof AuthenticatedAssemblyOrdersRoute
   '/banking': typeof AuthenticatedBankingRoute
   '/bills': typeof AuthenticatedBillsRoute
   '/chart-of-accounts': typeof AuthenticatedChartOfAccountsRoute
@@ -471,6 +479,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/signup': typeof SignupRoute
   '/admin': typeof AuthenticatedAdminRoute
+  '/assembly-orders': typeof AuthenticatedAssemblyOrdersRoute
   '/banking': typeof AuthenticatedBankingRoute
   '/bills': typeof AuthenticatedBillsRoute
   '/chart-of-accounts': typeof AuthenticatedChartOfAccountsRoute
@@ -533,6 +542,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/signup': typeof SignupRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
+  '/_authenticated/assembly-orders': typeof AuthenticatedAssemblyOrdersRoute
   '/_authenticated/banking': typeof AuthenticatedBankingRoute
   '/_authenticated/bills': typeof AuthenticatedBillsRoute
   '/_authenticated/chart-of-accounts': typeof AuthenticatedChartOfAccountsRoute
@@ -595,6 +605,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/signup'
     | '/admin'
+    | '/assembly-orders'
     | '/banking'
     | '/bills'
     | '/chart-of-accounts'
@@ -655,6 +666,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/signup'
     | '/admin'
+    | '/assembly-orders'
     | '/banking'
     | '/bills'
     | '/chart-of-accounts'
@@ -716,6 +728,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/signup'
     | '/_authenticated/admin'
+    | '/_authenticated/assembly-orders'
     | '/_authenticated/banking'
     | '/_authenticated/bills'
     | '/_authenticated/chart-of-accounts'
@@ -919,6 +932,13 @@ declare module '@tanstack/react-router' {
       path: '/banking'
       fullPath: '/banking'
       preLoaderRoute: typeof AuthenticatedBankingRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/assembly-orders': {
+      id: '/_authenticated/assembly-orders'
+      path: '/assembly-orders'
+      fullPath: '/assembly-orders'
+      preLoaderRoute: typeof AuthenticatedAssemblyOrdersRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/admin': {
@@ -1199,6 +1219,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
+  AuthenticatedAssemblyOrdersRoute: typeof AuthenticatedAssemblyOrdersRoute
   AuthenticatedBankingRoute: typeof AuthenticatedBankingRoute
   AuthenticatedBillsRoute: typeof AuthenticatedBillsRoute
   AuthenticatedChartOfAccountsRoute: typeof AuthenticatedChartOfAccountsRoute
@@ -1257,6 +1278,7 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
+  AuthenticatedAssemblyOrdersRoute: AuthenticatedAssemblyOrdersRoute,
   AuthenticatedBankingRoute: AuthenticatedBankingRoute,
   AuthenticatedBillsRoute: AuthenticatedBillsRoute,
   AuthenticatedChartOfAccountsRoute: AuthenticatedChartOfAccountsRoute,
