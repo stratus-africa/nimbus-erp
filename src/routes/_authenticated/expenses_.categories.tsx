@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "@/hooks/use-profile";
@@ -123,18 +123,18 @@ function CategoryDialog({ open, onOpenChange, editing, tenantId, categories, onS
   const { data: accounts = [] } = useExpenseAccounts(tenantId);
   const expenseAccts = accounts.filter((a: any) => a.account_type === "expense");
 
-  useState(() => {});
-  // sync when editing changes
-  if (open && editing && editing.id !== (window as any).__catEdit) {
-    (window as any).__catEdit = editing.id;
-    setName(editing.name ?? "");
-    setParent(editing.parent_category_id ?? "none");
-    setAccount(editing.expense_account_id ?? "none");
-    setActive(editing.is_active ?? true);
-  } else if (open && !editing && (window as any).__catEdit !== null) {
-    (window as any).__catEdit = null;
-    setName(""); setParent("none"); setAccount("none"); setActive(true);
-  }
+  useEffect(() => {
+    if (!open) return;
+    if (editing) {
+      setName(editing.name ?? "");
+      setParent(editing.parent_category_id ?? "none");
+      setAccount(editing.expense_account_id ?? "none");
+      setActive(editing.is_active ?? true);
+    } else {
+      setName(""); setParent("none"); setAccount("none"); setActive(true);
+    }
+  }, [open, editing]);
+
 
   const save = async () => {
     if (!name.trim()) return toast.error("Name required");
@@ -150,13 +150,13 @@ function CategoryDialog({ open, onOpenChange, editing, tenantId, categories, onS
       : await supabase.from("expense_categories" as any).insert(payload);
     if (error) return toast.error(error.message);
     toast.success(editing ? "Updated" : "Created");
-    (window as any).__catEdit = undefined;
     onOpenChange(false);
     onSaved();
   };
 
   return (
-    <Dialog open={open} onOpenChange={(v) => { if (!v) (window as any).__catEdit = undefined; onOpenChange(v); }}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+
       <DialogContent>
         <DialogHeader><DialogTitle>{editing ? "Edit category" : "New category"}</DialogTitle></DialogHeader>
         <div className="space-y-3">
