@@ -59,7 +59,9 @@ import { Route as AuthenticatedItemsNewRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedItemsItemIdRouteImport } from './routes/_authenticated/items_.$itemId'
 import { Route as AuthenticatedInvoicesNewRouteImport } from './routes/_authenticated/invoices_.new'
 import { Route as AuthenticatedInvoicesInvoiceIdRouteImport } from './routes/_authenticated/invoices_.$invoiceId'
+import { Route as AuthenticatedExpensesNewRouteImport } from './routes/_authenticated/expenses_.new'
 import { Route as AuthenticatedExpensesCategoriesRouteImport } from './routes/_authenticated/expenses_.categories'
+import { Route as AuthenticatedExpensesIdRouteImport } from './routes/_authenticated/expenses_.$id'
 import { Route as AuthenticatedCustomersNewRouteImport } from './routes/_authenticated/customers.new'
 import { Route as AuthenticatedCustomersCustomerIdRouteImport } from './routes/_authenticated/customers.$customerId'
 import { Route as AuthenticatedBillsNewRouteImport } from './routes/_authenticated/bills_.new'
@@ -358,12 +360,23 @@ const AuthenticatedInvoicesInvoiceIdRoute =
     path: '/invoices/$invoiceId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedExpensesNewRoute =
+  AuthenticatedExpensesNewRouteImport.update({
+    id: '/expenses_/new',
+    path: '/expenses/new',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedExpensesCategoriesRoute =
   AuthenticatedExpensesCategoriesRouteImport.update({
     id: '/expenses_/categories',
     path: '/expenses/categories',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedExpensesIdRoute = AuthenticatedExpensesIdRouteImport.update({
+  id: '/expenses_/$id',
+  path: '/expenses/$id',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedCustomersNewRoute =
   AuthenticatedCustomersNewRouteImport.update({
     id: '/customers/new',
@@ -484,7 +497,9 @@ export interface FileRoutesByFullPath {
   '/bills/new': typeof AuthenticatedBillsNewRoute
   '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
   '/customers/new': typeof AuthenticatedCustomersNewRoute
+  '/expenses/$id': typeof AuthenticatedExpensesIdRoute
   '/expenses/categories': typeof AuthenticatedExpensesCategoriesRoute
+  '/expenses/new': typeof AuthenticatedExpensesNewRoute
   '/invoices/$invoiceId': typeof AuthenticatedInvoicesInvoiceIdRoute
   '/invoices/new': typeof AuthenticatedInvoicesNewRoute
   '/items/$itemId': typeof AuthenticatedItemsItemIdRoute
@@ -551,7 +566,9 @@ export interface FileRoutesByTo {
   '/bills/new': typeof AuthenticatedBillsNewRoute
   '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
   '/customers/new': typeof AuthenticatedCustomersNewRoute
+  '/expenses/$id': typeof AuthenticatedExpensesIdRoute
   '/expenses/categories': typeof AuthenticatedExpensesCategoriesRoute
+  '/expenses/new': typeof AuthenticatedExpensesNewRoute
   '/invoices/$invoiceId': typeof AuthenticatedInvoicesInvoiceIdRoute
   '/invoices/new': typeof AuthenticatedInvoicesNewRoute
   '/items/$itemId': typeof AuthenticatedItemsItemIdRoute
@@ -620,7 +637,9 @@ export interface FileRoutesById {
   '/_authenticated/bills_/new': typeof AuthenticatedBillsNewRoute
   '/_authenticated/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
   '/_authenticated/customers/new': typeof AuthenticatedCustomersNewRoute
+  '/_authenticated/expenses_/$id': typeof AuthenticatedExpensesIdRoute
   '/_authenticated/expenses_/categories': typeof AuthenticatedExpensesCategoriesRoute
+  '/_authenticated/expenses_/new': typeof AuthenticatedExpensesNewRoute
   '/_authenticated/invoices_/$invoiceId': typeof AuthenticatedInvoicesInvoiceIdRoute
   '/_authenticated/invoices_/new': typeof AuthenticatedInvoicesNewRoute
   '/_authenticated/items_/$itemId': typeof AuthenticatedItemsItemIdRoute
@@ -689,7 +708,9 @@ export interface FileRouteTypes {
     | '/bills/new'
     | '/customers/$customerId'
     | '/customers/new'
+    | '/expenses/$id'
     | '/expenses/categories'
+    | '/expenses/new'
     | '/invoices/$invoiceId'
     | '/invoices/new'
     | '/items/$itemId'
@@ -756,7 +777,9 @@ export interface FileRouteTypes {
     | '/bills/new'
     | '/customers/$customerId'
     | '/customers/new'
+    | '/expenses/$id'
     | '/expenses/categories'
+    | '/expenses/new'
     | '/invoices/$invoiceId'
     | '/invoices/new'
     | '/items/$itemId'
@@ -824,7 +847,9 @@ export interface FileRouteTypes {
     | '/_authenticated/bills_/new'
     | '/_authenticated/customers/$customerId'
     | '/_authenticated/customers/new'
+    | '/_authenticated/expenses_/$id'
     | '/_authenticated/expenses_/categories'
+    | '/_authenticated/expenses_/new'
     | '/_authenticated/invoices_/$invoiceId'
     | '/_authenticated/invoices_/new'
     | '/_authenticated/items_/$itemId'
@@ -1221,11 +1246,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedInvoicesInvoiceIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/expenses_/new': {
+      id: '/_authenticated/expenses_/new'
+      path: '/expenses/new'
+      fullPath: '/expenses/new'
+      preLoaderRoute: typeof AuthenticatedExpensesNewRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/expenses_/categories': {
       id: '/_authenticated/expenses_/categories'
       path: '/expenses/categories'
       fullPath: '/expenses/categories'
       preLoaderRoute: typeof AuthenticatedExpensesCategoriesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/expenses_/$id': {
+      id: '/_authenticated/expenses_/$id'
+      path: '/expenses/$id'
+      fullPath: '/expenses/$id'
+      preLoaderRoute: typeof AuthenticatedExpensesIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/customers/new': {
@@ -1363,7 +1402,9 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedBillsNewRoute: typeof AuthenticatedBillsNewRoute
   AuthenticatedCustomersCustomerIdRoute: typeof AuthenticatedCustomersCustomerIdRoute
   AuthenticatedCustomersNewRoute: typeof AuthenticatedCustomersNewRoute
+  AuthenticatedExpensesIdRoute: typeof AuthenticatedExpensesIdRoute
   AuthenticatedExpensesCategoriesRoute: typeof AuthenticatedExpensesCategoriesRoute
+  AuthenticatedExpensesNewRoute: typeof AuthenticatedExpensesNewRoute
   AuthenticatedInvoicesInvoiceIdRoute: typeof AuthenticatedInvoicesInvoiceIdRoute
   AuthenticatedInvoicesNewRoute: typeof AuthenticatedInvoicesNewRoute
   AuthenticatedItemsItemIdRoute: typeof AuthenticatedItemsItemIdRoute
@@ -1429,7 +1470,9 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedBillsNewRoute: AuthenticatedBillsNewRoute,
   AuthenticatedCustomersCustomerIdRoute: AuthenticatedCustomersCustomerIdRoute,
   AuthenticatedCustomersNewRoute: AuthenticatedCustomersNewRoute,
+  AuthenticatedExpensesIdRoute: AuthenticatedExpensesIdRoute,
   AuthenticatedExpensesCategoriesRoute: AuthenticatedExpensesCategoriesRoute,
+  AuthenticatedExpensesNewRoute: AuthenticatedExpensesNewRoute,
   AuthenticatedInvoicesInvoiceIdRoute: AuthenticatedInvoicesInvoiceIdRoute,
   AuthenticatedInvoicesNewRoute: AuthenticatedInvoicesNewRoute,
   AuthenticatedItemsItemIdRoute: AuthenticatedItemsItemIdRoute,
