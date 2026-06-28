@@ -42,13 +42,21 @@ export function usePaymentAccounts(tenantId?: string) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("chart_of_accounts")
-        .select("id, code, name, account_type")
+        .select("id, code, name, account_type, account_subtype")
         .eq("tenant_id", tenantId!)
         .eq("is_active", true)
-        .in("account_type", ["cash", "bank", "credit_card", "accounts_payable", "other_current_liability"])
         .order("code");
       if (error) throw error;
-      return (data as any[]) ?? [];
+      const allowedSub = new Set([
+        "cash",
+        "bank",
+        "credit_card",
+        "accounts_payable",
+        "other_current_liability",
+      ]);
+      return ((data as any[]) ?? []).filter(
+        (a) => allowedSub.has(a.account_subtype) || a.account_type === "liability",
+      );
     },
   });
 }
