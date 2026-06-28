@@ -84,6 +84,7 @@ const NAV_GROUPS: NavGroup[] = [
       { title: "Suppliers", url: "/suppliers", icon: Truck },
       { title: "Purchase Orders", url: "/purchase-orders", icon: ShoppingCart },
       { title: "Bills", url: "/bills", icon: FileCheck },
+      { title: "Expenses", url: "/expenses", icon: ReceiptText },
       { title: "Payments Made", url: "/payments-made", icon: FileCheck },
       { title: "Supplier Credits", url: "/supplier-credits", icon: FileCheck },
     ],

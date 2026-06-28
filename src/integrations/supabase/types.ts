@@ -1067,6 +1067,354 @@ export type Database = {
           },
         ]
       }
+      expense_approvals: {
+        Row: {
+          acted_at: string | null
+          approval_level: number
+          approver_id: string | null
+          comments: string | null
+          created_at: string
+          expense_id: string
+          id: string
+          status: string
+        }
+        Insert: {
+          acted_at?: string | null
+          approval_level?: number
+          approver_id?: string | null
+          comments?: string | null
+          created_at?: string
+          expense_id: string
+          id?: string
+          status?: string
+        }
+        Update: {
+          acted_at?: string | null
+          approval_level?: number
+          approver_id?: string | null
+          comments?: string | null
+          created_at?: string
+          expense_id?: string
+          id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "expense_approvals_expense_id_fkey"
+            columns: ["expense_id"]
+            isOneToOne: false
+            referencedRelation: "expenses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      expense_categories: {
+        Row: {
+          created_at: string
+          expense_account_id: string | null
+          id: string
+          is_active: boolean
+          name: string
+          parent_category_id: string | null
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          expense_account_id?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          parent_category_id?: string | null
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          expense_account_id?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          parent_category_id?: string | null
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "expense_categories_expense_account_id_fkey"
+            columns: ["expense_account_id"]
+            isOneToOne: false
+            referencedRelation: "chart_of_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expense_categories_parent_category_id_fkey"
+            columns: ["parent_category_id"]
+            isOneToOne: false
+            referencedRelation: "expense_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expense_categories_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      expense_items: {
+        Row: {
+          account_id: string | null
+          amount: number
+          category_id: string | null
+          customer_id: string | null
+          description: string | null
+          expense_id: string
+          id: string
+          position: number
+          quantity: number
+          rate: number
+          tax_amount: number
+          tax_rate: number
+        }
+        Insert: {
+          account_id?: string | null
+          amount?: number
+          category_id?: string | null
+          customer_id?: string | null
+          description?: string | null
+          expense_id: string
+          id?: string
+          position?: number
+          quantity?: number
+          rate?: number
+          tax_amount?: number
+          tax_rate?: number
+        }
+        Update: {
+          account_id?: string | null
+          amount?: number
+          category_id?: string | null
+          customer_id?: string | null
+          description?: string | null
+          expense_id?: string
+          id?: string
+          position?: number
+          quantity?: number
+          rate?: number
+          tax_amount?: number
+          tax_rate?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "expense_items_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "chart_of_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expense_items_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "expense_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expense_items_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expense_items_expense_id_fkey"
+            columns: ["expense_id"]
+            isOneToOne: false
+            referencedRelation: "expenses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      expense_receipts: {
+        Row: {
+          expense_id: string
+          file_name: string
+          file_path: string
+          id: string
+          mime_type: string | null
+          size_bytes: number | null
+          uploaded_at: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          expense_id: string
+          file_name: string
+          file_path: string
+          id?: string
+          mime_type?: string | null
+          size_bytes?: number | null
+          uploaded_at?: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          expense_id?: string
+          file_name?: string
+          file_path?: string
+          id?: string
+          mime_type?: string | null
+          size_bytes?: number | null
+          uploaded_at?: string
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "expense_receipts_expense_id_fkey"
+            columns: ["expense_id"]
+            isOneToOne: false
+            referencedRelation: "expenses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      expenses: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          category_id: string | null
+          created_at: string
+          currency: string
+          customer_id: string | null
+          employee_user_id: string | null
+          exchange_rate: number
+          expense_account_id: string | null
+          expense_date: string
+          expense_number: string
+          id: string
+          is_billable: boolean
+          journal_entry_id: string | null
+          notes: string | null
+          paid_at: string | null
+          payment_account_id: string | null
+          reference: string | null
+          status: Database["public"]["Enums"]["expense_status"]
+          submitted_by_user_id: string | null
+          subtotal: number
+          tax_amount: number
+          tenant_id: string
+          total_amount: number
+          updated_at: string
+          vendor_id: string | null
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          category_id?: string | null
+          created_at?: string
+          currency?: string
+          customer_id?: string | null
+          employee_user_id?: string | null
+          exchange_rate?: number
+          expense_account_id?: string | null
+          expense_date?: string
+          expense_number: string
+          id?: string
+          is_billable?: boolean
+          journal_entry_id?: string | null
+          notes?: string | null
+          paid_at?: string | null
+          payment_account_id?: string | null
+          reference?: string | null
+          status?: Database["public"]["Enums"]["expense_status"]
+          submitted_by_user_id?: string | null
+          subtotal?: number
+          tax_amount?: number
+          tenant_id: string
+          total_amount?: number
+          updated_at?: string
+          vendor_id?: string | null
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          category_id?: string | null
+          created_at?: string
+          currency?: string
+          customer_id?: string | null
+          employee_user_id?: string | null
+          exchange_rate?: number
+          expense_account_id?: string | null
+          expense_date?: string
+          expense_number?: string
+          id?: string
+          is_billable?: boolean
+          journal_entry_id?: string | null
+          notes?: string | null
+          paid_at?: string | null
+          payment_account_id?: string | null
+          reference?: string | null
+          status?: Database["public"]["Enums"]["expense_status"]
+          submitted_by_user_id?: string | null
+          subtotal?: number
+          tax_amount?: number
+          tenant_id?: string
+          total_amount?: number
+          updated_at?: string
+          vendor_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "expenses_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "expense_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expenses_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expenses_expense_account_id_fkey"
+            columns: ["expense_account_id"]
+            isOneToOne: false
+            referencedRelation: "chart_of_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expenses_journal_entry_id_fkey"
+            columns: ["journal_entry_id"]
+            isOneToOne: false
+            referencedRelation: "journal_entries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expenses_payment_account_id_fkey"
+            columns: ["payment_account_id"]
+            isOneToOne: false
+            referencedRelation: "chart_of_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expenses_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expenses_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       inventory_adjustment_lines: {
         Row: {
           adjustment_id: string
@@ -2629,6 +2977,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      approve_expense: { Args: { _id: string }; Returns: string }
       clear_composite_explosion: {
         Args: { _doc_id: string; _doc_type: string; _tenant: string }
         Returns: undefined
@@ -2648,6 +2997,7 @@ export type Database = {
         Args: { _tenant: string; _user: string }
         Returns: boolean
       }
+      mark_expense_paid: { Args: { _id: string }; Returns: undefined }
       next_doc_number: {
         Args: { _doc_type: string; _tenant: string }
         Returns: string
@@ -2659,6 +3009,10 @@ export type Database = {
       reconcile_bank_account_balance: {
         Args: { _account: string }
         Returns: number
+      }
+      reject_expense: {
+        Args: { _comment: string; _id: string }
+        Returns: undefined
       }
       switch_tenant: { Args: { _tenant: string }; Returns: undefined }
     }
@@ -2680,6 +3034,13 @@ export type Database = {
         | "partially_paid"
         | "paid"
         | "overdue"
+        | "cancelled"
+      expense_status:
+        | "draft"
+        | "submitted"
+        | "approved"
+        | "rejected"
+        | "paid"
         | "cancelled"
       invoice_status:
         | "draft"
@@ -2857,6 +3218,14 @@ export const Constants = {
         "partially_paid",
         "paid",
         "overdue",
+        "cancelled",
+      ],
+      expense_status: [
+        "draft",
+        "submitted",
+        "approved",
+        "rejected",
+        "paid",
         "cancelled",
       ],
       invoice_status: [
