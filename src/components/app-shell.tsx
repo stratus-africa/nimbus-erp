@@ -99,6 +99,7 @@ const NAV_GROUPS: NavGroup[] = [
       { title: "Adjustments", url: "/inventory-adjustments", icon: ClipboardList },
       { title: "Packages", url: "/packages", icon: Boxes },
       { title: "Deliveries", url: "/deliveries", icon: Truck },
+      { title: "Warehouses", url: "/warehouses", icon: Boxes },
       { title: "Transfer Orders", url: "/transfer-orders", icon: ClipboardList },
     ],
   },
