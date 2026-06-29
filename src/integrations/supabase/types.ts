@@ -1504,6 +1504,70 @@ export type Database = {
           },
         ]
       }
+      inventory_transactions: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          item_id: string
+          notes: string | null
+          quantity: number
+          reference_id: string | null
+          reference_type: string | null
+          tenant_id: string
+          transaction_type: string
+          warehouse_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          item_id: string
+          notes?: string | null
+          quantity: number
+          reference_id?: string | null
+          reference_type?: string | null
+          tenant_id: string
+          transaction_type: string
+          warehouse_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          item_id?: string
+          notes?: string | null
+          quantity?: number
+          reference_id?: string | null
+          reference_type?: string | null
+          tenant_id?: string
+          transaction_type?: string
+          warehouse_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_transactions_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_transactions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_transactions_warehouse_id_fkey"
+            columns: ["warehouse_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       invoice_lines: {
         Row: {
           description: string | null
@@ -1953,15 +2017,19 @@ export type Database = {
           attention: string | null
           branch: string | null
           city: string | null
+          code: string | null
           country: string | null
           created_at: string
+          created_by: string | null
           email: string | null
           id: string
           is_active: boolean
           is_primary: boolean
+          manager_id: string | null
           name: string
           phone: string | null
           state: string | null
+          status: string
           street1: string | null
           street2: string | null
           tenant_id: string
@@ -1972,15 +2040,19 @@ export type Database = {
           attention?: string | null
           branch?: string | null
           city?: string | null
+          code?: string | null
           country?: string | null
           created_at?: string
+          created_by?: string | null
           email?: string | null
           id?: string
           is_active?: boolean
           is_primary?: boolean
+          manager_id?: string | null
           name: string
           phone?: string | null
           state?: string | null
+          status?: string
           street1?: string | null
           street2?: string | null
           tenant_id: string
@@ -1991,15 +2063,19 @@ export type Database = {
           attention?: string | null
           branch?: string | null
           city?: string | null
+          code?: string | null
           country?: string | null
           created_at?: string
+          created_by?: string | null
           email?: string | null
           id?: string
           is_active?: boolean
           is_primary?: boolean
+          manager_id?: string | null
           name?: string
           phone?: string | null
           state?: string | null
+          status?: string
           street1?: string | null
           street2?: string | null
           tenant_id?: string
@@ -2896,6 +2972,143 @@ export type Database = {
           },
         ]
       }
+      transfer_order_items: {
+        Row: {
+          created_at: string
+          id: string
+          item_id: string
+          position: number
+          quantity_received: number
+          quantity_requested: number
+          quantity_shipped: number
+          tenant_id: string
+          transfer_order_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          item_id: string
+          position?: number
+          quantity_received?: number
+          quantity_requested?: number
+          quantity_shipped?: number
+          tenant_id: string
+          transfer_order_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          item_id?: string
+          position?: number
+          quantity_received?: number
+          quantity_requested?: number
+          quantity_shipped?: number
+          tenant_id?: string
+          transfer_order_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transfer_order_items_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transfer_order_items_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transfer_order_items_transfer_order_id_fkey"
+            columns: ["transfer_order_id"]
+            isOneToOne: false
+            referencedRelation: "transfer_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      transfer_orders: {
+        Row: {
+          approved_by: string | null
+          created_at: string
+          created_by: string | null
+          destination_warehouse_id: string
+          id: string
+          notes: string | null
+          received_at: string | null
+          received_by: string | null
+          shipped_at: string | null
+          shipped_by: string | null
+          source_warehouse_id: string
+          status: Database["public"]["Enums"]["transfer_order_status"]
+          tenant_id: string
+          transfer_date: string
+          transfer_number: string
+          updated_at: string
+        }
+        Insert: {
+          approved_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          destination_warehouse_id: string
+          id?: string
+          notes?: string | null
+          received_at?: string | null
+          received_by?: string | null
+          shipped_at?: string | null
+          shipped_by?: string | null
+          source_warehouse_id: string
+          status?: Database["public"]["Enums"]["transfer_order_status"]
+          tenant_id: string
+          transfer_date?: string
+          transfer_number: string
+          updated_at?: string
+        }
+        Update: {
+          approved_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          destination_warehouse_id?: string
+          id?: string
+          notes?: string | null
+          received_at?: string | null
+          received_by?: string | null
+          shipped_at?: string | null
+          shipped_by?: string | null
+          source_warehouse_id?: string
+          status?: Database["public"]["Enums"]["transfer_order_status"]
+          tenant_id?: string
+          transfer_date?: string
+          transfer_number?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transfer_orders_destination_warehouse_id_fkey"
+            columns: ["destination_warehouse_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transfer_orders_source_warehouse_id_fkey"
+            columns: ["source_warehouse_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transfer_orders_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -3029,11 +3242,73 @@ export type Database = {
           },
         ]
       }
+      warehouse_stock: {
+        Row: {
+          created_at: string
+          id: string
+          in_transit_quantity: number
+          item_id: string
+          quantity: number
+          reserved_quantity: number
+          tenant_id: string
+          updated_at: string
+          warehouse_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          in_transit_quantity?: number
+          item_id: string
+          quantity?: number
+          reserved_quantity?: number
+          tenant_id: string
+          updated_at?: string
+          warehouse_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          in_transit_quantity?: number
+          item_id?: string
+          quantity?: number
+          reserved_quantity?: number
+          tenant_id?: string
+          updated_at?: string
+          warehouse_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "warehouse_stock_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "warehouse_stock_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "warehouse_stock_warehouse_id_fkey"
+            columns: ["warehouse_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      _ws_upsert: {
+        Args: { _item: string; _tenant: string; _wh: string }
+        Returns: string
+      }
       apply_composite_explosion: {
         Args: {
           _doc_id: string
@@ -3044,11 +3319,13 @@ export type Database = {
         Returns: undefined
       }
       approve_expense: { Args: { _id: string }; Returns: string }
+      cancel_transfer_order: { Args: { _id: string }; Returns: undefined }
       clear_composite_explosion: {
         Args: { _doc_id: string; _doc_type: string; _tenant: string }
         Returns: undefined
       }
       complete_assembly_order: { Args: { _id: string }; Returns: undefined }
+      confirm_transfer_order: { Args: { _id: string }; Returns: undefined }
       current_tenant: { Args: never; Returns: string }
       delete_item: { Args: { _id: string }; Returns: undefined }
       has_role: {
@@ -3073,12 +3350,20 @@ export type Database = {
         Args: { _currency?: string; _name: string; _slug: string }
         Returns: string
       }
+      receive_transfer_order: {
+        Args: { _id: string; _quantities?: Json }
+        Returns: undefined
+      }
       reconcile_bank_account_balance: {
         Args: { _account: string }
         Returns: number
       }
       reject_expense: {
         Args: { _comment: string; _id: string }
+        Returns: undefined
+      }
+      ship_transfer_order: {
+        Args: { _id: string; _quantities?: Json }
         Returns: undefined
       }
       switch_tenant: { Args: { _tenant: string }; Returns: undefined }
@@ -3140,6 +3425,13 @@ export type Database = {
         | "closed"
         | "cancelled"
       tenant_status: "trial" | "active" | "suspended"
+      transfer_order_status:
+        | "draft"
+        | "confirmed"
+        | "shipped"
+        | "received"
+        | "completed"
+        | "cancelled"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -3330,6 +3622,14 @@ export const Constants = {
         "cancelled",
       ],
       tenant_status: ["trial", "active", "suspended"],
+      transfer_order_status: [
+        "draft",
+        "confirmed",
+        "shipped",
+        "received",
+        "completed",
+        "cancelled",
+      ],
     },
   },
 } as const
