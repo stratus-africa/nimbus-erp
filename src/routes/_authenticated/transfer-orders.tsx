@@ -50,7 +50,7 @@ function TransferOrdersPage() {
   const exportCsv = () => {
     const header = ["Transfer #", "Date", "From", "To", "Status"];
     const lines = filtered.map((r: any) => [r.transfer_number, r.transfer_date, r.src?.name ?? "", r.dst?.name ?? "", r.status]);
-    const csv = [header, ...lines].map((row) => row.map((c) => `"${(c ?? "").toString().replace(/"/g, '""')}"`).join(",")).join("\n");
+    const csv = [header, ...lines].map((row) => row.map((c: any) => `"${(c ?? "").toString().replace(/"/g, '""')}"`).join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
