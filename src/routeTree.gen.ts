@@ -13,6 +13,7 @@ import { Route as SignupRouteImport } from './routes/signup'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedWarehousesRouteImport } from './routes/_authenticated/warehouses'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedSalesOrdersRouteImport } from './routes/_authenticated/sales-orders'
 import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated/reports'
@@ -96,6 +97,11 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedWarehousesRoute = AuthenticatedWarehousesRouteImport.update({
+  id: '/warehouses',
+  path: '/warehouses',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   id: '/settings',
@@ -490,6 +496,7 @@ export interface FileRoutesByFullPath {
   '/reports': typeof AuthenticatedReportsRoute
   '/sales-orders': typeof AuthenticatedSalesOrdersRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/warehouses': typeof AuthenticatedWarehousesRoute
   '/assembly-orders/$id': typeof AuthenticatedAssemblyOrdersIdRoute
   '/assembly-orders/new': typeof AuthenticatedAssemblyOrdersNewRoute
   '/banking/$accountId': typeof AuthenticatedBankingAccountIdRoute
@@ -559,6 +566,7 @@ export interface FileRoutesByTo {
   '/reports': typeof AuthenticatedReportsRoute
   '/sales-orders': typeof AuthenticatedSalesOrdersRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/warehouses': typeof AuthenticatedWarehousesRoute
   '/assembly-orders/$id': typeof AuthenticatedAssemblyOrdersIdRoute
   '/assembly-orders/new': typeof AuthenticatedAssemblyOrdersNewRoute
   '/banking/$accountId': typeof AuthenticatedBankingAccountIdRoute
@@ -630,6 +638,7 @@ export interface FileRoutesById {
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
   '/_authenticated/sales-orders': typeof AuthenticatedSalesOrdersRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
+  '/_authenticated/warehouses': typeof AuthenticatedWarehousesRoute
   '/_authenticated/assembly-orders_/$id': typeof AuthenticatedAssemblyOrdersIdRoute
   '/_authenticated/assembly-orders_/new': typeof AuthenticatedAssemblyOrdersNewRoute
   '/_authenticated/banking_/$accountId': typeof AuthenticatedBankingAccountIdRoute
@@ -701,6 +710,7 @@ export interface FileRouteTypes {
     | '/reports'
     | '/sales-orders'
     | '/settings'
+    | '/warehouses'
     | '/assembly-orders/$id'
     | '/assembly-orders/new'
     | '/banking/$accountId'
@@ -770,6 +780,7 @@ export interface FileRouteTypes {
     | '/reports'
     | '/sales-orders'
     | '/settings'
+    | '/warehouses'
     | '/assembly-orders/$id'
     | '/assembly-orders/new'
     | '/banking/$accountId'
@@ -840,6 +851,7 @@ export interface FileRouteTypes {
     | '/_authenticated/reports'
     | '/_authenticated/sales-orders'
     | '/_authenticated/settings'
+    | '/_authenticated/warehouses'
     | '/_authenticated/assembly-orders_/$id'
     | '/_authenticated/assembly-orders_/new'
     | '/_authenticated/banking_/$accountId'
@@ -923,6 +935,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/warehouses': {
+      id: '/_authenticated/warehouses'
+      path: '/warehouses'
+      fullPath: '/warehouses'
+      preLoaderRoute: typeof AuthenticatedWarehousesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/settings': {
       id: '/_authenticated/settings'
@@ -1395,6 +1414,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
   AuthenticatedSalesOrdersRoute: typeof AuthenticatedSalesOrdersRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
+  AuthenticatedWarehousesRoute: typeof AuthenticatedWarehousesRoute
   AuthenticatedAssemblyOrdersIdRoute: typeof AuthenticatedAssemblyOrdersIdRoute
   AuthenticatedAssemblyOrdersNewRoute: typeof AuthenticatedAssemblyOrdersNewRoute
   AuthenticatedBankingAccountIdRoute: typeof AuthenticatedBankingAccountIdRoute
@@ -1463,6 +1483,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedReportsRoute: AuthenticatedReportsRoute,
   AuthenticatedSalesOrdersRoute: AuthenticatedSalesOrdersRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
+  AuthenticatedWarehousesRoute: AuthenticatedWarehousesRoute,
   AuthenticatedAssemblyOrdersIdRoute: AuthenticatedAssemblyOrdersIdRoute,
   AuthenticatedAssemblyOrdersNewRoute: AuthenticatedAssemblyOrdersNewRoute,
   AuthenticatedBankingAccountIdRoute: AuthenticatedBankingAccountIdRoute,
