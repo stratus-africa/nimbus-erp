@@ -195,6 +195,20 @@ function ItemViewPage() {
     onError: (e: any) => toast.error(e.message),
   });
 
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const deleteItem = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.rpc("delete_item", { _id: itemId });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Item deleted");
+      qc.invalidateQueries({ queryKey: ["items"] });
+      navigate({ to: "/items" });
+    },
+    onError: (e: any) => toast.error(e.message ?? "Delete failed"),
+  });
+
   if (isLoading) {
     return (
       <div className="flex h-full bg-background">
