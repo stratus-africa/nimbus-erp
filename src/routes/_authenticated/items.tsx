@@ -92,8 +92,7 @@ function ItemsPage() {
 
   const del = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from("items").update({ deleted_at: new Date().toISOString() }).eq("id", id);
+      const { error } = await supabase.rpc("delete_item", { _id: id });
       if (error) throw error;
     },
     onSuccess: () => {
