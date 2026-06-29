@@ -92,8 +92,7 @@ function ItemsPage() {
 
   const del = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from("items").update({ deleted_at: new Date().toISOString() }).eq("id", id);
+      const { error } = await supabase.rpc("delete_item", { _id: id });
       if (error) throw error;
     },
     onSuccess: () => {
@@ -282,7 +281,7 @@ function ItemsPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete this item?</AlertDialogTitle>
             <AlertDialogDescription>
-              This soft-deletes the item. Existing invoices and bills referencing it are unaffected.
+              Items that have any transactions (quotes, sales orders, invoices, purchase orders, bills, adjustments, transfers or production) cannot be deleted &mdash; archive them instead.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
