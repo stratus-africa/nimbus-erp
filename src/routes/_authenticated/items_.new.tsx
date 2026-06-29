@@ -145,6 +145,14 @@ export function ItemFormPage({ itemId, initial }: { itemId?: string; initial?: P
         selling_price: v.sellable ? v.selling_price : 0,
         cost_price: v.purchasable ? v.cost_price : 0,
         reorder_level: v.reorder_level || 0,
+        hs_code: v.hs_code?.trim() || null,
+        sales_account_id: v.sellable ? (v.sales_account || null) : null,
+        purchase_account_id: v.purchasable ? (v.purchase_account || null) : null,
+        sales_tax_rate_id: v.sellable ? (v.sales_vat || null) : null,
+        purchase_tax_rate_id: v.purchasable ? (v.purchase_vat || null) : null,
+        preferred_vendor_id: v.purchasable ? (v.preferred_vendor || null) : null,
+        inventory_account_id: itemType === "inventory" ? (v.inventory_account || null) : null,
+        valuation_method: itemType === "inventory" ? v.valuation : null,
         description:
           [v.sales_desc?.trim(), v.purchase_desc?.trim()].filter(Boolean).join("\n---\n") || null,
       };
