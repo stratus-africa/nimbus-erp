@@ -281,7 +281,7 @@ function ItemsPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete this item?</AlertDialogTitle>
             <AlertDialogDescription>
-              This soft-deletes the item. Existing invoices and bills referencing it are unaffected.
+              Items that have any transactions (quotes, sales orders, invoices, purchase orders, bills, adjustments, transfers or production) cannot be deleted &mdash; archive them instead.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
