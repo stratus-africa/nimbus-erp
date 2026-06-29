@@ -13,6 +13,8 @@ import { Route as SignupRouteImport } from './routes/signup'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedWarehousesRouteImport } from './routes/_authenticated/warehouses'
+import { Route as AuthenticatedTransferOrdersRouteImport } from './routes/_authenticated/transfer-orders'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedSalesOrdersRouteImport } from './routes/_authenticated/sales-orders'
 import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated/reports'
@@ -34,6 +36,8 @@ import { Route as AuthenticatedAssemblyOrdersRouteImport } from './routes/_authe
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedSuppliersIndexRouteImport } from './routes/_authenticated/suppliers.index'
 import { Route as AuthenticatedCustomersIndexRouteImport } from './routes/_authenticated/customers.index'
+import { Route as AuthenticatedTransferOrdersNewRouteImport } from './routes/_authenticated/transfer-orders_.new'
+import { Route as AuthenticatedTransferOrdersIdRouteImport } from './routes/_authenticated/transfer-orders_.$id'
 import { Route as AuthenticatedSuppliersNewRouteImport } from './routes/_authenticated/suppliers.new'
 import { Route as AuthenticatedSuppliersSupplierIdRouteImport } from './routes/_authenticated/suppliers.$supplierId'
 import { Route as AuthenticatedSettingsVatRouteImport } from './routes/_authenticated/settings_.vat'
@@ -97,6 +101,17 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedWarehousesRoute = AuthenticatedWarehousesRouteImport.update({
+  id: '/warehouses',
+  path: '/warehouses',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedTransferOrdersRoute =
+  AuthenticatedTransferOrdersRouteImport.update({
+    id: '/transfer-orders',
+    path: '/transfer-orders',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -210,6 +225,18 @@ const AuthenticatedCustomersIndexRoute =
   AuthenticatedCustomersIndexRouteImport.update({
     id: '/customers/',
     path: '/customers/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedTransferOrdersNewRoute =
+  AuthenticatedTransferOrdersNewRouteImport.update({
+    id: '/transfer-orders_/new',
+    path: '/transfer-orders/new',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedTransferOrdersIdRoute =
+  AuthenticatedTransferOrdersIdRouteImport.update({
+    id: '/transfer-orders_/$id',
+    path: '/transfer-orders/$id',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedSuppliersNewRoute =
@@ -490,6 +517,8 @@ export interface FileRoutesByFullPath {
   '/reports': typeof AuthenticatedReportsRoute
   '/sales-orders': typeof AuthenticatedSalesOrdersRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/transfer-orders': typeof AuthenticatedTransferOrdersRoute
+  '/warehouses': typeof AuthenticatedWarehousesRoute
   '/assembly-orders/$id': typeof AuthenticatedAssemblyOrdersIdRoute
   '/assembly-orders/new': typeof AuthenticatedAssemblyOrdersNewRoute
   '/banking/$accountId': typeof AuthenticatedBankingAccountIdRoute
@@ -525,6 +554,8 @@ export interface FileRoutesByFullPath {
   '/settings/vat': typeof AuthenticatedSettingsVatRoute
   '/suppliers/$supplierId': typeof AuthenticatedSuppliersSupplierIdRoute
   '/suppliers/new': typeof AuthenticatedSuppliersNewRoute
+  '/transfer-orders/$id': typeof AuthenticatedTransferOrdersIdRoute
+  '/transfer-orders/new': typeof AuthenticatedTransferOrdersNewRoute
   '/customers/': typeof AuthenticatedCustomersIndexRoute
   '/suppliers/': typeof AuthenticatedSuppliersIndexRoute
   '/customers/$customerId/edit': typeof AuthenticatedCustomersCustomerIdEditRoute
@@ -559,6 +590,8 @@ export interface FileRoutesByTo {
   '/reports': typeof AuthenticatedReportsRoute
   '/sales-orders': typeof AuthenticatedSalesOrdersRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/transfer-orders': typeof AuthenticatedTransferOrdersRoute
+  '/warehouses': typeof AuthenticatedWarehousesRoute
   '/assembly-orders/$id': typeof AuthenticatedAssemblyOrdersIdRoute
   '/assembly-orders/new': typeof AuthenticatedAssemblyOrdersNewRoute
   '/banking/$accountId': typeof AuthenticatedBankingAccountIdRoute
@@ -594,6 +627,8 @@ export interface FileRoutesByTo {
   '/settings/vat': typeof AuthenticatedSettingsVatRoute
   '/suppliers/$supplierId': typeof AuthenticatedSuppliersSupplierIdRoute
   '/suppliers/new': typeof AuthenticatedSuppliersNewRoute
+  '/transfer-orders/$id': typeof AuthenticatedTransferOrdersIdRoute
+  '/transfer-orders/new': typeof AuthenticatedTransferOrdersNewRoute
   '/customers': typeof AuthenticatedCustomersIndexRoute
   '/suppliers': typeof AuthenticatedSuppliersIndexRoute
   '/customers/$customerId/edit': typeof AuthenticatedCustomersCustomerIdEditRoute
@@ -630,6 +665,8 @@ export interface FileRoutesById {
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
   '/_authenticated/sales-orders': typeof AuthenticatedSalesOrdersRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
+  '/_authenticated/transfer-orders': typeof AuthenticatedTransferOrdersRoute
+  '/_authenticated/warehouses': typeof AuthenticatedWarehousesRoute
   '/_authenticated/assembly-orders_/$id': typeof AuthenticatedAssemblyOrdersIdRoute
   '/_authenticated/assembly-orders_/new': typeof AuthenticatedAssemblyOrdersNewRoute
   '/_authenticated/banking_/$accountId': typeof AuthenticatedBankingAccountIdRoute
@@ -665,6 +702,8 @@ export interface FileRoutesById {
   '/_authenticated/settings_/vat': typeof AuthenticatedSettingsVatRoute
   '/_authenticated/suppliers/$supplierId': typeof AuthenticatedSuppliersSupplierIdRoute
   '/_authenticated/suppliers/new': typeof AuthenticatedSuppliersNewRoute
+  '/_authenticated/transfer-orders_/$id': typeof AuthenticatedTransferOrdersIdRoute
+  '/_authenticated/transfer-orders_/new': typeof AuthenticatedTransferOrdersNewRoute
   '/_authenticated/customers/': typeof AuthenticatedCustomersIndexRoute
   '/_authenticated/suppliers/': typeof AuthenticatedSuppliersIndexRoute
   '/_authenticated/customers/$customerId_/edit': typeof AuthenticatedCustomersCustomerIdEditRoute
@@ -701,6 +740,8 @@ export interface FileRouteTypes {
     | '/reports'
     | '/sales-orders'
     | '/settings'
+    | '/transfer-orders'
+    | '/warehouses'
     | '/assembly-orders/$id'
     | '/assembly-orders/new'
     | '/banking/$accountId'
@@ -736,6 +777,8 @@ export interface FileRouteTypes {
     | '/settings/vat'
     | '/suppliers/$supplierId'
     | '/suppliers/new'
+    | '/transfer-orders/$id'
+    | '/transfer-orders/new'
     | '/customers/'
     | '/suppliers/'
     | '/customers/$customerId/edit'
@@ -770,6 +813,8 @@ export interface FileRouteTypes {
     | '/reports'
     | '/sales-orders'
     | '/settings'
+    | '/transfer-orders'
+    | '/warehouses'
     | '/assembly-orders/$id'
     | '/assembly-orders/new'
     | '/banking/$accountId'
@@ -805,6 +850,8 @@ export interface FileRouteTypes {
     | '/settings/vat'
     | '/suppliers/$supplierId'
     | '/suppliers/new'
+    | '/transfer-orders/$id'
+    | '/transfer-orders/new'
     | '/customers'
     | '/suppliers'
     | '/customers/$customerId/edit'
@@ -840,6 +887,8 @@ export interface FileRouteTypes {
     | '/_authenticated/reports'
     | '/_authenticated/sales-orders'
     | '/_authenticated/settings'
+    | '/_authenticated/transfer-orders'
+    | '/_authenticated/warehouses'
     | '/_authenticated/assembly-orders_/$id'
     | '/_authenticated/assembly-orders_/new'
     | '/_authenticated/banking_/$accountId'
@@ -875,6 +924,8 @@ export interface FileRouteTypes {
     | '/_authenticated/settings_/vat'
     | '/_authenticated/suppliers/$supplierId'
     | '/_authenticated/suppliers/new'
+    | '/_authenticated/transfer-orders_/$id'
+    | '/_authenticated/transfer-orders_/new'
     | '/_authenticated/customers/'
     | '/_authenticated/suppliers/'
     | '/_authenticated/customers/$customerId_/edit'
@@ -923,6 +974,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/warehouses': {
+      id: '/_authenticated/warehouses'
+      path: '/warehouses'
+      fullPath: '/warehouses'
+      preLoaderRoute: typeof AuthenticatedWarehousesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/transfer-orders': {
+      id: '/_authenticated/transfer-orders'
+      path: '/transfer-orders'
+      fullPath: '/transfer-orders'
+      preLoaderRoute: typeof AuthenticatedTransferOrdersRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/settings': {
       id: '/_authenticated/settings'
@@ -1069,6 +1134,20 @@ declare module '@tanstack/react-router' {
       path: '/customers'
       fullPath: '/customers/'
       preLoaderRoute: typeof AuthenticatedCustomersIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/transfer-orders_/new': {
+      id: '/_authenticated/transfer-orders_/new'
+      path: '/transfer-orders/new'
+      fullPath: '/transfer-orders/new'
+      preLoaderRoute: typeof AuthenticatedTransferOrdersNewRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/transfer-orders_/$id': {
+      id: '/_authenticated/transfer-orders_/$id'
+      path: '/transfer-orders/$id'
+      fullPath: '/transfer-orders/$id'
+      preLoaderRoute: typeof AuthenticatedTransferOrdersIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/suppliers/new': {
@@ -1395,6 +1474,8 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
   AuthenticatedSalesOrdersRoute: typeof AuthenticatedSalesOrdersRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
+  AuthenticatedTransferOrdersRoute: typeof AuthenticatedTransferOrdersRoute
+  AuthenticatedWarehousesRoute: typeof AuthenticatedWarehousesRoute
   AuthenticatedAssemblyOrdersIdRoute: typeof AuthenticatedAssemblyOrdersIdRoute
   AuthenticatedAssemblyOrdersNewRoute: typeof AuthenticatedAssemblyOrdersNewRoute
   AuthenticatedBankingAccountIdRoute: typeof AuthenticatedBankingAccountIdRoute
@@ -1430,6 +1511,8 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSettingsVatRoute: typeof AuthenticatedSettingsVatRoute
   AuthenticatedSuppliersSupplierIdRoute: typeof AuthenticatedSuppliersSupplierIdRoute
   AuthenticatedSuppliersNewRoute: typeof AuthenticatedSuppliersNewRoute
+  AuthenticatedTransferOrdersIdRoute: typeof AuthenticatedTransferOrdersIdRoute
+  AuthenticatedTransferOrdersNewRoute: typeof AuthenticatedTransferOrdersNewRoute
   AuthenticatedCustomersIndexRoute: typeof AuthenticatedCustomersIndexRoute
   AuthenticatedSuppliersIndexRoute: typeof AuthenticatedSuppliersIndexRoute
   AuthenticatedCustomersCustomerIdEditRoute: typeof AuthenticatedCustomersCustomerIdEditRoute
@@ -1463,6 +1546,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedReportsRoute: AuthenticatedReportsRoute,
   AuthenticatedSalesOrdersRoute: AuthenticatedSalesOrdersRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
+  AuthenticatedTransferOrdersRoute: AuthenticatedTransferOrdersRoute,
+  AuthenticatedWarehousesRoute: AuthenticatedWarehousesRoute,
   AuthenticatedAssemblyOrdersIdRoute: AuthenticatedAssemblyOrdersIdRoute,
   AuthenticatedAssemblyOrdersNewRoute: AuthenticatedAssemblyOrdersNewRoute,
   AuthenticatedBankingAccountIdRoute: AuthenticatedBankingAccountIdRoute,
@@ -1502,6 +1587,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSettingsVatRoute: AuthenticatedSettingsVatRoute,
   AuthenticatedSuppliersSupplierIdRoute: AuthenticatedSuppliersSupplierIdRoute,
   AuthenticatedSuppliersNewRoute: AuthenticatedSuppliersNewRoute,
+  AuthenticatedTransferOrdersIdRoute: AuthenticatedTransferOrdersIdRoute,
+  AuthenticatedTransferOrdersNewRoute: AuthenticatedTransferOrdersNewRoute,
   AuthenticatedCustomersIndexRoute: AuthenticatedCustomersIndexRoute,
   AuthenticatedSuppliersIndexRoute: AuthenticatedSuppliersIndexRoute,
   AuthenticatedCustomersCustomerIdEditRoute:

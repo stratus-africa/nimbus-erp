@@ -17,6 +17,10 @@ import {
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { format, formatDistanceToNow } from "date-fns";
 
 export const Route = createFileRoute("/_authenticated/items_/$itemId")({
@@ -191,6 +195,20 @@ function ItemViewPage() {
     onError: (e: any) => toast.error(e.message),
   });
 
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const deleteItem = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.rpc("delete_item", { _id: itemId });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Item deleted");
+      qc.invalidateQueries({ queryKey: ["items"] });
+      navigate({ to: "/items" });
+    },
+    onError: (e: any) => toast.error(e.message ?? "Delete failed"),
+  });
+
   if (isLoading) {
     return (
       <div className="flex h-full bg-background">
@@ -292,7 +310,7 @@ function ItemViewPage() {
               </DropdownMenuItem>
               <DropdownMenuItem>Duplicate</DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-destructive">Delete</DropdownMenuItem>
+              <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => setConfirmDelete(true)}>Delete</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
           <Button variant="ghost" size="icon" onClick={() => navigate({ to: "/items" })}>
@@ -486,6 +504,22 @@ function ItemViewPage() {
 
      </div>
       </div>
+      <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this item?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Items used in any transactions (quotes, sales orders, invoices, purchase orders, bills, adjustments, transfers or production) cannot be deleted — archive them instead.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => deleteItem.mutate()} className="bg-rose-600 hover:bg-rose-700">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
