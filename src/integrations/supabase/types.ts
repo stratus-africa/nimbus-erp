@@ -1714,18 +1714,26 @@ export type Database = {
           created_by: string | null
           deleted_at: string | null
           description: string | null
+          hs_code: string | null
           id: string
           image_url: string | null
+          inventory_account_id: string | null
           is_active: boolean
           item_type: Database["public"]["Enums"]["item_type"]
           name: string
+          preferred_vendor_id: string | null
+          purchase_account_id: string | null
+          purchase_tax_rate_id: string | null
           reorder_level: number | null
+          sales_account_id: string | null
+          sales_tax_rate_id: string | null
           selling_price: number | null
           sku: string | null
           stock_on_hand: number
           tenant_id: string
           unit: string | null
           updated_at: string
+          valuation_method: string | null
         }
         Insert: {
           archived_at?: string | null
@@ -1736,18 +1744,26 @@ export type Database = {
           created_by?: string | null
           deleted_at?: string | null
           description?: string | null
+          hs_code?: string | null
           id?: string
           image_url?: string | null
+          inventory_account_id?: string | null
           is_active?: boolean
           item_type?: Database["public"]["Enums"]["item_type"]
           name: string
+          preferred_vendor_id?: string | null
+          purchase_account_id?: string | null
+          purchase_tax_rate_id?: string | null
           reorder_level?: number | null
+          sales_account_id?: string | null
+          sales_tax_rate_id?: string | null
           selling_price?: number | null
           sku?: string | null
           stock_on_hand?: number
           tenant_id: string
           unit?: string | null
           updated_at?: string
+          valuation_method?: string | null
         }
         Update: {
           archived_at?: string | null
@@ -1758,20 +1774,70 @@ export type Database = {
           created_by?: string | null
           deleted_at?: string | null
           description?: string | null
+          hs_code?: string | null
           id?: string
           image_url?: string | null
+          inventory_account_id?: string | null
           is_active?: boolean
           item_type?: Database["public"]["Enums"]["item_type"]
           name?: string
+          preferred_vendor_id?: string | null
+          purchase_account_id?: string | null
+          purchase_tax_rate_id?: string | null
           reorder_level?: number | null
+          sales_account_id?: string | null
+          sales_tax_rate_id?: string | null
           selling_price?: number | null
           sku?: string | null
           stock_on_hand?: number
           tenant_id?: string
           unit?: string | null
           updated_at?: string
+          valuation_method?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "items_inventory_account_id_fkey"
+            columns: ["inventory_account_id"]
+            isOneToOne: false
+            referencedRelation: "chart_of_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "items_preferred_vendor_id_fkey"
+            columns: ["preferred_vendor_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "items_purchase_account_id_fkey"
+            columns: ["purchase_account_id"]
+            isOneToOne: false
+            referencedRelation: "chart_of_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "items_purchase_tax_rate_id_fkey"
+            columns: ["purchase_tax_rate_id"]
+            isOneToOne: false
+            referencedRelation: "tax_rates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "items_sales_account_id_fkey"
+            columns: ["sales_account_id"]
+            isOneToOne: false
+            referencedRelation: "chart_of_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "items_sales_tax_rate_id_fkey"
+            columns: ["sales_tax_rate_id"]
+            isOneToOne: false
+            referencedRelation: "tax_rates"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "items_tenant_id_fkey"
             columns: ["tenant_id"]
@@ -2984,6 +3050,7 @@ export type Database = {
       }
       complete_assembly_order: { Args: { _id: string }; Returns: undefined }
       current_tenant: { Args: never; Returns: string }
+      delete_item: { Args: { _id: string }; Returns: undefined }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
