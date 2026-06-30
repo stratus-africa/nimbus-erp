@@ -36,24 +36,24 @@ function TransferOrderSettings() {
     queryKey: ["to-settings", tenantId],
     queryFn: async () => {
       const { data } = await supabase.from("tenant_settings")
-        .select("*").eq("tenant_id", tenantId!).eq("key", "transfer_orders").maybeSingle();
+        .select("*").eq("tenant_id", tenantId!).eq("namespace", "transfer_orders").maybeSingle();
       return data;
     },
   });
 
   useEffect(() => {
-    const cfg = (row?.value as any)?.permissions;
+    const cfg = (row?.settings as any)?.permissions;
     if (cfg) setMatrix({ ...DEFAULTS, ...cfg });
   }, [row]);
 
   const save = useMutation({
     mutationFn: async () => {
-      const value = { permissions: matrix };
+      const settings = { permissions: matrix };
       if (row) {
-        const { error } = await supabase.from("tenant_settings").update({ value }).eq("id", row.id);
+        const { error } = await supabase.from("tenant_settings").update({ settings }).eq("id", row.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from("tenant_settings").insert({ tenant_id: tenantId!, key: "transfer_orders", value });
+        const { error } = await supabase.from("tenant_settings").insert({ tenant_id: tenantId!, namespace: "transfer_orders", settings });
         if (error) throw error;
       }
     },

@@ -24,11 +24,11 @@ export function useTransferPermissions() {
     queryFn: async () => {
       const { data } = await supabase
         .from("tenant_settings")
-        .select("value")
+        .select("settings")
         .eq("tenant_id", tenantId!)
-        .eq("key", "transfer_orders")
+        .eq("namespace", "transfer_orders")
         .maybeSingle();
-      return ((data?.value as any)?.permissions as Record<TransferAction, string[]> | undefined) ?? null;
+      return ((data?.settings as any)?.permissions as Record<TransferAction, string[]> | undefined) ?? null;
     },
   });
 
