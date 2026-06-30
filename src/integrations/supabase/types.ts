@@ -3427,11 +3427,13 @@ export type Database = {
       tenant_status: "trial" | "active" | "suspended"
       transfer_order_status:
         | "draft"
+        | "pending_approval"
         | "confirmed"
         | "shipped"
         | "received"
         | "completed"
         | "cancelled"
+        | "rejected"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -3624,11 +3626,13 @@ export const Constants = {
       tenant_status: ["trial", "active", "suspended"],
       transfer_order_status: [
         "draft",
+        "pending_approval",
         "confirmed",
         "shipped",
         "received",
         "completed",
         "cancelled",
+        "rejected",
       ],
     },
   },
