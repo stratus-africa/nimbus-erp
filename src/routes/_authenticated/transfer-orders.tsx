@@ -16,7 +16,7 @@ export const Route = createFileRoute("/_authenticated/transfer-orders")({
 });
 
 const STATUS_VARIANT: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
-  draft: "secondary", confirmed: "outline", shipped: "outline", received: "outline", completed: "default", cancelled: "destructive",
+  draft: "secondary", pending_approval: "outline", confirmed: "outline", shipped: "outline", received: "outline", completed: "default", cancelled: "destructive", rejected: "destructive",
 };
 
 function TransferOrdersPage() {
