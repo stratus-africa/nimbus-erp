@@ -2127,6 +2127,75 @@ export type Database = {
           },
         ]
       }
+      packages: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          dimensions: string | null
+          id: string
+          notes: string | null
+          package_date: string
+          package_number: string
+          source_id: string
+          source_type: string
+          status: string
+          tenant_id: string
+          updated_at: string
+          warehouse_id: string | null
+          weight: number | null
+          weight_unit: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          dimensions?: string | null
+          id?: string
+          notes?: string | null
+          package_date?: string
+          package_number: string
+          source_id: string
+          source_type: string
+          status?: string
+          tenant_id: string
+          updated_at?: string
+          warehouse_id?: string | null
+          weight?: number | null
+          weight_unit?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          dimensions?: string | null
+          id?: string
+          notes?: string | null
+          package_date?: string
+          package_number?: string
+          source_id?: string
+          source_type?: string
+          status?: string
+          tenant_id?: string
+          updated_at?: string
+          warehouse_id?: string | null
+          weight?: number | null
+          weight_unit?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "packages_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "packages_warehouse_id_fkey"
+            columns: ["warehouse_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -2632,6 +2701,78 @@ export type Database = {
           },
         ]
       }
+      shipments: {
+        Row: {
+          carrier: string | null
+          created_at: string
+          created_by: string | null
+          delivered_date: string | null
+          id: string
+          notes: string | null
+          package_id: string | null
+          shipment_date: string | null
+          shipment_number: string
+          source_id: string
+          source_type: string
+          status: string
+          tenant_id: string
+          tracking_number: string | null
+          tracking_url: string | null
+          updated_at: string
+        }
+        Insert: {
+          carrier?: string | null
+          created_at?: string
+          created_by?: string | null
+          delivered_date?: string | null
+          id?: string
+          notes?: string | null
+          package_id?: string | null
+          shipment_date?: string | null
+          shipment_number: string
+          source_id: string
+          source_type: string
+          status?: string
+          tenant_id: string
+          tracking_number?: string | null
+          tracking_url?: string | null
+          updated_at?: string
+        }
+        Update: {
+          carrier?: string | null
+          created_at?: string
+          created_by?: string | null
+          delivered_date?: string | null
+          id?: string
+          notes?: string | null
+          package_id?: string | null
+          shipment_date?: string | null
+          shipment_number?: string
+          source_id?: string
+          source_type?: string
+          status?: string
+          tenant_id?: string
+          tracking_number?: string | null
+          tracking_url?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shipments_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "packages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shipments_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       subscription_plans: {
         Row: {
           created_at: string
@@ -2972,6 +3113,57 @@ export type Database = {
           },
         ]
       }
+      transfer_order_approvals: {
+        Row: {
+          action: string
+          actor_id: string | null
+          actor_name: string | null
+          comments: string | null
+          created_at: string
+          id: string
+          metadata: Json | null
+          tenant_id: string
+          transfer_order_id: string
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          actor_name?: string | null
+          comments?: string | null
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          tenant_id: string
+          transfer_order_id: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          actor_name?: string | null
+          comments?: string | null
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          tenant_id?: string
+          transfer_order_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transfer_order_approvals_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transfer_order_approvals_transfer_order_id_fkey"
+            columns: ["transfer_order_id"]
+            isOneToOne: false
+            referencedRelation: "transfer_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       transfer_order_items: {
         Row: {
           created_at: string
@@ -3033,6 +3225,7 @@ export type Database = {
       transfer_orders: {
         Row: {
           approved_by: string | null
+          carrier: string | null
           created_at: string
           created_by: string | null
           destination_warehouse_id: string
@@ -3040,17 +3233,25 @@ export type Database = {
           notes: string | null
           received_at: string | null
           received_by: string | null
+          rejected_at: string | null
+          rejected_by: string | null
+          rejection_reason: string | null
+          requested_at: string | null
+          requested_by: string | null
           shipped_at: string | null
           shipped_by: string | null
           source_warehouse_id: string
           status: Database["public"]["Enums"]["transfer_order_status"]
           tenant_id: string
+          tracking_number: string | null
+          tracking_url: string | null
           transfer_date: string
           transfer_number: string
           updated_at: string
         }
         Insert: {
           approved_by?: string | null
+          carrier?: string | null
           created_at?: string
           created_by?: string | null
           destination_warehouse_id: string
@@ -3058,17 +3259,25 @@ export type Database = {
           notes?: string | null
           received_at?: string | null
           received_by?: string | null
+          rejected_at?: string | null
+          rejected_by?: string | null
+          rejection_reason?: string | null
+          requested_at?: string | null
+          requested_by?: string | null
           shipped_at?: string | null
           shipped_by?: string | null
           source_warehouse_id: string
           status?: Database["public"]["Enums"]["transfer_order_status"]
           tenant_id: string
+          tracking_number?: string | null
+          tracking_url?: string | null
           transfer_date?: string
           transfer_number: string
           updated_at?: string
         }
         Update: {
           approved_by?: string | null
+          carrier?: string | null
           created_at?: string
           created_by?: string | null
           destination_warehouse_id?: string
@@ -3076,11 +3285,18 @@ export type Database = {
           notes?: string | null
           received_at?: string | null
           received_by?: string | null
+          rejected_at?: string | null
+          rejected_by?: string | null
+          rejection_reason?: string | null
+          requested_at?: string | null
+          requested_by?: string | null
           shipped_at?: string | null
           shipped_by?: string | null
           source_warehouse_id?: string
           status?: Database["public"]["Enums"]["transfer_order_status"]
           tenant_id?: string
+          tracking_number?: string | null
+          tracking_url?: string | null
           transfer_date?: string
           transfer_number?: string
           updated_at?: string
@@ -3305,6 +3521,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      _reserve_transfer_stock: { Args: { _id: string }; Returns: undefined }
       _ws_upsert: {
         Args: { _item: string; _tenant: string; _wh: string }
         Returns: string
@@ -3319,6 +3536,14 @@ export type Database = {
         Returns: undefined
       }
       approve_expense: { Args: { _id: string }; Returns: string }
+      approve_transfer_order: {
+        Args: { _id: string; _note?: string }
+        Returns: undefined
+      }
+      can_transfer_action: {
+        Args: { _action: string; _tenant: string }
+        Returns: boolean
+      }
       cancel_transfer_order: { Args: { _id: string }; Returns: undefined }
       clear_composite_explosion: {
         Args: { _doc_id: string; _doc_type: string; _tenant: string }
@@ -3362,10 +3587,27 @@ export type Database = {
         Args: { _comment: string; _id: string }
         Returns: undefined
       }
-      ship_transfer_order: {
-        Args: { _id: string; _quantities?: Json }
+      reject_transfer_order: {
+        Args: { _id: string; _reason: string }
         Returns: undefined
       }
+      request_transfer_approval: {
+        Args: { _id: string; _note?: string }
+        Returns: undefined
+      }
+      ship_transfer_order:
+        | { Args: { _id: string; _quantities?: Json }; Returns: undefined }
+        | {
+            Args: {
+              _carrier?: string
+              _create_package?: boolean
+              _id: string
+              _quantities?: Json
+              _tracking?: string
+              _tracking_url?: string
+            }
+            Returns: string
+          }
       switch_tenant: { Args: { _tenant: string }; Returns: undefined }
     }
     Enums: {
