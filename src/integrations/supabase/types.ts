@@ -3858,6 +3858,7 @@ export type Database = {
         Args: { _email: string; _role: Database["public"]["Enums"]["app_role"] }
         Returns: string
       }
+      is_current_user_suspended: { Args: never; Returns: boolean }
       is_super_admin: { Args: { _user: string }; Returns: boolean }
       is_tenant_member: {
         Args: { _tenant: string; _user: string }

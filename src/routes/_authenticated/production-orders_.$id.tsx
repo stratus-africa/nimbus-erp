@@ -6,9 +6,10 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ArrowLeft, CheckCircle2, Pencil, Trash2, XCircle } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Pencil, Trash2, XCircle, History } from "lucide-react";
 import { toast } from "sonner";
 import { formatCurrency, formatDate } from "@/lib/format";
+import { formatDistanceToNow } from "date-fns";
 
 export const Route = createFileRoute("/_authenticated/production-orders_/$id")({
   head: () => ({ meta: [{ title: "Production Order — Nimbus ERP" }] }),
@@ -34,6 +35,22 @@ function ProductionOrderDetail() {
     },
   });
 
+  const { data: activity } = useQuery({
+    enabled: !!order?.tenant_id,
+    queryKey: ["production-order-activity", id],
+    queryFn: async () => {
+      const { data, error } = await (supabase as any)
+        .from("audit_logs")
+        .select("id, action, summary, actor_name, created_at, details")
+        .eq("tenant_id", order.tenant_id)
+        .eq("entity_type", "assembly_orders")
+        .eq("entity_id", id)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
   if (!order) return <div className="text-muted-foreground">Loading…</div>;
 
   const complete = async () => {
@@ -42,6 +59,7 @@ function ProductionOrderDetail() {
     if (error) return toast.error(error.message);
     toast.success("Production order completed");
     qc.invalidateQueries({ queryKey: ["production-order", id] });
+    qc.invalidateQueries({ queryKey: ["production-order-activity", id] });
     qc.invalidateQueries({ queryKey: ["production-orders"] });
   };
 
@@ -54,6 +72,7 @@ function ProductionOrderDetail() {
     if (error) return toast.error(error.message);
     toast.success("Production order cancelled");
     qc.invalidateQueries({ queryKey: ["production-order", id] });
+    qc.invalidateQueries({ queryKey: ["production-order-activity", id] });
     qc.invalidateQueries({ queryKey: ["production-orders"] });
   };
 
@@ -140,6 +159,29 @@ function ProductionOrderDetail() {
             ))}
           </TableBody>
         </Table>
+      </Card>
+
+      <Card>
+        <div className="p-4 border-b font-semibold flex items-center gap-2">
+          <History className="h-4 w-4 text-muted-foreground" /> Activity
+        </div>
+        <div className="p-4">
+          {!activity?.length ? (
+            <div className="text-sm text-muted-foreground py-4 text-center">No activity yet.</div>
+          ) : (
+            <ol className="relative border-l pl-6 space-y-4">
+              {activity.map((a: any) => (
+                <li key={a.id} className="relative">
+                  <span className="absolute -left-[27px] top-1 h-2.5 w-2.5 rounded-full bg-primary" />
+                  <div className="text-sm">{a.summary}</div>
+                  <div className="text-xs text-muted-foreground mt-0.5">
+                    {a.actor_name ?? "System"} · {formatDate(a.created_at)} ({formatDistanceToNow(new Date(a.created_at), { addSuffix: true })})
+                  </div>
+                </li>
+              ))}
+            </ol>
+          )}
+        </div>
       </Card>
     </div>
   );

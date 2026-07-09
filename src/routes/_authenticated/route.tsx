@@ -7,6 +7,11 @@ export const Route = createFileRoute("/_authenticated")({
   beforeLoad: async () => {
     const { data, error } = await supabase.auth.getUser();
     if (error || !data.user) throw redirect({ to: "/auth" });
+
+    // Block suspended users
+    const { data: suspended } = await supabase.rpc("is_current_user_suspended");
+    if (suspended === true) throw redirect({ to: "/suspended" });
+
     return { user: data.user };
   },
   component: () => (
