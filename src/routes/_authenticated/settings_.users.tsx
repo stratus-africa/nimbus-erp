@@ -385,6 +385,7 @@ function SettingsUsersPage() {
       />
 
       <AuditDrawer member={auditFor} tenantId={tenantId} onClose={() => setAuditFor(null)} />
+      <WarehousesDialog member={warehouseFor} tenantId={tenantId} onClose={() => setWarehouseFor(null)} />
     </div>
   );
 }
