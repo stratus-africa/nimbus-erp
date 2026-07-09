@@ -59,6 +59,7 @@ import { Route as AuthenticatedQuotesQuoteIdRouteImport } from './routes/_authen
 import { Route as AuthenticatedPurchaseOrdersNewRouteImport } from './routes/_authenticated/purchase-orders_.new'
 import { Route as AuthenticatedPurchaseOrdersPoIdRouteImport } from './routes/_authenticated/purchase-orders_.$poId'
 import { Route as AuthenticatedProductionOrdersNewRouteImport } from './routes/_authenticated/production-orders_.new'
+import { Route as AuthenticatedProductionOrdersIdRouteImport } from './routes/_authenticated/production-orders_.$id'
 import { Route as AuthenticatedProductionItemsNewRouteImport } from './routes/_authenticated/production-items_.new'
 import { Route as AuthenticatedProductionItemsIdRouteImport } from './routes/_authenticated/production-items_.$id'
 import { Route as AuthenticatedPaymentsReceivedNewRouteImport } from './routes/_authenticated/payments-received_.new'
@@ -373,6 +374,12 @@ const AuthenticatedProductionOrdersNewRoute =
     path: '/production-orders/new',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedProductionOrdersIdRoute =
+  AuthenticatedProductionOrdersIdRouteImport.update({
+    id: '/production-orders_/$id',
+    path: '/production-orders/$id',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedProductionItemsNewRoute =
   AuthenticatedProductionItemsNewRouteImport.update({
     id: '/production-items_/new',
@@ -605,6 +612,7 @@ export interface FileRoutesByFullPath {
   '/payments-received/new': typeof AuthenticatedPaymentsReceivedNewRoute
   '/production-items/$id': typeof AuthenticatedProductionItemsIdRoute
   '/production-items/new': typeof AuthenticatedProductionItemsNewRoute
+  '/production-orders/$id': typeof AuthenticatedProductionOrdersIdRoute
   '/production-orders/new': typeof AuthenticatedProductionOrdersNewRoute
   '/purchase-orders/$poId': typeof AuthenticatedPurchaseOrdersPoIdRoute
   '/purchase-orders/new': typeof AuthenticatedPurchaseOrdersNewRoute
@@ -687,6 +695,7 @@ export interface FileRoutesByTo {
   '/payments-received/new': typeof AuthenticatedPaymentsReceivedNewRoute
   '/production-items/$id': typeof AuthenticatedProductionItemsIdRoute
   '/production-items/new': typeof AuthenticatedProductionItemsNewRoute
+  '/production-orders/$id': typeof AuthenticatedProductionOrdersIdRoute
   '/production-orders/new': typeof AuthenticatedProductionOrdersNewRoute
   '/purchase-orders/$poId': typeof AuthenticatedPurchaseOrdersPoIdRoute
   '/purchase-orders/new': typeof AuthenticatedPurchaseOrdersNewRoute
@@ -771,6 +780,7 @@ export interface FileRoutesById {
   '/_authenticated/payments-received_/new': typeof AuthenticatedPaymentsReceivedNewRoute
   '/_authenticated/production-items_/$id': typeof AuthenticatedProductionItemsIdRoute
   '/_authenticated/production-items_/new': typeof AuthenticatedProductionItemsNewRoute
+  '/_authenticated/production-orders_/$id': typeof AuthenticatedProductionOrdersIdRoute
   '/_authenticated/production-orders_/new': typeof AuthenticatedProductionOrdersNewRoute
   '/_authenticated/purchase-orders_/$poId': typeof AuthenticatedPurchaseOrdersPoIdRoute
   '/_authenticated/purchase-orders_/new': typeof AuthenticatedPurchaseOrdersNewRoute
@@ -855,6 +865,7 @@ export interface FileRouteTypes {
     | '/payments-received/new'
     | '/production-items/$id'
     | '/production-items/new'
+    | '/production-orders/$id'
     | '/production-orders/new'
     | '/purchase-orders/$poId'
     | '/purchase-orders/new'
@@ -937,6 +948,7 @@ export interface FileRouteTypes {
     | '/payments-received/new'
     | '/production-items/$id'
     | '/production-items/new'
+    | '/production-orders/$id'
     | '/production-orders/new'
     | '/purchase-orders/$poId'
     | '/purchase-orders/new'
@@ -1020,6 +1032,7 @@ export interface FileRouteTypes {
     | '/_authenticated/payments-received_/new'
     | '/_authenticated/production-items_/$id'
     | '/_authenticated/production-items_/new'
+    | '/_authenticated/production-orders_/$id'
     | '/_authenticated/production-orders_/new'
     | '/_authenticated/purchase-orders_/$poId'
     | '/_authenticated/purchase-orders_/new'
@@ -1414,6 +1427,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProductionOrdersNewRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/production-orders_/$id': {
+      id: '/_authenticated/production-orders_/$id'
+      path: '/production-orders/$id'
+      fullPath: '/production-orders/$id'
+      preLoaderRoute: typeof AuthenticatedProductionOrdersIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/production-items_/new': {
       id: '/_authenticated/production-items_/new'
       path: '/production-items/new'
@@ -1679,6 +1699,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedPaymentsReceivedNewRoute: typeof AuthenticatedPaymentsReceivedNewRoute
   AuthenticatedProductionItemsIdRoute: typeof AuthenticatedProductionItemsIdRoute
   AuthenticatedProductionItemsNewRoute: typeof AuthenticatedProductionItemsNewRoute
+  AuthenticatedProductionOrdersIdRoute: typeof AuthenticatedProductionOrdersIdRoute
   AuthenticatedProductionOrdersNewRoute: typeof AuthenticatedProductionOrdersNewRoute
   AuthenticatedPurchaseOrdersPoIdRoute: typeof AuthenticatedPurchaseOrdersPoIdRoute
   AuthenticatedPurchaseOrdersNewRoute: typeof AuthenticatedPurchaseOrdersNewRoute
@@ -1762,6 +1783,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedPaymentsReceivedNewRoute: AuthenticatedPaymentsReceivedNewRoute,
   AuthenticatedProductionItemsIdRoute: AuthenticatedProductionItemsIdRoute,
   AuthenticatedProductionItemsNewRoute: AuthenticatedProductionItemsNewRoute,
+  AuthenticatedProductionOrdersIdRoute: AuthenticatedProductionOrdersIdRoute,
   AuthenticatedProductionOrdersNewRoute: AuthenticatedProductionOrdersNewRoute,
   AuthenticatedPurchaseOrdersPoIdRoute: AuthenticatedPurchaseOrdersPoIdRoute,
   AuthenticatedPurchaseOrdersNewRoute: AuthenticatedPurchaseOrdersNewRoute,
