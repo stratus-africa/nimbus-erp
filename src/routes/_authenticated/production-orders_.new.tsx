@@ -18,8 +18,8 @@ import { ArrowLeft, Factory, ChevronsUpDown, Check } from "lucide-react";
 import { toast } from "sonner";
 import { formatDate } from "@/lib/format";
 
-export const Route = createFileRoute("/_authenticated/assembly-orders_/new")({
-  head: () => ({ meta: [{ title: "New Assembly Order — Nimbus ERP" }] }),
+export const Route = createFileRoute("/_authenticated/production-orders_/new")({
+  head: () => ({ meta: [{ title: "New Production Order — Nimbus ERP" }] }),
   component: NewAssemblyOrderPage,
 });
 
@@ -138,7 +138,7 @@ function NewAssemblyOrderPage() {
     setSoIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
 
   const save = async () => {
-    if (!tenantId || !assemblyItemId) return toast.error("Select an assembly item");
+    if (!tenantId || !assemblyItemId) return toast.error("Select a product to produce");
     if (quantity <= 0) return toast.error("Quantity must be greater than zero");
     setSaving(true);
     try {
@@ -152,8 +152,8 @@ function NewAssemblyOrderPage() {
         notes: notes || null,
       }).select("id").single();
       if (error) throw error;
-      toast.success("Assembly order created");
-      navigate({ to: "/assembly-orders/$id", params: { id: data.id } });
+      toast.success("Production order created");
+      navigate({ to: "/production-orders/$id", params: { id: data.id } });
     } catch (e: any) {
       toast.error(e.message ?? "Failed");
     } finally {
@@ -167,7 +167,7 @@ function NewAssemblyOrderPage() {
     const selectedLines = assemblyLines.filter(
       (l: any) => picks[`${l.sales_order_id}:${l.id}`]?.selected && (picks[`${l.sales_order_id}:${l.id}`]?.qty ?? 0) > 0,
     );
-    if (!selectedLines.length) return toast.error("Select at least one assembly item to produce");
+    if (!selectedLines.length) return toast.error("Select at least one product to produce");
 
     setSaving(true);
     const soNumbers = Array.from(new Set(selectedLines.map((l: any) => soById.get(l.sales_order_id)?.so_number).filter(Boolean)));
@@ -225,14 +225,14 @@ function NewAssemblyOrderPage() {
         if (error) throw error;
         created.push(data.id);
       }
-      toast.success(`Created ${created.length} assembly order${created.length === 1 ? "" : "s"}`);
+      toast.success(`Created ${created.length} production order${created.length === 1 ? "" : "s"}`);
       if (created.length === 1) {
-        navigate({ to: "/assembly-orders/$id", params: { id: created[0] } });
+        navigate({ to: "/production-orders/$id", params: { id: created[0] } });
       } else {
-        navigate({ to: "/assembly-orders" });
+        navigate({ to: "/production-orders" });
       }
     } catch (e: any) {
-      toast.error(e.message ?? "Failed to create assembly orders");
+      toast.error(e.message ?? "Failed to create production orders");
     } finally {
       setSaving(false);
     }
@@ -242,20 +242,20 @@ function NewAssemblyOrderPage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" onClick={() => navigate({ to: "/assembly-orders" })}>
+          <Button variant="ghost" size="icon" onClick={() => navigate({ to: "/production-orders" })}>
             <ArrowLeft className="h-4 w-4" />
           </Button>
-          <h1 className="text-xl font-semibold">New Assembly Order</h1>
+          <h1 className="text-xl font-semibold">New Production Order</h1>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => navigate({ to: "/assembly-orders" })}>Cancel</Button>
+          <Button variant="outline" onClick={() => navigate({ to: "/production-orders" })}>Cancel</Button>
           {mode === "manual" ? (
             <Button disabled={saving} onClick={save} className="bg-emerald-600 hover:bg-emerald-700">
               {saving ? "Saving…" : "Save"}
             </Button>
           ) : (
             <Button disabled={saving} onClick={saveFromSO} className="bg-emerald-600 hover:bg-emerald-700">
-              {saving ? "Saving…" : "Create Assembly Orders"}
+              {saving ? "Saving…" : "Create Production Orders"}
             </Button>
           )}
         </div>
@@ -282,9 +282,9 @@ function NewAssemblyOrderPage() {
       {mode === "manual" ? (
         <Card className="max-w-2xl space-y-4 p-6">
           <div className="space-y-2">
-            <Label>Assembly Item *</Label>
+            <Label>Product to Produce *</Label>
             <Select value={assemblyItemId} onValueChange={setAssemblyItemId}>
-              <SelectTrigger><SelectValue placeholder="Select an assembly composite item" /></SelectTrigger>
+              <SelectTrigger><SelectValue placeholder="Select an assembly-type product" /></SelectTrigger>
               <SelectContent>
                 {assemblies?.map((a: any) => (
                   <SelectItem key={a.items?.id} value={a.items?.id}>
@@ -402,12 +402,12 @@ function NewAssemblyOrderPage() {
                 onCheckedChange={(v) => setConsolidate(!!v)}
               />
               <Label htmlFor="consolidate" className="text-sm font-normal">
-                Consolidate: one assembly order per item, summing quantities across selected sales orders
+                Consolidate: one production order per item, summing quantities across selected sales orders
               </Label>
             </div>
 
             <div className="space-y-2">
-              <Label>Notes (applied to each assembly order)</Label>
+              <Label>Notes (applied to each production order)</Label>
               <Textarea
                 value={soNotes}
                 onChange={(e) => setSoNotes(e.target.value)}
@@ -421,13 +421,13 @@ function NewAssemblyOrderPage() {
               <div className="flex items-center justify-between border-b p-4">
                 <div className="flex items-center gap-2">
                   <Factory className="h-4 w-4 text-muted-foreground" />
-                  <h2 className="font-semibold">Assembly items across selected sales orders</h2>
+                  <h2 className="font-semibold">Production items across selected sales orders</h2>
                 </div>
                 <Badge variant="secondary">{assemblyLines.length} line(s)</Badge>
               </div>
               {assemblyLines.length === 0 ? (
                 <div className="p-6 text-sm text-muted-foreground">
-                  None of the selected sales orders have line items configured as assembly composite items.
+                  None of the selected sales orders have line items configured as assembly-type production items.
                 </div>
               ) : (
                 <Table>

@@ -6,16 +6,16 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ArrowLeft, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Pencil, Trash2, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { formatCurrency, formatDate } from "@/lib/format";
 
-export const Route = createFileRoute("/_authenticated/assembly-orders_/$id")({
-  head: () => ({ meta: [{ title: "Assembly Order — Nimbus ERP" }] }),
-  component: AssemblyOrderDetail,
+export const Route = createFileRoute("/_authenticated/production-orders_/$id")({
+  head: () => ({ meta: [{ title: "Production Order — Nimbus ERP" }] }),
+  component: ProductionOrderDetail,
 });
 
-function AssemblyOrderDetail() {
+function ProductionOrderDetail() {
   const { id } = Route.useParams();
   const { data: profile } = useProfile();
   const currency = profile?.currentTenant?.base_currency ?? "USD";
@@ -23,7 +23,7 @@ function AssemblyOrderDetail() {
   const qc = useQueryClient();
 
   const { data: order } = useQuery({
-    queryKey: ["assembly-order", id],
+    queryKey: ["production-order", id],
     queryFn: async () => {
       const { data, error } = await (supabase as any)
         .from("assembly_orders")
@@ -37,28 +37,67 @@ function AssemblyOrderDetail() {
   if (!order) return <div className="text-muted-foreground">Loading…</div>;
 
   const complete = async () => {
-    if (!confirm(`Complete this assembly order? Components will be consumed and ${order.quantity} unit(s) of ${order.items?.name} added to stock.`)) return;
+    if (!confirm(`Complete this production order? Components will be consumed and ${order.quantity} unit(s) of ${order.items?.name} added to stock.`)) return;
     const { error } = await supabase.rpc("complete_assembly_order", { _id: id });
     if (error) return toast.error(error.message);
-    toast.success("Assembly order completed");
-    qc.invalidateQueries({ queryKey: ["assembly-order", id] });
-    qc.invalidateQueries({ queryKey: ["assembly-orders"] });
+    toast.success("Production order completed");
+    qc.invalidateQueries({ queryKey: ["production-order", id] });
+    qc.invalidateQueries({ queryKey: ["production-orders"] });
+  };
+
+  const cancel = async () => {
+    if (!confirm("Cancel this production order?")) return;
+    const { error } = await (supabase as any)
+      .from("assembly_orders")
+      .update({ status: "cancelled" })
+      .eq("id", id);
+    if (error) return toast.error(error.message);
+    toast.success("Production order cancelled");
+    qc.invalidateQueries({ queryKey: ["production-order", id] });
+    qc.invalidateQueries({ queryKey: ["production-orders"] });
+  };
+
+  const remove = async () => {
+    if (!confirm("Delete this production order? This cannot be undone.")) return;
+    const { error } = await (supabase as any).from("assembly_orders").delete().eq("id", id);
+    if (error) return toast.error(error.message);
+    toast.success("Production order deleted");
+    qc.invalidateQueries({ queryKey: ["production-orders"] });
+    navigate({ to: "/production-orders" });
   };
 
   const cons = order.assembly_consumptions ?? [];
   const totalCost = cons.reduce((s: number, c: any) => s + Number(c.quantity_used) * Number(c.unit_cost), 0);
+  const editable = order.status !== "completed" && order.status !== "cancelled";
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" onClick={() => navigate({ to: "/assembly-orders" })}><ArrowLeft className="h-4 w-4" /></Button>
-          <h1 className="text-xl font-semibold">{order.order_number ?? "Assembly Order"}</h1>
-          <Badge variant={order.status === "completed" ? "default" : "secondary"} className="capitalize">{order.status}</Badge>
+          <Button variant="ghost" size="icon" onClick={() => navigate({ to: "/production-orders" })}><ArrowLeft className="h-4 w-4" /></Button>
+          <h1 className="text-xl font-semibold">{order.order_number ?? "Production Order"}</h1>
+          <Badge variant={order.status === "completed" ? "default" : order.status === "cancelled" ? "destructive" : "secondary"} className="capitalize">{order.status}</Badge>
         </div>
-        {order.status !== "completed" && order.status !== "cancelled" && (
-          <Button onClick={complete} className="bg-emerald-600 hover:bg-emerald-700"><CheckCircle2 className="h-4 w-4 mr-2" /> Complete Assembly</Button>
-        )}
+        <div className="flex gap-2">
+          {editable && (
+            <Button variant="outline" onClick={() => navigate({ to: "/production-orders/$id/edit", params: { id } })}>
+              <Pencil className="h-4 w-4 mr-2" /> Edit
+            </Button>
+          )}
+          {editable && (
+            <Button variant="outline" onClick={cancel}>
+              <XCircle className="h-4 w-4 mr-2" /> Cancel
+            </Button>
+          )}
+          {order.status !== "completed" && (
+            <Button variant="outline" onClick={remove} className="text-rose-600 hover:text-rose-700">
+              <Trash2 className="h-4 w-4 mr-2" /> Delete
+            </Button>
+          )}
+          {editable && (
+            <Button onClick={complete} className="bg-emerald-600 hover:bg-emerald-700"><CheckCircle2 className="h-4 w-4 mr-2" /> Complete Production</Button>
+          )}
+        </div>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-4">
@@ -67,6 +106,13 @@ function AssemblyOrderDetail() {
         <Card className="p-4"><div className="text-xs text-muted-foreground">Total Component Cost</div><div className="font-medium">{formatCurrency(totalCost, currency)}</div></Card>
         <Card className="p-4"><div className="text-xs text-muted-foreground">Completed</div><div className="font-medium">{order.completed_at ? formatDate(order.completed_at) : "—"}</div></Card>
       </div>
+
+      {order.notes && (
+        <Card className="p-4">
+          <div className="text-xs text-muted-foreground mb-1">Notes</div>
+          <div className="text-sm whitespace-pre-wrap">{order.notes}</div>
+        </Card>
+      )}
 
       <Card>
         <div className="p-4 border-b font-semibold">Component Consumption</div>

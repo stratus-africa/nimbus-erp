@@ -97,7 +97,7 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { title: "Items", url: "/items", icon: Boxes, module: "items" },
       { title: "Production Items", url: "/production-items", icon: Boxes, module: "items" },
-      { title: "Production", url: "/assembly-orders", icon: ClipboardList, module: "items" },
+      { title: "Production Orders", url: "/production-orders", icon: ClipboardList, module: "items" },
       { title: "Adjustments", url: "/inventory-adjustments", icon: ClipboardList, module: "items" },
       { title: "Packages", url: "/packages", icon: Boxes, module: "items" },
       { title: "Deliveries", url: "/deliveries", icon: Truck, module: "items" },
