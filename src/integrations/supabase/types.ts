@@ -815,6 +815,136 @@ export type Database = {
           },
         ]
       }
+      credit_note_lines: {
+        Row: {
+          credit_note_id: string
+          description: string | null
+          id: string
+          item_id: string | null
+          line_total: number
+          position: number
+          quantity: number
+          rate: number
+          tax_rate: number
+        }
+        Insert: {
+          credit_note_id: string
+          description?: string | null
+          id?: string
+          item_id?: string | null
+          line_total?: number
+          position?: number
+          quantity?: number
+          rate?: number
+          tax_rate?: number
+        }
+        Update: {
+          credit_note_id?: string
+          description?: string | null
+          id?: string
+          item_id?: string | null
+          line_total?: number
+          position?: number
+          quantity?: number
+          rate?: number
+          tax_rate?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "credit_note_lines_credit_note_id_fkey"
+            columns: ["credit_note_id"]
+            isOneToOne: false
+            referencedRelation: "credit_notes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "credit_note_lines_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      credit_notes: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          credit_note_date: string
+          credit_note_number: string
+          customer_id: string | null
+          deleted_at: string | null
+          id: string
+          notes: string | null
+          reference: string | null
+          source_invoice_id: string | null
+          status: string
+          subtotal: number
+          tax_total: number
+          tenant_id: string
+          total: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          credit_note_date?: string
+          credit_note_number: string
+          customer_id?: string | null
+          deleted_at?: string | null
+          id?: string
+          notes?: string | null
+          reference?: string | null
+          source_invoice_id?: string | null
+          status?: string
+          subtotal?: number
+          tax_total?: number
+          tenant_id: string
+          total?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          credit_note_date?: string
+          credit_note_number?: string
+          customer_id?: string | null
+          deleted_at?: string | null
+          id?: string
+          notes?: string | null
+          reference?: string | null
+          source_invoice_id?: string | null
+          status?: string
+          subtotal?: number
+          tax_total?: number
+          tenant_id?: string
+          total?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "credit_notes_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "credit_notes_source_invoice_id_fkey"
+            columns: ["source_invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "credit_notes_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       custom_buttons: {
         Row: {
           action_config: Json
