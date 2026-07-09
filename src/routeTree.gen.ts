@@ -29,6 +29,7 @@ import { Route as AuthenticatedInvoicesRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedInventoryAdjustmentsRouteImport } from './routes/_authenticated/inventory-adjustments'
 import { Route as AuthenticatedExpensesRouteImport } from './routes/_authenticated/expenses'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedCreditNotesRouteImport } from './routes/_authenticated/credit-notes'
 import { Route as AuthenticatedChartOfAccountsRouteImport } from './routes/_authenticated/chart-of-accounts'
 import { Route as AuthenticatedBillsRouteImport } from './routes/_authenticated/bills'
 import { Route as AuthenticatedBankingRouteImport } from './routes/_authenticated/banking'
@@ -71,6 +72,7 @@ import { Route as AuthenticatedExpensesCategoriesRouteImport } from './routes/_a
 import { Route as AuthenticatedExpensesIdRouteImport } from './routes/_authenticated/expenses_.$id'
 import { Route as AuthenticatedCustomersNewRouteImport } from './routes/_authenticated/customers.new'
 import { Route as AuthenticatedCustomersCustomerIdRouteImport } from './routes/_authenticated/customers.$customerId'
+import { Route as AuthenticatedCreditNotesNewRouteImport } from './routes/_authenticated/credit-notes_.new'
 import { Route as AuthenticatedBillsNewRouteImport } from './routes/_authenticated/bills_.new'
 import { Route as AuthenticatedBillsBillIdRouteImport } from './routes/_authenticated/bills_.$billId'
 import { Route as AuthenticatedBankingAccountIdRouteImport } from './routes/_authenticated/banking_.$accountId'
@@ -84,6 +86,7 @@ import { Route as AuthenticatedQuotesQuoteIdEditRouteImport } from './routes/_au
 import { Route as AuthenticatedItemsItemIdEditRouteImport } from './routes/_authenticated/items_.$itemId_.edit'
 import { Route as AuthenticatedInvoicesInvoiceIdEditRouteImport } from './routes/_authenticated/invoices_.$invoiceId_.edit'
 import { Route as AuthenticatedCustomersCustomerIdEditRouteImport } from './routes/_authenticated/customers.$customerId_.edit'
+import { Route as AuthenticatedCreditNotesCreditNoteIdEditRouteImport } from './routes/_authenticated/credit-notes_.$creditNoteId_.edit'
 import { Route as AuthenticatedSettingsLocationsLocationIdEditRouteImport } from './routes/_authenticated/settings_.locations_.$locationId_.edit'
 
 const SignupRoute = SignupRouteImport.update({
@@ -192,6 +195,12 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedCreditNotesRoute =
+  AuthenticatedCreditNotesRouteImport.update({
+    id: '/credit-notes',
+    path: '/credit-notes',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedChartOfAccountsRoute =
   AuthenticatedChartOfAccountsRouteImport.update({
     id: '/chart-of-accounts',
@@ -438,6 +447,12 @@ const AuthenticatedCustomersCustomerIdRoute =
     path: '/customers/$customerId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedCreditNotesNewRoute =
+  AuthenticatedCreditNotesNewRouteImport.update({
+    id: '/credit-notes_/new',
+    path: '/credit-notes/new',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedBillsNewRoute = AuthenticatedBillsNewRouteImport.update({
   id: '/bills_/new',
   path: '/bills/new',
@@ -515,6 +530,12 @@ const AuthenticatedCustomersCustomerIdEditRoute =
     path: '/customers/$customerId/edit',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedCreditNotesCreditNoteIdEditRoute =
+  AuthenticatedCreditNotesCreditNoteIdEditRouteImport.update({
+    id: '/credit-notes_/$creditNoteId_/edit',
+    path: '/credit-notes/$creditNoteId/edit',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedSettingsLocationsLocationIdEditRoute =
   AuthenticatedSettingsLocationsLocationIdEditRouteImport.update({
     id: '/settings_/locations_/$locationId_/edit',
@@ -531,6 +552,7 @@ export interface FileRoutesByFullPath {
   '/banking': typeof AuthenticatedBankingRoute
   '/bills': typeof AuthenticatedBillsRoute
   '/chart-of-accounts': typeof AuthenticatedChartOfAccountsRoute
+  '/credit-notes': typeof AuthenticatedCreditNotesRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/expenses': typeof AuthenticatedExpensesRoute
   '/inventory-adjustments': typeof AuthenticatedInventoryAdjustmentsRoute
@@ -552,6 +574,7 @@ export interface FileRoutesByFullPath {
   '/banking/$accountId': typeof AuthenticatedBankingAccountIdRoute
   '/bills/$billId': typeof AuthenticatedBillsBillIdRoute
   '/bills/new': typeof AuthenticatedBillsNewRoute
+  '/credit-notes/new': typeof AuthenticatedCreditNotesNewRoute
   '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
   '/customers/new': typeof AuthenticatedCustomersNewRoute
   '/expenses/$id': typeof AuthenticatedExpensesIdRoute
@@ -589,6 +612,7 @@ export interface FileRoutesByFullPath {
   '/transfer-orders/new': typeof AuthenticatedTransferOrdersNewRoute
   '/customers/': typeof AuthenticatedCustomersIndexRoute
   '/suppliers/': typeof AuthenticatedSuppliersIndexRoute
+  '/credit-notes/$creditNoteId/edit': typeof AuthenticatedCreditNotesCreditNoteIdEditRoute
   '/customers/$customerId/edit': typeof AuthenticatedCustomersCustomerIdEditRoute
   '/invoices/$invoiceId/edit': typeof AuthenticatedInvoicesInvoiceIdEditRoute
   '/items/$itemId/edit': typeof AuthenticatedItemsItemIdEditRoute
@@ -608,6 +632,7 @@ export interface FileRoutesByTo {
   '/banking': typeof AuthenticatedBankingRoute
   '/bills': typeof AuthenticatedBillsRoute
   '/chart-of-accounts': typeof AuthenticatedChartOfAccountsRoute
+  '/credit-notes': typeof AuthenticatedCreditNotesRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/expenses': typeof AuthenticatedExpensesRoute
   '/inventory-adjustments': typeof AuthenticatedInventoryAdjustmentsRoute
@@ -629,6 +654,7 @@ export interface FileRoutesByTo {
   '/banking/$accountId': typeof AuthenticatedBankingAccountIdRoute
   '/bills/$billId': typeof AuthenticatedBillsBillIdRoute
   '/bills/new': typeof AuthenticatedBillsNewRoute
+  '/credit-notes/new': typeof AuthenticatedCreditNotesNewRoute
   '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
   '/customers/new': typeof AuthenticatedCustomersNewRoute
   '/expenses/$id': typeof AuthenticatedExpensesIdRoute
@@ -666,6 +692,7 @@ export interface FileRoutesByTo {
   '/transfer-orders/new': typeof AuthenticatedTransferOrdersNewRoute
   '/customers': typeof AuthenticatedCustomersIndexRoute
   '/suppliers': typeof AuthenticatedSuppliersIndexRoute
+  '/credit-notes/$creditNoteId/edit': typeof AuthenticatedCreditNotesCreditNoteIdEditRoute
   '/customers/$customerId/edit': typeof AuthenticatedCustomersCustomerIdEditRoute
   '/invoices/$invoiceId/edit': typeof AuthenticatedInvoicesInvoiceIdEditRoute
   '/items/$itemId/edit': typeof AuthenticatedItemsItemIdEditRoute
@@ -687,6 +714,7 @@ export interface FileRoutesById {
   '/_authenticated/banking': typeof AuthenticatedBankingRoute
   '/_authenticated/bills': typeof AuthenticatedBillsRoute
   '/_authenticated/chart-of-accounts': typeof AuthenticatedChartOfAccountsRoute
+  '/_authenticated/credit-notes': typeof AuthenticatedCreditNotesRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/expenses': typeof AuthenticatedExpensesRoute
   '/_authenticated/inventory-adjustments': typeof AuthenticatedInventoryAdjustmentsRoute
@@ -708,6 +736,7 @@ export interface FileRoutesById {
   '/_authenticated/banking_/$accountId': typeof AuthenticatedBankingAccountIdRoute
   '/_authenticated/bills_/$billId': typeof AuthenticatedBillsBillIdRoute
   '/_authenticated/bills_/new': typeof AuthenticatedBillsNewRoute
+  '/_authenticated/credit-notes_/new': typeof AuthenticatedCreditNotesNewRoute
   '/_authenticated/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
   '/_authenticated/customers/new': typeof AuthenticatedCustomersNewRoute
   '/_authenticated/expenses_/$id': typeof AuthenticatedExpensesIdRoute
@@ -745,6 +774,7 @@ export interface FileRoutesById {
   '/_authenticated/transfer-orders_/new': typeof AuthenticatedTransferOrdersNewRoute
   '/_authenticated/customers/': typeof AuthenticatedCustomersIndexRoute
   '/_authenticated/suppliers/': typeof AuthenticatedSuppliersIndexRoute
+  '/_authenticated/credit-notes_/$creditNoteId_/edit': typeof AuthenticatedCreditNotesCreditNoteIdEditRoute
   '/_authenticated/customers/$customerId_/edit': typeof AuthenticatedCustomersCustomerIdEditRoute
   '/_authenticated/invoices_/$invoiceId_/edit': typeof AuthenticatedInvoicesInvoiceIdEditRoute
   '/_authenticated/items_/$itemId_/edit': typeof AuthenticatedItemsItemIdEditRoute
@@ -766,6 +796,7 @@ export interface FileRouteTypes {
     | '/banking'
     | '/bills'
     | '/chart-of-accounts'
+    | '/credit-notes'
     | '/dashboard'
     | '/expenses'
     | '/inventory-adjustments'
@@ -787,6 +818,7 @@ export interface FileRouteTypes {
     | '/banking/$accountId'
     | '/bills/$billId'
     | '/bills/new'
+    | '/credit-notes/new'
     | '/customers/$customerId'
     | '/customers/new'
     | '/expenses/$id'
@@ -824,6 +856,7 @@ export interface FileRouteTypes {
     | '/transfer-orders/new'
     | '/customers/'
     | '/suppliers/'
+    | '/credit-notes/$creditNoteId/edit'
     | '/customers/$customerId/edit'
     | '/invoices/$invoiceId/edit'
     | '/items/$itemId/edit'
@@ -843,6 +876,7 @@ export interface FileRouteTypes {
     | '/banking'
     | '/bills'
     | '/chart-of-accounts'
+    | '/credit-notes'
     | '/dashboard'
     | '/expenses'
     | '/inventory-adjustments'
@@ -864,6 +898,7 @@ export interface FileRouteTypes {
     | '/banking/$accountId'
     | '/bills/$billId'
     | '/bills/new'
+    | '/credit-notes/new'
     | '/customers/$customerId'
     | '/customers/new'
     | '/expenses/$id'
@@ -901,6 +936,7 @@ export interface FileRouteTypes {
     | '/transfer-orders/new'
     | '/customers'
     | '/suppliers'
+    | '/credit-notes/$creditNoteId/edit'
     | '/customers/$customerId/edit'
     | '/invoices/$invoiceId/edit'
     | '/items/$itemId/edit'
@@ -921,6 +957,7 @@ export interface FileRouteTypes {
     | '/_authenticated/banking'
     | '/_authenticated/bills'
     | '/_authenticated/chart-of-accounts'
+    | '/_authenticated/credit-notes'
     | '/_authenticated/dashboard'
     | '/_authenticated/expenses'
     | '/_authenticated/inventory-adjustments'
@@ -942,6 +979,7 @@ export interface FileRouteTypes {
     | '/_authenticated/banking_/$accountId'
     | '/_authenticated/bills_/$billId'
     | '/_authenticated/bills_/new'
+    | '/_authenticated/credit-notes_/new'
     | '/_authenticated/customers/$customerId'
     | '/_authenticated/customers/new'
     | '/_authenticated/expenses_/$id'
@@ -979,6 +1017,7 @@ export interface FileRouteTypes {
     | '/_authenticated/transfer-orders_/new'
     | '/_authenticated/customers/'
     | '/_authenticated/suppliers/'
+    | '/_authenticated/credit-notes_/$creditNoteId_/edit'
     | '/_authenticated/customers/$customerId_/edit'
     | '/_authenticated/invoices_/$invoiceId_/edit'
     | '/_authenticated/items_/$itemId_/edit'
@@ -1137,6 +1176,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/credit-notes': {
+      id: '/_authenticated/credit-notes'
+      path: '/credit-notes'
+      fullPath: '/credit-notes'
+      preLoaderRoute: typeof AuthenticatedCreditNotesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/chart-of-accounts': {
@@ -1433,6 +1479,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCustomersCustomerIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/credit-notes_/new': {
+      id: '/_authenticated/credit-notes_/new'
+      path: '/credit-notes/new'
+      fullPath: '/credit-notes/new'
+      preLoaderRoute: typeof AuthenticatedCreditNotesNewRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/bills_/new': {
       id: '/_authenticated/bills_/new'
       path: '/bills/new'
@@ -1524,6 +1577,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCustomersCustomerIdEditRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/credit-notes_/$creditNoteId_/edit': {
+      id: '/_authenticated/credit-notes_/$creditNoteId_/edit'
+      path: '/credit-notes/$creditNoteId/edit'
+      fullPath: '/credit-notes/$creditNoteId/edit'
+      preLoaderRoute: typeof AuthenticatedCreditNotesCreditNoteIdEditRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/settings_/locations_/$locationId_/edit': {
       id: '/_authenticated/settings_/locations_/$locationId_/edit'
       path: '/settings/locations/$locationId/edit'
@@ -1540,6 +1600,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedBankingRoute: typeof AuthenticatedBankingRoute
   AuthenticatedBillsRoute: typeof AuthenticatedBillsRoute
   AuthenticatedChartOfAccountsRoute: typeof AuthenticatedChartOfAccountsRoute
+  AuthenticatedCreditNotesRoute: typeof AuthenticatedCreditNotesRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedExpensesRoute: typeof AuthenticatedExpensesRoute
   AuthenticatedInventoryAdjustmentsRoute: typeof AuthenticatedInventoryAdjustmentsRoute
@@ -1561,6 +1622,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedBankingAccountIdRoute: typeof AuthenticatedBankingAccountIdRoute
   AuthenticatedBillsBillIdRoute: typeof AuthenticatedBillsBillIdRoute
   AuthenticatedBillsNewRoute: typeof AuthenticatedBillsNewRoute
+  AuthenticatedCreditNotesNewRoute: typeof AuthenticatedCreditNotesNewRoute
   AuthenticatedCustomersCustomerIdRoute: typeof AuthenticatedCustomersCustomerIdRoute
   AuthenticatedCustomersNewRoute: typeof AuthenticatedCustomersNewRoute
   AuthenticatedExpensesIdRoute: typeof AuthenticatedExpensesIdRoute
@@ -1598,6 +1660,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedTransferOrdersNewRoute: typeof AuthenticatedTransferOrdersNewRoute
   AuthenticatedCustomersIndexRoute: typeof AuthenticatedCustomersIndexRoute
   AuthenticatedSuppliersIndexRoute: typeof AuthenticatedSuppliersIndexRoute
+  AuthenticatedCreditNotesCreditNoteIdEditRoute: typeof AuthenticatedCreditNotesCreditNoteIdEditRoute
   AuthenticatedCustomersCustomerIdEditRoute: typeof AuthenticatedCustomersCustomerIdEditRoute
   AuthenticatedInvoicesInvoiceIdEditRoute: typeof AuthenticatedInvoicesInvoiceIdEditRoute
   AuthenticatedItemsItemIdEditRoute: typeof AuthenticatedItemsItemIdEditRoute
@@ -1615,6 +1678,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedBankingRoute: AuthenticatedBankingRoute,
   AuthenticatedBillsRoute: AuthenticatedBillsRoute,
   AuthenticatedChartOfAccountsRoute: AuthenticatedChartOfAccountsRoute,
+  AuthenticatedCreditNotesRoute: AuthenticatedCreditNotesRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedExpensesRoute: AuthenticatedExpensesRoute,
   AuthenticatedInventoryAdjustmentsRoute:
@@ -1637,6 +1701,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedBankingAccountIdRoute: AuthenticatedBankingAccountIdRoute,
   AuthenticatedBillsBillIdRoute: AuthenticatedBillsBillIdRoute,
   AuthenticatedBillsNewRoute: AuthenticatedBillsNewRoute,
+  AuthenticatedCreditNotesNewRoute: AuthenticatedCreditNotesNewRoute,
   AuthenticatedCustomersCustomerIdRoute: AuthenticatedCustomersCustomerIdRoute,
   AuthenticatedCustomersNewRoute: AuthenticatedCustomersNewRoute,
   AuthenticatedExpensesIdRoute: AuthenticatedExpensesIdRoute,
@@ -1679,6 +1744,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedTransferOrdersNewRoute: AuthenticatedTransferOrdersNewRoute,
   AuthenticatedCustomersIndexRoute: AuthenticatedCustomersIndexRoute,
   AuthenticatedSuppliersIndexRoute: AuthenticatedSuppliersIndexRoute,
+  AuthenticatedCreditNotesCreditNoteIdEditRoute:
+    AuthenticatedCreditNotesCreditNoteIdEditRoute,
   AuthenticatedCustomersCustomerIdEditRoute:
     AuthenticatedCustomersCustomerIdEditRoute,
   AuthenticatedInvoicesInvoiceIdEditRoute:

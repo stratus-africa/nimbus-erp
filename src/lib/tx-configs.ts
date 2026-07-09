@@ -75,3 +75,26 @@ export const purchaseOrderConfig: DocConfig = {
     { value: "cancelled", label: "Cancelled" },
   ],
 };
+
+export const creditNoteConfig: DocConfig = {
+  kind: "credit_note",
+  title: "Credit Notes",
+  description: "Customer credit notes issued against invoices or refunds.",
+  docTable: "credit_notes",
+  linesTable: "credit_note_lines",
+  numberField: "credit_note_number",
+  dateField: "credit_note_date",
+  secondaryDateField: "",
+  secondaryDateLabel: "",
+  partyField: "customer_id",
+  partyTable: "customers",
+  partyLabel: "Customer",
+  docTypeForNumbering: "credit_note",
+  fkLinesField: "credit_note_id",
+  statuses: [
+    { value: "draft", label: "Draft" },
+    { value: "open", label: "Open" },
+    { value: "applied", label: "Applied" },
+    { value: "void", label: "Void" },
+  ],
+};

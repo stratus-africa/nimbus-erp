@@ -391,13 +391,22 @@ export function TransactionFormPage({
               className="max-w-md"
             />
 
-            <Label>{config.secondaryDateLabel}</Label>
-            <Input
-              type="date"
-              value={date2}
-              onChange={(e) => setDate2(e.target.value)}
-              className="max-w-md"
-            />
+            {config.secondaryDateField ? (
+              <>
+                <Label>{config.secondaryDateLabel}</Label>
+                <Input
+                  type="date"
+                  value={date2}
+                  onChange={(e) => setDate2(e.target.value)}
+                  className="max-w-md"
+                />
+              </>
+            ) : (
+              <>
+                <div />
+                <div />
+              </>
+            )}
 
             <Label>Status</Label>
             <Select value={status} onValueChange={setStatus}>
