@@ -21,11 +21,11 @@ import { Plus, Trash2 } from "lucide-react";
  * Each module renders this component with the right config.
  */
 export type DocConfig = {
-  kind: "invoice" | "quote" | "purchase_order" | "bill";
+  kind: "invoice" | "quote" | "purchase_order" | "bill" | "credit_note";
   title: string;
   description: string;
-  docTable: "invoices" | "quotes" | "purchase_orders" | "bills";
-  linesTable: "invoice_lines" | "quote_lines" | "purchase_order_lines" | "bill_lines";
+  docTable: "invoices" | "quotes" | "purchase_orders" | "bills" | "credit_notes";
+  linesTable: "invoice_lines" | "quote_lines" | "purchase_order_lines" | "bill_lines" | "credit_note_lines";
   numberField: string;
   dateField: string;
   secondaryDateField: string;
