@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SuspendedRouteImport } from './routes/suspended'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
@@ -90,6 +91,11 @@ import { Route as AuthenticatedCustomersCustomerIdEditRouteImport } from './rout
 import { Route as AuthenticatedCreditNotesCreditNoteIdEditRouteImport } from './routes/_authenticated/credit-notes_.$creditNoteId_.edit'
 import { Route as AuthenticatedSettingsLocationsLocationIdEditRouteImport } from './routes/_authenticated/settings_.locations_.$locationId_.edit'
 
+const SuspendedRoute = SuspendedRouteImport.update({
+  id: '/suspended',
+  path: '/suspended',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
   path: '/signup',
@@ -554,6 +560,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/signup': typeof SignupRoute
+  '/suspended': typeof SuspendedRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/banking': typeof AuthenticatedBankingRoute
   '/bills': typeof AuthenticatedBillsRoute
@@ -635,6 +642,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/signup': typeof SignupRoute
+  '/suspended': typeof SuspendedRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/banking': typeof AuthenticatedBankingRoute
   '/bills': typeof AuthenticatedBillsRoute
@@ -718,6 +726,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/signup': typeof SignupRoute
+  '/suspended': typeof SuspendedRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/banking': typeof AuthenticatedBankingRoute
   '/_authenticated/bills': typeof AuthenticatedBillsRoute
@@ -801,6 +810,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/signup'
+    | '/suspended'
     | '/admin'
     | '/banking'
     | '/bills'
@@ -882,6 +892,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/signup'
+    | '/suspended'
     | '/admin'
     | '/banking'
     | '/bills'
@@ -964,6 +975,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/signup'
+    | '/suspended'
     | '/_authenticated/admin'
     | '/_authenticated/banking'
     | '/_authenticated/bills'
@@ -1047,10 +1059,18 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   SignupRoute: typeof SignupRoute
+  SuspendedRoute: typeof SuspendedRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/suspended': {
+      id: '/suspended'
+      path: '/suspended'
+      fullPath: '/suspended'
+      preLoaderRoute: typeof SuspendedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/signup': {
       id: '/signup'
       path: '/signup'
@@ -1794,6 +1814,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   SignupRoute: SignupRoute,
+  SuspendedRoute: SuspendedRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
