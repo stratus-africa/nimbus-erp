@@ -1,76 +1,55 @@
-# RBAC & Users Management — Full Implementation Plan
+# Sales Orders → Packages → Shipments + Warehouse Access
 
-This is a large, cross-cutting change (users, roles, permissions, audit, guards). Below is the plan I'll execute end-to-end. Please review before I proceed.
-
-## 1. Database changes (single migration)
+## 1. Database (single migration)
 
 **New tables**
+- `package_items` — one row per SO line copied into the package (`package_id`, `item_id`, `description`, `quantity`, `sales_order_line_id`).
+- `shipment_packages` — join table so a shipment can carry many packages (`shipment_id`, `package_id`, unique pair). Keep the existing `shipments.package_id` for backward-compat but treat it as "primary package"; new UI reads via the join table.
+- `user_warehouses` — `(tenant_id, user_id, warehouse_id)` unique. RLS: company_admin manages, users read own rows.
 
-- `custom_roles` — tenant-defined roles (name, description, cloned_from, is_system=false, created_by).
-- `role_permissions` — per-role permission grid. Columns: `tenant_id`, `role_key` (text — either an `app_role` enum value or a `custom_roles.id`), `module` (text: items, invoices, sales_orders, purchase_orders, bills, quotes, transfer_orders, warehouses, expenses, customers, suppliers, banking, chart_of_accounts, reports, users, roles, settings), `can_view`, `can_create`, `can_edit`, `can_delete`, `can_approve`, `can_export`. Unique `(tenant_id, role_key, module)`.
-- `user_status` on `tenant_members` — `active | suspended`, plus `suspended_at`, `suspended_by`.
+**New functions**
+- `create_package_from_sales_order(_so_id uuid) returns uuid` — SECURITY DEFINER. Validates tenant + `has_permission('sales_orders','edit')`. Copies every SO line at ordered qty into `package_items`. Uses `next_doc_number(_,'package')`. Updates SO status → `packed` (add enum value if missing; else store on new `packed_at` timestamp and leave status alone). Audit-logs `package_created_from_so`.
+- `create_shipment_from_package(_package_id uuid, _carrier text, _tracking text, _tracking_url text) returns uuid` — creates a shipment, links via `shipment_packages`, sets `packages.status='shipped'`.
+- `attach_packages_to_shipment(_shipment_id uuid, _package_ids uuid[])` — bulk-attach many packages; validates same tenant + same source_warehouse; blocks packages already on another shipment.
+- `user_can_see_warehouse(_user uuid, _tenant uuid, _warehouse uuid) returns boolean` — true if super_admin, company_admin, or row exists in `user_warehouses`, or user has NO restrictions (i.e. no `user_warehouses` rows for that tenant = unrestricted).
+- `visible_warehouse_ids(_tenant uuid) returns setof uuid` — helper used by client queries.
 
-**New / updated functions**
+## 2. Sales Order changes
 
-- `has_permission(_user uuid, _tenant uuid, _module text, _action text) returns boolean` — resolves all roles held by the user for that tenant, unions permissions, treats `company_admin` / `super_admin` as full-access, and honours `is_active` on the membership.
-- `invite_tenant_user(_email text, _role_key text) returns uuid` — SECURITY DEFINER; company_admin-only; inserts pending `tenant_members` + `user_roles` row keyed on email until the auth user exists (holding table `pending_invitations`).
-- `set_user_status(_user uuid, _tenant uuid, _status text)` — writes `tenant_members.status` and audit_logs entry.
-- `assign_user_role(_user uuid, _tenant uuid, _role text)` — replaces the user's tenant-scoped role rows and audits.
-- Role CRUD helpers `create_custom_role`, `update_custom_role`, `clone_role`, `delete_custom_role` — audit each action.
+- `sales-orders_.$soId.tsx`: rename "Mark as Sent" action → **"Create Package"**. Click calls `create_package_from_sales_order`, toast with link to the new package.
+- No behaviour change to any other action.
 
-**Seed defaults**: on `provision_tenant`, seed `role_permissions` with sensible defaults for the built-in enum roles across every module.
+## 3. Packages module
 
-## 2. Server functions (`src/lib/*.functions.ts`)
+- Ensure listing page exists at `/packages` (create if missing) showing all packages with SO/customer, status.
+- Detail page `/packages/$id`: shows lines from `package_items`, plus a **"Create Shipment"** button → dialog (carrier, tracking#, url) → calls `create_shipment_from_package`, redirects to the new shipment.
 
-All authenticated (`requireSupabaseAuth`), all admin-gated where mutating:
+## 4. Shipments module
 
-- `inviteUser({ email, roleKey })` — calls `supabaseAdmin.auth.admin.inviteUserByEmail`, then `invite_tenant_user` RPC to record membership/role, then audit.
-- `setUserStatus({ userId, status })`, `assignUserRole({ userId, roleKey })`.
-- `saveRolePermissions({ roleKey, rows })`, `createRole`, `updateRole`, `cloneRole`, `deleteRole`.
-- `listAuditForRole(roleKey)` — for the role detail timeline.
+- Listing at `/shipments` (create if missing).
+- Detail page `/shipments/$id`: shows attached packages (join query on `shipment_packages`), plus **"Attach Packages"** dialog (multi-select of unassigned packages in same warehouse) → calls `attach_packages_to_shipment`.
 
-RBAC enforcement middleware `requirePermission(module, action)` composes with `requireSupabaseAuth` and calls `has_permission`. Attach it to any server fn that mutates a module (invoices, items, etc.) — start with the fns already in use; catalog covered below.
+## 5. User ↔ Warehouse restriction
 
-## 3. Front-end changes
+- `/settings/users` → row action **"Manage Warehouses"** opens a dialog with checkbox list of tenant warehouses, saves to `user_warehouses`. Empty selection = full access (default).
+- New hook `useVisibleWarehouses()` returns the warehouse IDs the current user may see.
+- **Item pickers** in Quotes / Sales Orders / Invoices: filter `items` by `warehouse_stock.warehouse_id IN (visible)`. Non-inventory items always visible.
+- `/warehouses` listing filters by visible IDs too.
+- Company admins & super admins bypass.
 
-**`/settings/users`**
-- "Invite User" button opens dialog: email, role select (populated from enum + tenant custom_roles), submit → `inviteUser`.
-- Row actions (3-dot): Change Role (submenu of roles, saves via `assignUserRole` + toast), Activate / Suspend (toggle), Remove.
-- Status column reflects `tenant_members.status`. Filter view "Suspended Users" wired up.
+## Technical notes
 
-**`/settings/roles`**
-- New Role button → dialog (name, description, clone from). Opens editor.
-- Row actions on custom roles: Edit / Clone / Delete → real handlers, confirmations for delete.
-- Row click on any role → `/settings/roles/$roleKey` detail page.
+- Reuses existing `packages`, `shipments`, `package_items` (new), `shipment_packages` (new) schema — no rewiring of transfer orders (their `_reserve_transfer_stock` flow is untouched).
+- All new tables get GRANTs (authenticated + service_role) and RLS scoped by `is_tenant_member`.
+- Item-visibility filtering happens client-side via the visible-warehouses hook AND is enforced by an RLS SELECT policy update on `items` (`OR NOT EXISTS(...user_warehouses...)`).
+- If any of the RPCs already exists with a conflicting signature I'll `CREATE OR REPLACE`.
 
-**`/settings/roles/$roleKey`** (new)
-- Header: name, description, badge (System / Custom).
-- Permissions matrix: rows = modules, columns = View / Create / Edit / Delete / Approve / Export. Checkboxes bound to `role_permissions`. Save writes the whole grid.
-- Timeline tab: audit_logs filtered to `entity_type='roles'` and this role.
+## Order of execution
 
-**Route guards**
-- Client-side `useHasPermission(module, action)` (reads a cached `role_permissions` snapshot for current user's roles) — used to hide nav items and disable action buttons across the app.
-- `_authenticated` child layouts for admin-only surfaces (`/settings/users`, `/settings/roles`) already gated by company_admin via `has_role`; extend with `has_permission('users','view')` / `('roles','view')` fallback so custom roles can be granted access.
+1. Migration (schema + RPCs + RLS).
+2. SO rename action → Create Package.
+3. Package detail Create Shipment.
+4. Shipment attach multiple packages.
+5. User warehouses UI + item picker filtering.
 
-## 4. Audit logging
-
-Every mutating action (invite, status change, role change, role CRUD, permission save) inserts an `audit_logs` row: `entity_type` = `tenant_members` or `roles`, plus a human summary + JSONB details (before/after). Users page adds an audit drawer per member; role detail page shows its timeline.
-
-## 5. Scope of RBAC enforcement in this pass
-
-Enforce `has_permission` on:
-- All existing transfer-order RPCs (already partial via `can_transfer_action` — align to `has_permission`).
-- Item delete, invoice create/update/delete, sales-order confirm/ship, bill approve/pay, expense approve, journal-entry post, user/role management. Everything else stays functional but not yet guarded — I'll list what's covered vs. deferred in the final message.
-
-## Notes
-
-- No native "user suspension" in Supabase Auth is used — status lives on `tenant_members` so multi-tenant is respected. Suspended users still authenticate but the `_authenticated` gate redirects them to `/suspended`.
-- All new tables get GRANTs (`authenticated`, `service_role`) and RLS scoped via `is_tenant_member` + `has_role('company_admin')`.
-- No changes to `src/integrations/supabase/*` generated files; types will regenerate after migration.
-
-## Confirm before I start
-
-Please confirm:
-1. OK to add `custom_roles`, `role_permissions`, `pending_invitations` tables + membership `status` column.
-2. OK that "suspended" is enforced at app-level (not by disabling the Supabase auth user).
-3. OK to enforce RBAC on the modules listed in §5 in this pass and defer the rest to a follow-up.
+Confirm and I'll ship it in that order.
