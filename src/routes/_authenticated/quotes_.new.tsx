@@ -279,7 +279,11 @@ export function QuoteFormPage({
     onSuccess: (id) => {
       toast.success(isEdit ? "Quote updated" : "Quote saved");
       qc.invalidateQueries({ queryKey: ["quotes-list"] });
+      qc.invalidateQueries({ queryKey: ["quotes-sidebar"] });
       qc.invalidateQueries({ queryKey: ["quote", id] });
+      qc.invalidateQueries({ queryKey: ["quote-detail", id] });
+      qc.invalidateQueries({ queryKey: ["quote-lines", id] });
+      qc.invalidateQueries({ queryKey: ["quote-edit", id] });
       navigate(isEdit ? { to: "/quotes/$quoteId", params: { quoteId: id } } : { to: "/quotes" });
     },
     onError: (e: any) => toast.error(e.message ?? "Failed to save"),
