@@ -7,24 +7,40 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useState } from "react";
-import { ArrowLeft } from "lucide-react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { useEffect, useMemo, useState } from "react";
+import { ArrowLeft, Factory } from "lucide-react";
 import { toast } from "sonner";
+import { formatDate } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/assembly-orders_/new")({
   head: () => ({ meta: [{ title: "New Assembly Order — Nimbus ERP" }] }),
   component: NewAssemblyOrderPage,
 });
 
+// Statuses considered "not fully fulfilled" — the SO still has open lines
+// that could drive production.
+const OPEN_SO_STATUSES = ["draft", "confirmed", "sent", "partially_invoiced"];
+
 function NewAssemblyOrderPage() {
   const { data: profile } = useProfile();
   const tenantId = profile?.currentTenant?.id;
   const navigate = useNavigate();
+  const [mode, setMode] = useState<"manual" | "from_so">("manual");
+
+  // Manual mode state
   const [assemblyItemId, setAssemblyItemId] = useState("");
   const [quantity, setQuantity] = useState<number>(1);
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
+
+  // From-SO mode state
+  const [soId, setSoId] = useState<string>("");
+  const [soNotes, setSoNotes] = useState("");
+  const [picks, setPicks] = useState<Record<string, { selected: boolean; qty: number }>>({});
 
   const { data: assemblies } = useQuery({
     enabled: !!tenantId,
@@ -39,6 +55,61 @@ function NewAssemblyOrderPage() {
       return data ?? [];
     },
   });
+
+  // Set of item IDs that are assembly composites — used to filter SO lines
+  const assemblyItemIds = useMemo(
+    () => new Set((assemblies ?? []).map((a: any) => a.items?.id).filter(Boolean)),
+    [assemblies],
+  );
+
+  const { data: openSOs } = useQuery({
+    enabled: !!tenantId && mode === "from_so",
+    queryKey: ["open-sales-orders", tenantId],
+    queryFn: async () => {
+      const { data, error } = await (supabase as any)
+        .from("sales_orders")
+        .select("id, so_number, so_date, status, customers(name)")
+        .eq("tenant_id", tenantId!)
+        .is("deleted_at", null)
+        .in("status", OPEN_SO_STATUSES)
+        .order("so_date", { ascending: false });
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  const { data: soLines } = useQuery({
+    enabled: !!tenantId && !!soId,
+    queryKey: ["so-lines-for-assembly", soId],
+    queryFn: async () => {
+      const { data, error } = await (supabase as any)
+        .from("sales_order_lines")
+        .select("id, item_id, description, quantity, items:item_id(id, name, sku)")
+        .eq("sales_order_id", soId)
+        .order("position");
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  // Only lines whose item is a registered assembly composite item.
+  const assemblyLines = useMemo(
+    () => (soLines ?? []).filter((l: any) => l.item_id && assemblyItemIds.has(l.item_id)),
+    [soLines, assemblyItemIds],
+  );
+
+  // Initialize per-line picks when the SO's lines load.
+  useEffect(() => {
+    if (!assemblyLines.length) {
+      setPicks({});
+      return;
+    }
+    const next: Record<string, { selected: boolean; qty: number }> = {};
+    for (const l of assemblyLines) {
+      next[l.id] = { selected: true, qty: Number(l.quantity) || 1 };
+    }
+    setPicks(next);
+  }, [assemblyLines]);
 
   const save = async () => {
     if (!tenantId || !assemblyItemId) return toast.error("Select an assembly item");
@@ -64,39 +135,208 @@ function NewAssemblyOrderPage() {
     }
   };
 
+  const saveFromSO = async () => {
+    if (!tenantId) return;
+    if (!soId) return toast.error("Select a sales order");
+    const selectedLines = assemblyLines.filter((l: any) => picks[l.id]?.selected && (picks[l.id]?.qty ?? 0) > 0);
+    if (!selectedLines.length) return toast.error("Select at least one assembly item to produce");
+
+    setSaving(true);
+    const soNumber = openSOs?.find((s: any) => s.id === soId)?.so_number;
+    const baseNote = soNotes || `From Sales Order ${soNumber ?? ""}`.trim();
+    const created: string[] = [];
+    try {
+      for (const line of selectedLines) {
+        const { data: num, error: ne } = await supabase.rpc("next_doc_number", {
+          _tenant: tenantId,
+          _doc_type: "assembly",
+        });
+        if (ne) throw ne;
+        const { data, error } = await (supabase as any).from("assembly_orders").insert({
+          tenant_id: tenantId,
+          order_number: num,
+          assembly_item_id: line.item_id,
+          quantity: picks[line.id].qty,
+          status: "draft",
+          notes: baseNote,
+        }).select("id").single();
+        if (error) throw error;
+        created.push(data.id);
+      }
+      toast.success(`Created ${created.length} assembly order${created.length === 1 ? "" : "s"}`);
+      if (created.length === 1) {
+        navigate({ to: "/assembly-orders/$id", params: { id: created[0] } });
+      } else {
+        navigate({ to: "/assembly-orders" });
+      }
+    } catch (e: any) {
+      toast.error(e.message ?? "Failed to create assembly orders");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" onClick={() => navigate({ to: "/assembly-orders" })}><ArrowLeft className="h-4 w-4" /></Button>
+          <Button variant="ghost" size="icon" onClick={() => navigate({ to: "/assembly-orders" })}>
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
           <h1 className="text-xl font-semibold">New Assembly Order</h1>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => navigate({ to: "/assembly-orders" })}>Cancel</Button>
-          <Button disabled={saving} onClick={save} className="bg-emerald-600 hover:bg-emerald-700">{saving ? "Saving…" : "Save"}</Button>
+          {mode === "manual" ? (
+            <Button disabled={saving} onClick={save} className="bg-emerald-600 hover:bg-emerald-700">
+              {saving ? "Saving…" : "Save"}
+            </Button>
+          ) : (
+            <Button disabled={saving} onClick={saveFromSO} className="bg-emerald-600 hover:bg-emerald-700">
+              {saving ? "Saving…" : "Create Assembly Orders"}
+            </Button>
+          )}
         </div>
       </div>
-      <Card className="p-6 space-y-4 max-w-2xl">
-        <div className="space-y-2">
-          <Label>Assembly Item *</Label>
-          <Select value={assemblyItemId} onValueChange={setAssemblyItemId}>
-            <SelectTrigger><SelectValue placeholder="Select an assembly composite item" /></SelectTrigger>
-            <SelectContent>
-              {assemblies?.map((a: any) => (
-                <SelectItem key={a.items?.id} value={a.items?.id}>{a.items?.name} {a.items?.sku ? `(${a.items.sku})` : ""}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+
+      {/* Mode toggle */}
+      <div className="inline-flex rounded-md border bg-muted/40 p-0.5">
+        <button
+          type="button"
+          onClick={() => setMode("manual")}
+          className={`rounded px-3 py-1.5 text-sm ${mode === "manual" ? "bg-background shadow-sm" : "text-muted-foreground"}`}
+        >
+          Manual
+        </button>
+        <button
+          type="button"
+          onClick={() => setMode("from_so")}
+          className={`rounded px-3 py-1.5 text-sm ${mode === "from_so" ? "bg-background shadow-sm" : "text-muted-foreground"}`}
+        >
+          From Sales Order
+        </button>
+      </div>
+
+      {mode === "manual" ? (
+        <Card className="max-w-2xl space-y-4 p-6">
+          <div className="space-y-2">
+            <Label>Assembly Item *</Label>
+            <Select value={assemblyItemId} onValueChange={setAssemblyItemId}>
+              <SelectTrigger><SelectValue placeholder="Select an assembly composite item" /></SelectTrigger>
+              <SelectContent>
+                {assemblies?.map((a: any) => (
+                  <SelectItem key={a.items?.id} value={a.items?.id}>
+                    {a.items?.name} {a.items?.sku ? `(${a.items.sku})` : ""}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label>Quantity to Produce *</Label>
+            <Input type="number" step="1" min="1" value={quantity} onChange={(e) => setQuantity(parseFloat(e.target.value) || 0)} />
+          </div>
+          <div className="space-y-2">
+            <Label>Notes</Label>
+            <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} />
+          </div>
+        </Card>
+      ) : (
+        <div className="space-y-4">
+          <Card className="max-w-3xl space-y-4 p-6">
+            <div className="space-y-2">
+              <Label>Sales Order *</Label>
+              <Select value={soId} onValueChange={setSoId}>
+                <SelectTrigger><SelectValue placeholder="Select an open sales order" /></SelectTrigger>
+                <SelectContent>
+                  {(openSOs ?? []).length === 0 ? (
+                    <div className="px-3 py-2 text-sm text-muted-foreground">No open sales orders</div>
+                  ) : openSOs?.map((s: any) => (
+                    <SelectItem key={s.id} value={s.id}>
+                      {s.so_number} · {s.customers?.name ?? "—"} · {formatDate(s.so_date)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                Only sales orders that are not fully fulfilled are shown.
+              </p>
+            </div>
+            <div className="space-y-2">
+              <Label>Notes (applied to each assembly order)</Label>
+              <Textarea
+                value={soNotes}
+                onChange={(e) => setSoNotes(e.target.value)}
+                placeholder="Optional — defaults to From Sales Order <number>"
+              />
+            </div>
+          </Card>
+
+          {soId && (
+            <Card>
+              <div className="flex items-center justify-between border-b p-4">
+                <div className="flex items-center gap-2">
+                  <Factory className="h-4 w-4 text-muted-foreground" />
+                  <h2 className="font-semibold">Assembly items on this sales order</h2>
+                </div>
+                <Badge variant="secondary">{assemblyLines.length} item(s)</Badge>
+              </div>
+              {assemblyLines.length === 0 ? (
+                <div className="p-6 text-sm text-muted-foreground">
+                  This sales order has no line items that are configured as assembly composite items.
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-10 pl-6"></TableHead>
+                      <TableHead>Item</TableHead>
+                      <TableHead>SKU</TableHead>
+                      <TableHead className="text-right">Ordered</TableHead>
+                      <TableHead className="text-right w-40">Quantity to Produce</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {assemblyLines.map((l: any) => {
+                      const p = picks[l.id] ?? { selected: false, qty: 0 };
+                      return (
+                        <TableRow key={l.id}>
+                          <TableCell className="pl-6">
+                            <Checkbox
+                              checked={p.selected}
+                              onCheckedChange={(v) =>
+                                setPicks((prev) => ({ ...prev, [l.id]: { ...p, selected: !!v } }))
+                              }
+                            />
+                          </TableCell>
+                          <TableCell>{l.items?.name ?? l.description ?? "—"}</TableCell>
+                          <TableCell className="text-muted-foreground">{l.items?.sku ?? ""}</TableCell>
+                          <TableCell className="text-right tabular-nums">{Number(l.quantity)}</TableCell>
+                          <TableCell className="text-right">
+                            <Input
+                              type="number"
+                              min={0}
+                              step="1"
+                              value={p.qty}
+                              onChange={(e) =>
+                                setPicks((prev) => ({
+                                  ...prev,
+                                  [l.id]: { ...p, qty: parseFloat(e.target.value) || 0 },
+                                }))
+                              }
+                              className="ml-auto h-9 w-32 text-right tabular-nums"
+                            />
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              )}
+            </Card>
+          )}
         </div>
-        <div className="space-y-2">
-          <Label>Quantity to Produce *</Label>
-          <Input type="number" step="1" min="1" value={quantity} onChange={(e) => setQuantity(parseFloat(e.target.value) || 0)} />
-        </div>
-        <div className="space-y-2">
-          <Label>Notes</Label>
-          <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} />
-        </div>
-      </Card>
+      )}
     </div>
   );
 }
