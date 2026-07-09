@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useVisibleWarehouseIds, useItemIdsInWarehouses } from "@/hooks/use-visible-warehouses";
 import { Button } from "@/components/ui/button";
@@ -57,6 +57,7 @@ export function TransactionFormPage({
   backTo,
 }: TransactionFormPageProps) {
   const navigate = useNavigate();
+  const qc = useQueryClient();
   const [partyId, setPartyId] = useState<string>("");
   const [date, setDate] = useState<string>(new Date().toISOString().slice(0, 10));
   const [date2, setDate2] = useState<string>("");
@@ -307,6 +308,8 @@ export function TransactionFormPage({
       }
 
       toast.success(sendAfter ? "Saved and sent" : "Saved");
+      // Invalidate everything related so detail pages reflect updated lines/totals.
+      await qc.invalidateQueries();
       navigate({ to: backTo });
     } catch (e: any) {
       toast.error(e.message);

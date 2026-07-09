@@ -273,7 +273,10 @@ export function SalesOrderFormPage({
     onSuccess: (id) => {
       toast.success(isEdit ? "Sales Order updated" : "Sales Order saved");
       qc.invalidateQueries({ queryKey: ["sales-orders-list"] });
+      qc.invalidateQueries({ queryKey: ["sales-orders-sidebar"] });
       qc.invalidateQueries({ queryKey: ["sales-order-detail", id] });
+      qc.invalidateQueries({ queryKey: ["sales-order-lines", id] });
+      qc.invalidateQueries({ queryKey: ["sales-order-edit", id] });
       navigate(isEdit ? { to: "/sales-orders/$soId", params: { soId: id } } : { to: "/sales-orders" });
     },
     onError: (e: any) => toast.error(e.message ?? "Failed to save"),
