@@ -200,10 +200,28 @@ function PackageDetailPage() {
         <Button variant="ghost" size="sm" className="h-8 gap-1.5 text-sm">
           <Mail className="h-4 w-4" /> Send Email
         </Button>
-        <Button variant="ghost" size="sm" className="h-8 gap-1.5 text-sm">
-          <FileText className="h-4 w-4" /> PDF/Print
-          <ChevronRight className="h-3 w-3 rotate-90" />
+        <Button variant="ghost" size="sm" className="h-8 gap-1.5 text-sm" onClick={downloadPdf} disabled={pdfBusy}>
+          <FileText className="h-4 w-4" /> {pdfBusy ? "Generating…" : "PDF/Print"}
         </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm" className="h-8 gap-1.5 text-sm">
+              Status: <span className="font-semibold uppercase">{pkg.status.replace("_", " ")}</span>
+              <ChevronDown className="h-3.5 w-3.5" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start">
+            <DropdownMenuItem onClick={() => setConfirmStatus("not_shipped")} disabled={pkg.status === "not_shipped"}>
+              Mark as Not Shipped
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setConfirmStatus("shipped")} disabled={pkg.status === "shipped"}>
+              Mark as Shipped
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setConfirmStatus("delivered")} disabled={pkg.status === "delivered"}>
+              Mark as Delivered
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
         <Button variant="ghost" size="icon" className="h-8 w-8">
           <MoreHorizontal className="h-4 w-4" />
         </Button>
