@@ -138,7 +138,7 @@ function NewAssemblyOrderPage() {
     setSoIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
 
   const save = async () => {
-    if (!tenantId || !assemblyItemId) return toast.error("Select an assembly item");
+    if (!tenantId || !assemblyItemId) return toast.error("Select a product to produce");
     if (quantity <= 0) return toast.error("Quantity must be greater than zero");
     setSaving(true);
     try {
@@ -152,7 +152,7 @@ function NewAssemblyOrderPage() {
         notes: notes || null,
       }).select("id").single();
       if (error) throw error;
-      toast.success("Assembly order created");
+      toast.success("Production order created");
       navigate({ to: "/production-orders/$id", params: { id: data.id } });
     } catch (e: any) {
       toast.error(e.message ?? "Failed");
@@ -167,7 +167,7 @@ function NewAssemblyOrderPage() {
     const selectedLines = assemblyLines.filter(
       (l: any) => picks[`${l.sales_order_id}:${l.id}`]?.selected && (picks[`${l.sales_order_id}:${l.id}`]?.qty ?? 0) > 0,
     );
-    if (!selectedLines.length) return toast.error("Select at least one assembly item to produce");
+    if (!selectedLines.length) return toast.error("Select at least one product to produce");
 
     setSaving(true);
     const soNumbers = Array.from(new Set(selectedLines.map((l: any) => soById.get(l.sales_order_id)?.so_number).filter(Boolean)));
@@ -282,9 +282,9 @@ function NewAssemblyOrderPage() {
       {mode === "manual" ? (
         <Card className="max-w-2xl space-y-4 p-6">
           <div className="space-y-2">
-            <Label>Assembly Item *</Label>
+            <Label>Product to Produce *</Label>
             <Select value={assemblyItemId} onValueChange={setAssemblyItemId}>
-              <SelectTrigger><SelectValue placeholder="Select an assembly composite item" /></SelectTrigger>
+              <SelectTrigger><SelectValue placeholder="Select an assembly-type product" /></SelectTrigger>
               <SelectContent>
                 {assemblies?.map((a: any) => (
                   <SelectItem key={a.items?.id} value={a.items?.id}>
@@ -421,13 +421,13 @@ function NewAssemblyOrderPage() {
               <div className="flex items-center justify-between border-b p-4">
                 <div className="flex items-center gap-2">
                   <Factory className="h-4 w-4 text-muted-foreground" />
-                  <h2 className="font-semibold">Assembly items across selected sales orders</h2>
+                  <h2 className="font-semibold">Production items across selected sales orders</h2>
                 </div>
                 <Badge variant="secondary">{assemblyLines.length} line(s)</Badge>
               </div>
               {assemblyLines.length === 0 ? (
                 <div className="p-6 text-sm text-muted-foreground">
-                  None of the selected sales orders have line items configured as assembly composite items.
+                  None of the selected sales orders have line items configured as assembly-type production items.
                 </div>
               ) : (
                 <Table>
