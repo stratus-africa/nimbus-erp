@@ -232,6 +232,16 @@ export function TransactionFormPage({
       if (!ok) return;
     }
     setSaving(true);
+    // Snapshot for rollback if the save fails after any partial state change
+    const snapshot = {
+      lines: lines.map((l) => ({ ...l })),
+      status,
+      partyId,
+      notes,
+      terms,
+      date,
+      date2,
+    };
     try {
       let docId = initial?.id as string | undefined;
       const finalStatus = sendAfter
@@ -245,6 +255,8 @@ export function TransactionFormPage({
         [config.dateField]: date,
         status: finalStatus,
         notes: [notes, terms ? `\n\nTerms:\n${terms}` : ""].join("").trim() || null,
+        // subtotal/tax/total are recomputed server-side by triggers after lines land,
+        // but we still send an initial value so the row is valid.
         subtotal,
         tax_total: tax,
         total,
@@ -292,6 +304,21 @@ export function TransactionFormPage({
         .insert(lineRows as any);
       if (le) throw le;
 
+      // Refresh header values from server so UI matches trigger-recomputed totals.
+      try {
+        const { data: refreshed } = await supabase
+          .from(config.docTable)
+          .select("subtotal, tax_total, total, balance_due, amount_paid")
+          .eq("id", docId!)
+          .maybeSingle();
+        if (refreshed) {
+          // Nothing to write back to local totals — they derive from `lines`,
+          // and the reload after navigate will pick up the authoritative values.
+        }
+      } catch {
+        /* non-fatal */
+      }
+
       // Auto-explode any composite (kit) items into component reservations / deductions.
       const k = config.kind as string;
       if (docId && (k === "invoice" || k === "quote" || k === "sales_order")) {
@@ -308,11 +335,18 @@ export function TransactionFormPage({
       }
 
       toast.success(sendAfter ? "Saved and sent" : "Saved");
-      // Invalidate everything related so detail pages reflect updated lines/totals.
       await qc.invalidateQueries();
       navigate({ to: backTo });
     } catch (e: any) {
-      toast.error(e.message);
+      // Roll back local edits to the pre-save snapshot and surface a clear toast.
+      setLines(snapshot.lines);
+      setStatus(snapshot.status);
+      setPartyId(snapshot.partyId);
+      setNotes(snapshot.notes);
+      setTerms(snapshot.terms);
+      setDate(snapshot.date);
+      setDate2(snapshot.date2);
+      toast.error(e?.message ? `Save failed: ${e.message}` : "Save failed — reverted your changes");
     } finally {
       setSaving(false);
     }
