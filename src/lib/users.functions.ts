@@ -39,7 +39,7 @@ export const inviteUser = createServerFn({ method: "POST" })
     // Record invite + attach if user already exists
     const { data: invId, error: rpcErr } = await supabase.rpc("invite_tenant_user", {
       _email: data.email,
-      _role: data.role,
+      _role: data.role as any,
     });
     if (rpcErr) throw new Error(rpcErr.message);
     return { invitationId: invId as string, alreadyRegistered: !!inviteErr };
