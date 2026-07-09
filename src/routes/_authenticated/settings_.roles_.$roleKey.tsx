@@ -12,9 +12,15 @@ import { toast } from "sonner";
 import { formatDate } from "@/lib/format";
 import { MODULES, MODULE_LABELS, ACTIONS, ACTION_COLUMNS, type PermRow } from "@/hooks/use-permissions";
 
+import { PermissionGate } from "@/components/permission-gate";
+
 export const Route = createFileRoute("/_authenticated/settings_/roles_/$roleKey")({
   head: () => ({ meta: [{ title: "Role Permissions — Nimbus ERP" }] }),
-  component: RoleDetailPage,
+  component: () => (
+    <PermissionGate module="roles">
+      <RoleDetailPage />
+    </PermissionGate>
+  ),
 });
 
 const SYSTEM_ROLE_INFO: Record<string, { name: string; description: string }> = {
