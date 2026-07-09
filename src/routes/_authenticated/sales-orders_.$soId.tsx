@@ -8,8 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { formatCurrency, formatDate, formatDateTime } from "@/lib/format";
 import { toast } from "sonner";
 import {
-  Edit, Send, Share2, Printer, FileText, MoreHorizontal, Sparkles, Paperclip,
-  MessageSquare, X, CheckCircle2, Clock, UserCircle2, FilePlus2, Plus, Search, ChevronDown,
+  Edit, Share2, Printer, FileText, MoreHorizontal, Sparkles, Paperclip,
+  MessageSquare, X, CheckCircle2, Clock, UserCircle2, FilePlus2, Plus, Search, ChevronDown, Package,
 } from "lucide-react";
 import { DocActionsMenu } from "@/components/doc-actions-menu";
 
