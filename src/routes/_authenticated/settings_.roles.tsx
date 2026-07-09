@@ -1,11 +1,38 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "@/hooks/use-profile";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -33,56 +60,22 @@ export const Route = createFileRoute("/_authenticated/settings_/roles")({
   component: SettingsRolesPage,
 });
 
-type RoleDef = {
+type RoleRow = {
   key: string;
   name: string;
   description: string;
   system: boolean;
+  userCount: number;
 };
 
-const SYSTEM_ROLES: RoleDef[] = [
-  {
-    key: "super_admin",
-    name: "Super Admin",
-    description: "Full platform access across every workspace. Cannot be edited or deleted.",
-    system: true,
-  },
-  {
-    key: "company_admin",
-    name: "Admin",
-    description: "Full access to this organization — settings, users, and all modules.",
-    system: true,
-  },
-  {
-    key: "accountant",
-    name: "Accountant",
-    description: "Access to accounting, banking, taxes, and financial reports.",
-    system: true,
-  },
-  {
-    key: "sales",
-    name: "Sales",
-    description: "Manage customers, quotes, sales orders, invoices, and payments received.",
-    system: true,
-  },
-  {
-    key: "purchasing",
-    name: "Purchasing",
-    description: "Manage vendors, purchase orders, bills, and payments made.",
-    system: true,
-  },
-  {
-    key: "inventory",
-    name: "Inventory",
-    description: "Manage items, warehouses, stock adjustments, and transfers.",
-    system: true,
-  },
-  {
-    key: "readonly",
-    name: "Read Only",
-    description: "View-only access to records. Cannot create, edit, or delete.",
-    system: true,
-  },
+const SYSTEM_ROLES: { key: string; name: string; description: string }[] = [
+  { key: "super_admin", name: "Super Admin", description: "Full platform access across every workspace." },
+  { key: "company_admin", name: "Admin", description: "Full access to this organization." },
+  { key: "accountant", name: "Accountant", description: "Access to accounting, banking, taxes, and financial reports." },
+  { key: "sales", name: "Sales", description: "Manage customers, quotes, sales orders, invoices, and payments." },
+  { key: "purchasing", name: "Purchasing", description: "Manage vendors, purchase orders, bills, and payments." },
+  { key: "inventory", name: "Inventory", description: "Manage items, warehouses, stock adjustments, and transfers." },
+  { key: "readonly", name: "Read Only", description: "View-only access to records." },
 ];
 
 const VIEWS = ["All Roles", "System Roles", "Custom Roles"] as const;
@@ -90,11 +83,15 @@ const VIEWS = ["All Roles", "System Roles", "Custom Roles"] as const;
 function SettingsRolesPage() {
   const { data: profile } = useProfile();
   const tenantId = profile?.currentTenant?.id;
+  const qc = useQueryClient();
   const [view, setView] = useState<(typeof VIEWS)[number]>("All Roles");
   const [search, setSearch] = useState("");
   const [sortAsc, setSortAsc] = useState(true);
+  const [newOpen, setNewOpen] = useState(false);
+  const [editing, setEditing] = useState<{ id: string; name: string; description: string } | null>(null);
+  const [deleting, setDeleting] = useState<{ id: string; name: string } | null>(null);
 
-  const { data: counts = {}, isLoading } = useQuery({
+  const { data: counts = {} } = useQuery({
     enabled: !!tenantId,
     queryKey: ["role-counts", tenantId],
     queryFn: async () => {
@@ -112,19 +109,93 @@ function SettingsRolesPage() {
     },
   });
 
+  const { data: custom = [] } = useQuery({
+    enabled: !!tenantId,
+    queryKey: ["custom-roles", tenantId],
+    queryFn: async () => {
+      const { data, error } = await (supabase as any)
+        .from("custom_roles")
+        .select("*")
+        .eq("tenant_id", tenantId!)
+        .order("name");
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  const allRoles: RoleRow[] = useMemo(() => {
+    const sys = SYSTEM_ROLES.map((r) => ({
+      ...r,
+      system: true,
+      userCount: (counts as any)[r.key] ?? 0,
+    }));
+    const cust = (custom as any[]).map((c) => ({
+      key: c.id,
+      name: c.name,
+      description: c.description ?? "",
+      system: false,
+      userCount: (counts as any)[c.id] ?? 0,
+    }));
+    return [...sys, ...cust];
+  }, [counts, custom]);
+
   const filtered = useMemo(() => {
-    let list = SYSTEM_ROLES.slice();
+    let list = allRoles.slice();
     if (view === "System Roles") list = list.filter((r) => r.system);
     if (view === "Custom Roles") list = list.filter((r) => !r.system);
     const q = search.trim().toLowerCase();
-    if (q) {
-      list = list.filter(
-        (r) => r.name.toLowerCase().includes(q) || r.description.toLowerCase().includes(q),
-      );
-    }
+    if (q) list = list.filter((r) => r.name.toLowerCase().includes(q) || r.description.toLowerCase().includes(q));
     list.sort((a, b) => (sortAsc ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name)));
     return list;
-  }, [view, search, sortAsc]);
+  }, [allRoles, view, search, sortAsc]);
+
+  const createRole = useMutation({
+    mutationFn: async (v: { name: string; description: string; cloneFrom: string | null }) => {
+      const { data, error } = await supabase.rpc("create_custom_role", {
+        _name: v.name,
+        _description: v.description || null,
+        _clone_from: v.cloneFrom,
+      });
+      if (error) throw error;
+      return data as string;
+    },
+    onSuccess: () => {
+      toast.success("Role created");
+      qc.invalidateQueries({ queryKey: ["custom-roles"] });
+      setNewOpen(false);
+    },
+    onError: (e: any) => toast.error(e.message ?? "Failed"),
+  });
+
+  const updateRole = useMutation({
+    mutationFn: async (v: { id: string; name: string; description: string }) => {
+      const { error } = await supabase.rpc("update_custom_role", {
+        _id: v.id,
+        _name: v.name,
+        _description: v.description || null,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Role updated");
+      qc.invalidateQueries({ queryKey: ["custom-roles"] });
+      setEditing(null);
+    },
+    onError: (e: any) => toast.error(e.message ?? "Failed"),
+  });
+
+  const deleteRole = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.rpc("delete_custom_role", { _id: id });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Role deleted");
+      qc.invalidateQueries({ queryKey: ["custom-roles"] });
+      setDeleting(null);
+    },
+    onError: (e: any) => toast.error(e.message ?? "Failed"),
+  });
 
   return (
     <div className="-m-6 min-h-[calc(100vh-3.5rem)] bg-background">
@@ -138,9 +209,7 @@ function SettingsRolesPage() {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start">
             {VIEWS.map((v) => (
-              <DropdownMenuItem key={v} onClick={() => setView(v)}>
-                {v}
-              </DropdownMenuItem>
+              <DropdownMenuItem key={v} onClick={() => setView(v)}>{v}</DropdownMenuItem>
             ))}
           </DropdownMenuContent>
         </DropdownMenu>
@@ -159,12 +228,9 @@ function SettingsRolesPage() {
           <Button
             size="sm"
             className="h-8 gap-1.5 bg-violet-600 hover:bg-violet-700 text-white"
-            onClick={() => toast.info("Custom roles — coming soon")}
+            onClick={() => setNewOpen(true)}
           >
             <Plus className="h-4 w-4" /> New Role
-          </Button>
-          <Button variant="outline" size="icon" className="h-8 w-8">
-            <MoreHorizontal className="h-4 w-4" />
           </Button>
         </div>
       </div>
@@ -183,13 +249,11 @@ function SettingsRolesPage() {
           <div />
         </div>
 
-        {isLoading ? (
-          <div className="px-6 py-10 text-center text-sm text-muted-foreground">Loading roles…</div>
-        ) : !filtered.length ? (
+        {!filtered.length ? (
           <div className="px-6 py-10 text-center text-sm text-muted-foreground">No roles match this view.</div>
         ) : (
           filtered.map((r, idx) => {
-            const count = counts[r.key] ?? 0;
+            const count = r.userCount;
             return (
               <div
                 key={r.key}
@@ -198,7 +262,11 @@ function SettingsRolesPage() {
                   idx % 2 === 1 && "bg-muted/20",
                 )}
               >
-                <div className="flex items-start gap-3">
+                <Link
+                  to="/settings/roles/$roleKey"
+                  params={{ roleKey: r.key }}
+                  className="flex items-start gap-3 hover:text-primary"
+                >
                   <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-violet-100 text-violet-700">
                     <ShieldCheck className="h-4 w-4" />
                   </div>
@@ -206,7 +274,7 @@ function SettingsRolesPage() {
                     <div className="truncate text-sm font-medium text-primary">{r.name}</div>
                     <div className="truncate text-xs text-muted-foreground">{r.description}</div>
                   </div>
-                </div>
+                </Link>
                 <div>
                   {r.system ? (
                     <Badge variant="secondary" className="gap-1 font-normal">
@@ -231,20 +299,32 @@ function SettingsRolesPage() {
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem
                       onClick={() =>
-                        toast.info(r.system ? "System roles can't be edited" : "Edit role — coming soon")
+                        r.system
+                          ? toast.info("System roles can't be edited")
+                          : setEditing({ id: r.key, name: r.name, description: r.description })
                       }
                       disabled={r.system}
                     >
                       <Pencil className="mr-2 h-4 w-4" /> Edit
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => toast.info("Duplicate role — coming soon")}>
+                    <DropdownMenuItem
+                      onClick={() =>
+                        createRole.mutate({
+                          name: `${r.name} (copy)`,
+                          description: r.description,
+                          cloneFrom: r.key,
+                        })
+                      }
+                    >
                       <Copy className="mr-2 h-4 w-4" /> Clone
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       className="text-destructive focus:text-destructive"
                       disabled={r.system}
                       onClick={() =>
-                        toast.info(r.system ? "System roles can't be deleted" : "Delete role — coming soon")
+                        r.system
+                          ? toast.info("System roles can't be deleted")
+                          : setDeleting({ id: r.key, name: r.name })
                       }
                     >
                       <Trash2 className="mr-2 h-4 w-4" /> Delete
@@ -256,6 +336,136 @@ function SettingsRolesPage() {
           })
         )}
       </div>
+
+      {/* New role */}
+      <NewRoleDialog
+        open={newOpen}
+        onOpenChange={setNewOpen}
+        allRoles={allRoles}
+        onCreate={(v) => createRole.mutate(v)}
+        pending={createRole.isPending}
+      />
+
+      {/* Edit role */}
+      <Dialog open={!!editing} onOpenChange={(v) => !v && setEditing(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit role</DialogTitle>
+          </DialogHeader>
+          {editing && (
+            <div className="space-y-3">
+              <div className="space-y-2">
+                <Label>Name *</Label>
+                <Input value={editing.name} onChange={(e) => setEditing({ ...editing, name: e.target.value })} />
+              </div>
+              <div className="space-y-2">
+                <Label>Description</Label>
+                <Textarea
+                  value={editing.description}
+                  onChange={(e) => setEditing({ ...editing, description: e.target.value })}
+                />
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditing(null)}>Cancel</Button>
+            <Button
+              onClick={() => editing && updateRole.mutate(editing)}
+              disabled={!editing?.name.trim() || updateRole.isPending}
+            >
+              Save
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete role */}
+      <AlertDialog open={!!deleting} onOpenChange={(v) => !v && setDeleting(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete role "{deleting?.name}"?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Users currently assigned to this role will lose its permissions. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => deleting && deleteRole.mutate(deleting.id)}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
+  );
+}
+
+function NewRoleDialog({
+  open,
+  onOpenChange,
+  allRoles,
+  onCreate,
+  pending,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  allRoles: RoleRow[];
+  onCreate: (v: { name: string; description: string; cloneFrom: string | null }) => void;
+  pending: boolean;
+}) {
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [cloneFrom, setCloneFrom] = useState<string>("none");
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>New role</DialogTitle>
+          <DialogDescription>Create a custom role scoped to this workspace.</DialogDescription>
+        </DialogHeader>
+        <div className="space-y-3">
+          <div className="space-y-2">
+            <Label>Name *</Label>
+            <Input value={name} onChange={(e) => setName(e.target.value)} autoFocus />
+          </div>
+          <div className="space-y-2">
+            <Label>Description</Label>
+            <Textarea value={description} onChange={(e) => setDescription(e.target.value)} />
+          </div>
+          <div className="space-y-2">
+            <Label>Clone permissions from</Label>
+            <Select value={cloneFrom} onValueChange={setCloneFrom}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Start empty</SelectItem>
+                {allRoles.map((r) => (
+                  <SelectItem key={r.key} value={r.key}>{r.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={pending}>Cancel</Button>
+          <Button
+            disabled={!name.trim() || pending}
+            onClick={() =>
+              onCreate({
+                name: name.trim(),
+                description: description.trim(),
+                cloneFrom: cloneFrom === "none" ? null : cloneFrom,
+              })
+            }
+            className="bg-violet-600 hover:bg-violet-700 text-white"
+          >
+            {pending ? "Creating…" : "Create"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
