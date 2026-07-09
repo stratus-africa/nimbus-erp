@@ -2298,6 +2298,61 @@ export type Database = {
           },
         ]
       }
+      package_items: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          item_id: string | null
+          package_id: string
+          position: number
+          quantity: number
+          sales_order_line_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          item_id?: string | null
+          package_id: string
+          position?: number
+          quantity?: number
+          sales_order_line_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          item_id?: string | null
+          package_id?: string
+          position?: number
+          quantity?: number
+          sales_order_line_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "package_items_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "package_items_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "packages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "package_items_sales_order_line_id_fkey"
+            columns: ["sales_order_line_id"]
+            isOneToOne: false
+            referencedRelation: "sales_order_lines"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       packages: {
         Row: {
           created_at: string
@@ -2959,6 +3014,42 @@ export type Database = {
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shipment_packages: {
+        Row: {
+          created_at: string
+          id: string
+          package_id: string
+          shipment_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          package_id: string
+          shipment_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          package_id?: string
+          shipment_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shipment_packages_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: true
+            referencedRelation: "packages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shipment_packages_shipment_id_fkey"
+            columns: ["shipment_id"]
+            isOneToOne: false
+            referencedRelation: "shipments"
             referencedColumns: ["id"]
           },
         ]
@@ -3628,6 +3719,45 @@ export type Database = {
           },
         ]
       }
+      user_warehouses: {
+        Row: {
+          created_at: string
+          id: string
+          tenant_id: string
+          user_id: string
+          warehouse_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          tenant_id: string
+          user_id: string
+          warehouse_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          tenant_id?: string
+          user_id?: string
+          warehouse_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_warehouses_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_warehouses_warehouse_id_fkey"
+            columns: ["warehouse_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       validation_rules: {
         Row: {
           created_at: string
@@ -3819,6 +3949,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      attach_packages_to_shipment: {
+        Args: { _package_ids: string[]; _shipment_id: string }
+        Returns: undefined
+      }
       can_transfer_action: {
         Args: { _action: string; _tenant: string }
         Returns: boolean
@@ -3832,6 +3966,19 @@ export type Database = {
       confirm_transfer_order: { Args: { _id: string }; Returns: undefined }
       create_custom_role: {
         Args: { _clone_from: string; _description: string; _name: string }
+        Returns: string
+      }
+      create_package_from_sales_order: {
+        Args: { _so_id: string }
+        Returns: string
+      }
+      create_shipment_from_package: {
+        Args: {
+          _carrier: string
+          _package_id: string
+          _tracking: string
+          _tracking_url: string
+        }
         Returns: string
       }
       current_tenant: { Args: never; Returns: string }
@@ -3918,6 +4065,10 @@ export type Database = {
       update_custom_role: {
         Args: { _description: string; _id: string; _name: string }
         Returns: undefined
+      }
+      user_has_warehouse_access: {
+        Args: { _tenant: string; _user: string; _warehouse: string }
+        Returns: boolean
       }
     }
     Enums: {
