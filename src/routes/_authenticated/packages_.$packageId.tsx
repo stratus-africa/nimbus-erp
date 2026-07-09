@@ -134,6 +134,46 @@ function PackageDetailPage() {
     onError: (e: any) => toast.error(e.message ?? "Failed"),
   });
 
+  const setStatus = useMutation({
+    mutationFn: async (next: string) => {
+      const { error } = await (supabase as any).rpc("set_package_status", { _id: packageId, _status: next });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Status updated");
+      setConfirmStatus(null);
+      qc.invalidateQueries();
+    },
+    onError: (e: any) => toast.error(e.message ?? "Failed to update status"),
+  });
+
+  const downloadPdf = async () => {
+    setPdfBusy(true);
+    try {
+      const { data: sess } = await supabase.auth.getSession();
+      const token = sess.session?.access_token;
+      if (!token) throw new Error("Not signed in");
+      const res = await fetch(`/api/pdf/package/${packageId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error(await res.text());
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${pkg?.package_number ?? "package"}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      toast.success("PDF downloaded");
+    } catch (e: any) {
+      toast.error(e.message ?? "PDF failed");
+    } finally {
+      setPdfBusy(false);
+    }
+  };
+
   if (isLoading) return <div className="p-6 text-muted-foreground">Loading…</div>;
   if (!pkg) return <div className="p-6">Package not found.</div>;
 
