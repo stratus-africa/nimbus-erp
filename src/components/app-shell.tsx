@@ -156,6 +156,20 @@ function AppSidebar({
   const collapsed = state === "collapsed";
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { data: profile } = useProfile();
+  const { can, ready } = usePermissions();
+
+  // Filter nav items by module view permission (ready=true unless custom-role query is loading).
+  const visibleGroups = ready
+    ? NAV_GROUPS.map((g) => {
+        if (g.items) {
+          const items = g.items.filter((i) => !i.module || can(i.module as any, "view"));
+          return items.length ? { ...g, items } : null;
+        }
+        if (g.module && !can(g.module as any, "view")) return null;
+        return g;
+      }).filter(Boolean) as NavGroup[]
+    : NAV_GROUPS;
+
 
   return (
     <Sidebar collapsible="icon" aria-label="Primary">
