@@ -84,6 +84,7 @@ function SettingsUsersPage() {
   const [sortAsc, setSortAsc] = useState(true);
   const [inviteOpen, setInviteOpen] = useState(false);
   const [auditFor, setAuditFor] = useState<Member | null>(null);
+  const [warehouseFor, setWarehouseFor] = useState<Member | null>(null);
   const qc = useQueryClient();
 
   const { data: members = [], isLoading } = useQuery({
