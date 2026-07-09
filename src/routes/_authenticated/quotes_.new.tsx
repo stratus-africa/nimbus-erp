@@ -311,7 +311,7 @@ export function QuoteFormPage({
 
       {/* Form body */}
       <div className="flex-1 overflow-auto">
-        <div className="mx-auto max-w-5xl space-y-0 px-6 py-6">
+        <div className="w-full space-y-0 px-6 py-6">
           {/* Customer + Location */}
           <section className="space-y-4 border-b pb-6">
             <Field label="Customer Name" required>
