@@ -244,7 +244,7 @@ function RoleDetailPage() {
                       if (!row) return null;
                       return (
                         <tr key={m} className={idx % 2 === 1 ? "bg-muted/10" : ""}>
-                          <td className="px-4 py-2 font-medium">{MODULE_LABELS[m as any]}</td>
+                          <td className="px-4 py-2 font-medium">{(MODULE_LABELS as any)[m]}</td>
                           {ACTIONS.map((a) => (
                             <td key={a} className="px-3 py-2 text-center">
                               <Checkbox
