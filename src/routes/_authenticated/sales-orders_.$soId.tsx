@@ -317,8 +317,8 @@ function SalesOrderDetailPage() {
             <CheckCircle2 className="h-4 w-4" /> Confirm
           </Button>
           <Button variant="ghost" size="sm" className="h-8 gap-1.5"
-            disabled={!canSend || setStatus.isPending} onClick={() => setStatus.mutate("sent")}>
-            <Send className="h-4 w-4" /> Mark as Sent
+            disabled={!canSend || createPackage.isPending} onClick={() => createPackage.mutate()}>
+            <Package className="h-4 w-4" /> Create Package
           </Button>
           <Button variant="ghost" size="sm" className="h-8 gap-1.5 text-blue-700 hover:bg-blue-50 hover:text-blue-800"
             disabled={!canConvert || convertToInvoice.isPending} onClick={() => convertToInvoice.mutate()}>
