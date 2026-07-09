@@ -3984,6 +3984,7 @@ export type Database = {
       current_tenant: { Args: never; Returns: string }
       delete_custom_role: { Args: { _id: string }; Returns: undefined }
       delete_item: { Args: { _id: string }; Returns: undefined }
+      get_package_pdf_data: { Args: { _id: string }; Returns: Json }
       has_permission: {
         Args: {
           _action: string
@@ -4020,6 +4021,11 @@ export type Database = {
         Args: { _currency?: string; _name: string; _slug: string }
         Returns: string
       }
+      recalc_bill_totals: { Args: { _id: string }; Returns: undefined }
+      recalc_invoice_totals: { Args: { _id: string }; Returns: undefined }
+      recalc_po_totals: { Args: { _id: string }; Returns: undefined }
+      recalc_quote_totals: { Args: { _id: string }; Returns: undefined }
+      recalc_so_totals: { Args: { _id: string }; Returns: undefined }
       receive_transfer_order: {
         Args: { _id: string; _quantities?: Json }
         Returns: undefined
@@ -4042,6 +4048,10 @@ export type Database = {
       }
       save_role_permissions: {
         Args: { _role_key: string; _rows: Json }
+        Returns: undefined
+      }
+      set_package_status: {
+        Args: { _id: string; _status: string }
         Returns: undefined
       }
       set_user_status: {
