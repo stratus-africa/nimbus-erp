@@ -46,6 +46,8 @@ function PackageDetailPage() {
   const [tracking, setTracking] = useState("");
   const [trackingUrl, setTrackingUrl] = useState("");
   const [notesDraft, setNotesDraft] = useState("");
+  const [confirmStatus, setConfirmStatus] = useState<string | null>(null);
+  const [pdfBusy, setPdfBusy] = useState(false);
 
   const { data: pkg, isLoading } = useQuery({
     queryKey: ["package-detail-v2", packageId],
