@@ -11,8 +11,10 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, Factory } from "lucide-react";
+import { ArrowLeft, Factory, ChevronsUpDown, Check } from "lucide-react";
 import { toast } from "sonner";
 import { formatDate } from "@/lib/format";
 
@@ -24,6 +26,9 @@ export const Route = createFileRoute("/_authenticated/assembly-orders_/new")({
 // Statuses considered "not fully fulfilled" — the SO still has open lines
 // that could drive production.
 const OPEN_SO_STATUSES = ["draft", "confirmed", "sent", "partially_invoiced"];
+
+type Pick = { selected: boolean; qty: number };
+type PickKey = string; // `${soId}:${lineId}`
 
 function NewAssemblyOrderPage() {
   const { data: profile } = useProfile();
@@ -38,9 +43,12 @@ function NewAssemblyOrderPage() {
   const [saving, setSaving] = useState(false);
 
   // From-SO mode state
-  const [soId, setSoId] = useState<string>("");
+  const [soIds, setSoIds] = useState<string[]>([]);
   const [soNotes, setSoNotes] = useState("");
-  const [picks, setPicks] = useState<Record<string, { selected: boolean; qty: number }>>({});
+  const [consolidate, setConsolidate] = useState(true);
+  const [picks, setPicks] = useState<Record<PickKey, Pick>>({});
+  const [soPickerOpen, setSoPickerOpen] = useState(false);
+  const [soSearch, setSoSearch] = useState("");
 
   const { data: assemblies } = useQuery({
     enabled: !!tenantId,
@@ -56,7 +64,6 @@ function NewAssemblyOrderPage() {
     },
   });
 
-  // Set of item IDs that are assembly composites — used to filter SO lines
   const assemblyItemIds = useMemo(
     () => new Set((assemblies ?? []).map((a: any) => a.items?.id).filter(Boolean)),
     [assemblies],
@@ -78,14 +85,14 @@ function NewAssemblyOrderPage() {
     },
   });
 
-  const { data: soLines } = useQuery({
-    enabled: !!tenantId && !!soId,
-    queryKey: ["so-lines-for-assembly", soId],
+  const { data: allSoLines } = useQuery({
+    enabled: !!tenantId && soIds.length > 0,
+    queryKey: ["so-lines-for-assembly-multi", soIds.slice().sort().join(",")],
     queryFn: async () => {
       const { data, error } = await (supabase as any)
         .from("sales_order_lines")
-        .select("id, item_id, description, quantity, items:item_id(id, name, sku)")
-        .eq("sales_order_id", soId)
+        .select("id, sales_order_id, item_id, description, quantity, position, items:item_id(id, name, sku)")
+        .in("sales_order_id", soIds)
         .order("position");
       if (error) throw error;
       return data ?? [];
@@ -94,22 +101,41 @@ function NewAssemblyOrderPage() {
 
   // Only lines whose item is a registered assembly composite item.
   const assemblyLines = useMemo(
-    () => (soLines ?? []).filter((l: any) => l.item_id && assemblyItemIds.has(l.item_id)),
-    [soLines, assemblyItemIds],
+    () => (allSoLines ?? []).filter((l: any) => l.item_id && assemblyItemIds.has(l.item_id)),
+    [allSoLines, assemblyItemIds],
   );
 
-  // Initialize per-line picks when the SO's lines load.
+  const soById = useMemo(() => {
+    const m = new Map<string, any>();
+    (openSOs ?? []).forEach((s: any) => m.set(s.id, s));
+    return m;
+  }, [openSOs]);
+
+  // Initialize per-line picks when lines load. Preserve existing selections.
   useEffect(() => {
-    if (!assemblyLines.length) {
-      setPicks({});
-      return;
-    }
-    const next: Record<string, { selected: boolean; qty: number }> = {};
-    for (const l of assemblyLines) {
-      next[l.id] = { selected: true, qty: Number(l.quantity) || 1 };
-    }
-    setPicks(next);
+    setPicks((prev) => {
+      const next: Record<PickKey, Pick> = {};
+      for (const l of assemblyLines) {
+        const key: PickKey = `${l.sales_order_id}:${l.id}`;
+        next[key] = prev[key] ?? { selected: true, qty: Number(l.quantity) || 1 };
+      }
+      return next;
+    });
   }, [assemblyLines]);
+
+  const filteredSoOptions = useMemo(() => {
+    const q = soSearch.trim().toLowerCase();
+    const list = openSOs ?? [];
+    if (!q) return list;
+    return list.filter(
+      (s: any) =>
+        s.so_number?.toLowerCase().includes(q) ||
+        s.customers?.name?.toLowerCase().includes(q),
+    );
+  }, [openSOs, soSearch]);
+
+  const toggleSo = (id: string) =>
+    setSoIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
 
   const save = async () => {
     if (!tenantId || !assemblyItemId) return toast.error("Select an assembly item");
@@ -137,16 +163,52 @@ function NewAssemblyOrderPage() {
 
   const saveFromSO = async () => {
     if (!tenantId) return;
-    if (!soId) return toast.error("Select a sales order");
-    const selectedLines = assemblyLines.filter((l: any) => picks[l.id]?.selected && (picks[l.id]?.qty ?? 0) > 0);
+    if (!soIds.length) return toast.error("Select at least one sales order");
+    const selectedLines = assemblyLines.filter(
+      (l: any) => picks[`${l.sales_order_id}:${l.id}`]?.selected && (picks[`${l.sales_order_id}:${l.id}`]?.qty ?? 0) > 0,
+    );
     if (!selectedLines.length) return toast.error("Select at least one assembly item to produce");
 
     setSaving(true);
-    const soNumber = openSOs?.find((s: any) => s.id === soId)?.so_number;
-    const baseNote = soNotes || `From Sales Order ${soNumber ?? ""}`.trim();
+    const soNumbers = Array.from(new Set(selectedLines.map((l: any) => soById.get(l.sales_order_id)?.so_number).filter(Boolean)));
+    const baseNote = soNotes || `From Sales Order${soNumbers.length > 1 ? "s" : ""} ${soNumbers.join(", ")}`.trim();
+
+    // Build production plan: consolidate by item, or one per line.
+    type Plan = { assembly_item_id: string; quantity: number; note: string };
+    const plans: Plan[] = [];
+    if (consolidate) {
+      const byItem = new Map<string, { qty: number; sources: string[] }>();
+      for (const l of selectedLines) {
+        const key = l.item_id as string;
+        const p = picks[`${l.sales_order_id}:${l.id}`];
+        const bucket = byItem.get(key) ?? { qty: 0, sources: [] };
+        bucket.qty += p.qty;
+        const so = soById.get(l.sales_order_id)?.so_number;
+        if (so && !bucket.sources.includes(so)) bucket.sources.push(so);
+        byItem.set(key, bucket);
+      }
+      for (const [assembly_item_id, b] of byItem) {
+        plans.push({
+          assembly_item_id,
+          quantity: b.qty,
+          note: soNotes || `From Sales Order${b.sources.length > 1 ? "s" : ""} ${b.sources.join(", ")}`,
+        });
+      }
+    } else {
+      for (const l of selectedLines) {
+        const p = picks[`${l.sales_order_id}:${l.id}`];
+        const so = soById.get(l.sales_order_id)?.so_number;
+        plans.push({
+          assembly_item_id: l.item_id,
+          quantity: p.qty,
+          note: soNotes || `From Sales Order ${so ?? ""}`.trim(),
+        });
+      }
+    }
+
     const created: string[] = [];
     try {
-      for (const line of selectedLines) {
+      for (const plan of plans) {
         const { data: num, error: ne } = await supabase.rpc("next_doc_number", {
           _tenant: tenantId,
           _doc_type: "assembly",
@@ -155,10 +217,10 @@ function NewAssemblyOrderPage() {
         const { data, error } = await (supabase as any).from("assembly_orders").insert({
           tenant_id: tenantId,
           order_number: num,
-          assembly_item_id: line.item_id,
-          quantity: picks[line.id].qty,
+          assembly_item_id: plan.assembly_item_id,
+          quantity: plan.quantity,
           status: "draft",
-          notes: baseNote,
+          notes: plan.note || baseNote,
         }).select("id").single();
         if (error) throw error;
         created.push(data.id);
@@ -213,7 +275,7 @@ function NewAssemblyOrderPage() {
           onClick={() => setMode("from_so")}
           className={`rounded px-3 py-1.5 text-sm ${mode === "from_so" ? "bg-background shadow-sm" : "text-muted-foreground"}`}
         >
-          From Sales Order
+          From Sales Orders
         </button>
       </div>
 
@@ -245,51 +307,134 @@ function NewAssemblyOrderPage() {
         <div className="space-y-4">
           <Card className="max-w-3xl space-y-4 p-6">
             <div className="space-y-2">
-              <Label>Sales Order *</Label>
-              <Select value={soId} onValueChange={setSoId}>
-                <SelectTrigger><SelectValue placeholder="Select an open sales order" /></SelectTrigger>
-                <SelectContent>
-                  {(openSOs ?? []).length === 0 ? (
-                    <div className="px-3 py-2 text-sm text-muted-foreground">No open sales orders</div>
-                  ) : openSOs?.map((s: any) => (
-                    <SelectItem key={s.id} value={s.id}>
-                      {s.so_number} · {s.customers?.name ?? "—"} · {formatDate(s.so_date)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label>Sales Orders *</Label>
+              <Popover open={soPickerOpen} onOpenChange={setSoPickerOpen}>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" role="combobox" className="w-full justify-between font-normal">
+                    <span className="truncate">
+                      {soIds.length === 0
+                        ? "Select one or more open sales orders"
+                        : `${soIds.length} sales order${soIds.length === 1 ? "" : "s"} selected`}
+                    </span>
+                    <ChevronsUpDown className="ml-2 h-4 w-4 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                  <div className="border-b p-2">
+                    <Input
+                      value={soSearch}
+                      onChange={(e) => setSoSearch(e.target.value)}
+                      placeholder="Search by SO number or customer"
+                      className="h-8"
+                    />
+                  </div>
+                  <ScrollArea className="max-h-72">
+                    {filteredSoOptions.length === 0 ? (
+                      <div className="px-3 py-6 text-center text-sm text-muted-foreground">
+                        {openSOs?.length ? "No matches" : "No open sales orders"}
+                      </div>
+                    ) : (
+                      <ul className="py-1">
+                        {filteredSoOptions.map((s: any) => {
+                          const checked = soIds.includes(s.id);
+                          return (
+                            <li key={s.id}>
+                              <button
+                                type="button"
+                                onClick={() => toggleSo(s.id)}
+                                className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-accent"
+                              >
+                                <div className="grid h-4 w-4 place-items-center rounded border">
+                                  {checked && <Check className="h-3 w-3" />}
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                  <div className="truncate font-medium">
+                                    {s.so_number} · {s.customers?.name ?? "—"}
+                                  </div>
+                                  <div className="text-xs text-muted-foreground">
+                                    {formatDate(s.so_date)} · {s.status}
+                                  </div>
+                                </div>
+                              </button>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    )}
+                  </ScrollArea>
+                  {soIds.length > 0 && (
+                    <div className="flex justify-between border-t p-2">
+                      <Button variant="ghost" size="sm" onClick={() => setSoIds([])}>Clear</Button>
+                      <Button size="sm" onClick={() => setSoPickerOpen(false)}>Done</Button>
+                    </div>
+                  )}
+                </PopoverContent>
+              </Popover>
+              {soIds.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 pt-1">
+                  {soIds.map((id) => {
+                    const s = soById.get(id);
+                    return (
+                      <Badge key={id} variant="secondary" className="gap-1 pr-1">
+                        {s?.so_number ?? id.slice(0, 6)}
+                        <button
+                          type="button"
+                          onClick={() => toggleSo(id)}
+                          className="rounded hover:bg-background/80 px-1 text-muted-foreground"
+                          aria-label="Remove"
+                        >
+                          ×
+                        </button>
+                      </Badge>
+                    );
+                  })}
+                </div>
+              )}
               <p className="text-xs text-muted-foreground">
                 Only sales orders that are not fully fulfilled are shown.
               </p>
             </div>
+
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id="consolidate"
+                checked={consolidate}
+                onCheckedChange={(v) => setConsolidate(!!v)}
+              />
+              <Label htmlFor="consolidate" className="text-sm font-normal">
+                Consolidate: one assembly order per item, summing quantities across selected sales orders
+              </Label>
+            </div>
+
             <div className="space-y-2">
               <Label>Notes (applied to each assembly order)</Label>
               <Textarea
                 value={soNotes}
                 onChange={(e) => setSoNotes(e.target.value)}
-                placeholder="Optional — defaults to From Sales Order <number>"
+                placeholder="Optional — defaults to From Sales Order(s) <numbers>"
               />
             </div>
           </Card>
 
-          {soId && (
+          {soIds.length > 0 && (
             <Card>
               <div className="flex items-center justify-between border-b p-4">
                 <div className="flex items-center gap-2">
                   <Factory className="h-4 w-4 text-muted-foreground" />
-                  <h2 className="font-semibold">Assembly items on this sales order</h2>
+                  <h2 className="font-semibold">Assembly items across selected sales orders</h2>
                 </div>
-                <Badge variant="secondary">{assemblyLines.length} item(s)</Badge>
+                <Badge variant="secondary">{assemblyLines.length} line(s)</Badge>
               </div>
               {assemblyLines.length === 0 ? (
                 <div className="p-6 text-sm text-muted-foreground">
-                  This sales order has no line items that are configured as assembly composite items.
+                  None of the selected sales orders have line items configured as assembly composite items.
                 </div>
               ) : (
                 <Table>
                   <TableHeader>
                     <TableRow>
                       <TableHead className="w-10 pl-6"></TableHead>
+                      <TableHead>Sales Order</TableHead>
                       <TableHead>Item</TableHead>
                       <TableHead>SKU</TableHead>
                       <TableHead className="text-right">Ordered</TableHead>
@@ -298,16 +443,22 @@ function NewAssemblyOrderPage() {
                   </TableHeader>
                   <TableBody>
                     {assemblyLines.map((l: any) => {
-                      const p = picks[l.id] ?? { selected: false, qty: 0 };
+                      const key: PickKey = `${l.sales_order_id}:${l.id}`;
+                      const p = picks[key] ?? { selected: false, qty: 0 };
+                      const so = soById.get(l.sales_order_id);
                       return (
-                        <TableRow key={l.id}>
+                        <TableRow key={key}>
                           <TableCell className="pl-6">
                             <Checkbox
                               checked={p.selected}
                               onCheckedChange={(v) =>
-                                setPicks((prev) => ({ ...prev, [l.id]: { ...p, selected: !!v } }))
+                                setPicks((prev) => ({ ...prev, [key]: { ...p, selected: !!v } }))
                               }
                             />
+                          </TableCell>
+                          <TableCell className="text-sm">
+                            <div className="font-medium">{so?.so_number ?? "—"}</div>
+                            <div className="text-xs text-muted-foreground">{so?.customers?.name ?? ""}</div>
                           </TableCell>
                           <TableCell>{l.items?.name ?? l.description ?? "—"}</TableCell>
                           <TableCell className="text-muted-foreground">{l.items?.sku ?? ""}</TableCell>
@@ -321,7 +472,7 @@ function NewAssemblyOrderPage() {
                               onChange={(e) =>
                                 setPicks((prev) => ({
                                   ...prev,
-                                  [l.id]: { ...p, qty: parseFloat(e.target.value) || 0 },
+                                  [key]: { ...p, qty: parseFloat(e.target.value) || 0 },
                                 }))
                               }
                               className="ml-auto h-9 w-32 text-right tabular-nums"
