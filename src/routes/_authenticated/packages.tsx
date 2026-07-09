@@ -149,10 +149,11 @@ function PackagesListPage() {
             <button className="bg-muted p-1.5 text-foreground"><List className="h-4 w-4" /></button>
             <button className="p-1.5 text-muted-foreground hover:bg-muted/50"><Columns className="h-4 w-4" /></button>
           </div>
-          <Button size="sm" className="bg-orange-500 text-white hover:bg-orange-600">+ New</Button>
+          <Button size="sm" className="bg-orange-500 text-white hover:bg-orange-600" onClick={() => setNewOpen(true)}>+ New</Button>
           <Button size="icon" variant="outline" className="h-8 w-8"><MoreHorizontal className="h-4 w-4" /></Button>
         </div>
       </div>
+      <NewPackageDialog open={newOpen} onOpenChange={setNewOpen} />
 
       <div className="flex items-center gap-2 border-b bg-card/50 px-4 py-2">
         <div className="relative flex-1 max-w-xs">
