@@ -6,9 +6,10 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ArrowLeft, CheckCircle2, Pencil, Trash2, XCircle } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Pencil, Trash2, XCircle, History } from "lucide-react";
 import { toast } from "sonner";
 import { formatCurrency, formatDate } from "@/lib/format";
+import { formatDistanceToNow } from "date-fns";
 
 export const Route = createFileRoute("/_authenticated/production-orders_/$id")({
   head: () => ({ meta: [{ title: "Production Order — Nimbus ERP" }] }),
@@ -31,6 +32,22 @@ function ProductionOrderDetail() {
         .eq("id", id).single();
       if (error) throw error;
       return data;
+    },
+  });
+
+  const { data: activity } = useQuery({
+    enabled: !!order?.tenant_id,
+    queryKey: ["production-order-activity", id],
+    queryFn: async () => {
+      const { data, error } = await (supabase as any)
+        .from("audit_logs")
+        .select("id, action, summary, actor_name, created_at, details")
+        .eq("tenant_id", order.tenant_id)
+        .eq("entity_type", "assembly_orders")
+        .eq("entity_id", id)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data ?? [];
     },
   });
 
