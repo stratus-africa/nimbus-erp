@@ -141,6 +141,20 @@ function SalesOrderDetailPage() {
     onError: (e: any) => toast.error(e.message ?? "Failed to update"),
   });
 
+  const createPackage = useMutation({
+    mutationFn: async () => {
+      const { data, error } = await (supabase as any).rpc("create_package_from_sales_order", { _so_id: soId });
+      if (error) throw error;
+      return data as string;
+    },
+    onSuccess: (pkgId: string) => {
+      toast.success("Package created");
+      qc.invalidateQueries({ queryKey: ["sales-order-detail", soId] });
+      navigate({ to: "/packages/$packageId", params: { packageId: pkgId } });
+    },
+    onError: (e: any) => toast.error(e.message ?? "Failed to create package"),
+  });
+
   const convertToInvoice = useMutation({
     mutationFn: async () => {
       if (!tenantId || !so) throw new Error("Missing tenant or sales order");
