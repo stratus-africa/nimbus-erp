@@ -341,7 +341,8 @@ export function TransactionFormPage({
 
       {/* Body */}
       <div className="flex-1 overflow-auto">
-        <div className="mx-auto max-w-5xl p-6">
+        <div className="w-full p-6">
+
           {/* Top fields */}
           <div className="rounded-md border bg-muted/20 p-5">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-[180px_1fr]">
