@@ -55,9 +55,15 @@ import {
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
+import { PermissionGate } from "@/components/permission-gate";
+
 export const Route = createFileRoute("/_authenticated/settings_/roles")({
   head: () => ({ meta: [{ title: "Roles — Nimbus ERP" }] }),
-  component: SettingsRolesPage,
+  component: () => (
+    <PermissionGate module="roles">
+      <SettingsRolesPage />
+    </PermissionGate>
+  ),
 });
 
 type RoleRow = {
