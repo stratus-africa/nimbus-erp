@@ -8,8 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { formatCurrency, formatDate, formatDateTime } from "@/lib/format";
 import { toast } from "sonner";
 import {
-  Edit, Send, Share2, Printer, FileText, MoreHorizontal, Sparkles, Paperclip,
-  MessageSquare, X, CheckCircle2, Clock, UserCircle2, FilePlus2, Plus, Search, ChevronDown,
+  Edit, Share2, Printer, FileText, MoreHorizontal, Sparkles, Paperclip,
+  MessageSquare, X, CheckCircle2, Clock, UserCircle2, FilePlus2, Plus, Search, ChevronDown, Package,
 } from "lucide-react";
 import { DocActionsMenu } from "@/components/doc-actions-menu";
 
@@ -139,6 +139,20 @@ function SalesOrderDetailPage() {
       qc.invalidateQueries({ queryKey: ["sales-orders-list"] });
     },
     onError: (e: any) => toast.error(e.message ?? "Failed to update"),
+  });
+
+  const createPackage = useMutation({
+    mutationFn: async () => {
+      const { data, error } = await (supabase as any).rpc("create_package_from_sales_order", { _so_id: soId });
+      if (error) throw error;
+      return data as string;
+    },
+    onSuccess: (pkgId: string) => {
+      toast.success("Package created");
+      qc.invalidateQueries({ queryKey: ["sales-order-detail", soId] });
+      navigate({ to: "/packages/$packageId", params: { packageId: pkgId } });
+    },
+    onError: (e: any) => toast.error(e.message ?? "Failed to create package"),
   });
 
   const convertToInvoice = useMutation({
@@ -317,8 +331,8 @@ function SalesOrderDetailPage() {
             <CheckCircle2 className="h-4 w-4" /> Confirm
           </Button>
           <Button variant="ghost" size="sm" className="h-8 gap-1.5"
-            disabled={!canSend || setStatus.isPending} onClick={() => setStatus.mutate("sent")}>
-            <Send className="h-4 w-4" /> Mark as Sent
+            disabled={!canSend || createPackage.isPending} onClick={() => createPackage.mutate()}>
+            <Package className="h-4 w-4" /> Create Package
           </Button>
           <Button variant="ghost" size="sm" className="h-8 gap-1.5 text-blue-700 hover:bg-blue-50 hover:text-blue-800"
             disabled={!canConvert || convertToInvoice.isPending} onClick={() => convertToInvoice.mutate()}>

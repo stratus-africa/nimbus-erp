@@ -40,6 +40,7 @@ import {
   UserCheck,
   UserX,
   ScrollText,
+  Warehouse,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -83,6 +84,7 @@ function SettingsUsersPage() {
   const [sortAsc, setSortAsc] = useState(true);
   const [inviteOpen, setInviteOpen] = useState(false);
   const [auditFor, setAuditFor] = useState<Member | null>(null);
+  const [warehouseFor, setWarehouseFor] = useState<Member | null>(null);
   const qc = useQueryClient();
 
   const { data: members = [], isLoading } = useQuery({
@@ -359,6 +361,9 @@ function SettingsUsersPage() {
                         </DropdownMenuItem>
                       )}
                       <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={() => setWarehouseFor(m)}>
+                        <Warehouse className="mr-2 h-4 w-4" /> Manage Warehouses
+                      </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => setAuditFor(m)}>
                         <ScrollText className="mr-2 h-4 w-4" /> View timeline
                       </DropdownMenuItem>
@@ -380,6 +385,7 @@ function SettingsUsersPage() {
       />
 
       <AuditDrawer member={auditFor} tenantId={tenantId} onClose={() => setAuditFor(null)} />
+      <WarehousesDialog member={warehouseFor} tenantId={tenantId} onClose={() => setWarehouseFor(null)} />
     </div>
   );
 }
@@ -502,6 +508,114 @@ function AuditDrawer({
             ))
           )}
         </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function WarehousesDialog({
+  member,
+  tenantId,
+  onClose,
+}: {
+  member: Member | null;
+  tenantId: string | undefined;
+  onClose: () => void;
+}) {
+  const qc = useQueryClient();
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+
+  const { data: warehouses = [] } = useQuery({
+    enabled: !!tenantId && !!member,
+    queryKey: ["tenant-warehouses", tenantId],
+    queryFn: async () => {
+      const { data } = await (supabase as any)
+        .from("locations")
+        .select("id, name")
+        .eq("tenant_id", tenantId!)
+        .order("name");
+      return data ?? [];
+    },
+  });
+
+  const { data: assigned } = useQuery({
+    enabled: !!tenantId && !!member,
+    queryKey: ["member-warehouses", tenantId, member?.user_id],
+    queryFn: async () => {
+      const { data } = await (supabase as any)
+        .from("user_warehouses")
+        .select("warehouse_id")
+        .eq("tenant_id", tenantId!)
+        .eq("user_id", member!.user_id);
+      return (data ?? []).map((r: any) => r.warehouse_id as string);
+    },
+  });
+
+  useEffect(() => {
+    if (assigned) setSelected(new Set(assigned));
+  }, [assigned]);
+
+  const save = useMutation({
+    mutationFn: async () => {
+      const { error: delErr } = await (supabase as any)
+        .from("user_warehouses")
+        .delete()
+        .eq("tenant_id", tenantId!)
+        .eq("user_id", member!.user_id);
+      if (delErr) throw delErr;
+      const rows = Array.from(selected).map((wid) => ({
+        tenant_id: tenantId!,
+        user_id: member!.user_id,
+        warehouse_id: wid,
+      }));
+      if (rows.length) {
+        const { error } = await (supabase as any).from("user_warehouses").insert(rows);
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      toast.success("Warehouse access updated");
+      qc.invalidateQueries({ queryKey: ["member-warehouses"] });
+      onClose();
+    },
+    onError: (e: any) => toast.error(e.message ?? "Failed to save"),
+  });
+
+  const toggle = (id: string) =>
+    setSelected((s) => {
+      const n = new Set(s);
+      n.has(id) ? n.delete(id) : n.add(id);
+      return n;
+    });
+
+  return (
+    <Dialog open={!!member} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Manage Warehouses</DialogTitle>
+          <DialogDescription>
+            {member?.profile?.full_name ?? member?.profile?.email ?? "User"}. Leave all unchecked to grant access to every warehouse.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="max-h-80 space-y-2 overflow-auto">
+          {warehouses.map((w: any) => (
+            <label key={w.id} className="flex items-center gap-2 rounded border p-2 cursor-pointer hover:bg-muted/30">
+              <input
+                type="checkbox"
+                checked={selected.has(w.id)}
+                onChange={() => toggle(w.id)}
+              />
+              <span className="text-sm">{w.name}</span>
+            </label>
+          ))}
+          {warehouses.length === 0 && (
+            <div className="p-6 text-center text-sm text-muted-foreground">No warehouses configured.</div>
+          )}
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>Cancel</Button>
+          <Button onClick={() => save.mutate()} disabled={save.isPending}>Save</Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
