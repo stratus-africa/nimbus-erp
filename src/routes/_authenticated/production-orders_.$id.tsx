@@ -59,6 +59,7 @@ function ProductionOrderDetail() {
     if (error) return toast.error(error.message);
     toast.success("Production order completed");
     qc.invalidateQueries({ queryKey: ["production-order", id] });
+    qc.invalidateQueries({ queryKey: ["production-order-activity", id] });
     qc.invalidateQueries({ queryKey: ["production-orders"] });
   };
 
@@ -71,6 +72,7 @@ function ProductionOrderDetail() {
     if (error) return toast.error(error.message);
     toast.success("Production order cancelled");
     qc.invalidateQueries({ queryKey: ["production-order", id] });
+    qc.invalidateQueries({ queryKey: ["production-order-activity", id] });
     qc.invalidateQueries({ queryKey: ["production-orders"] });
   };
 
@@ -157,6 +159,29 @@ function ProductionOrderDetail() {
             ))}
           </TableBody>
         </Table>
+      </Card>
+
+      <Card>
+        <div className="p-4 border-b font-semibold flex items-center gap-2">
+          <History className="h-4 w-4 text-muted-foreground" /> Activity
+        </div>
+        <div className="p-4">
+          {!activity?.length ? (
+            <div className="text-sm text-muted-foreground py-4 text-center">No activity yet.</div>
+          ) : (
+            <ol className="relative border-l pl-6 space-y-4">
+              {activity.map((a: any) => (
+                <li key={a.id} className="relative">
+                  <span className="absolute -left-[27px] top-1 h-2.5 w-2.5 rounded-full bg-primary" />
+                  <div className="text-sm">{a.summary}</div>
+                  <div className="text-xs text-muted-foreground mt-0.5">
+                    {a.actor_name ?? "System"} · {formatDate(a.created_at)} ({formatDistanceToNow(new Date(a.created_at), { addSuffix: true })})
+                  </div>
+                </li>
+              ))}
+            </ol>
+          )}
+        </div>
       </Card>
     </div>
   );
