@@ -308,6 +308,8 @@ export function TransactionFormPage({
       }
 
       toast.success(sendAfter ? "Saved and sent" : "Saved");
+      // Invalidate everything related so detail pages reflect updated lines/totals.
+      await qc.invalidateQueries();
       navigate({ to: backTo });
     } catch (e: any) {
       toast.error(e.message);
