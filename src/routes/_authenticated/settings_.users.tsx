@@ -359,6 +359,9 @@ function SettingsUsersPage() {
                         </DropdownMenuItem>
                       )}
                       <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={() => setWarehouseFor(m)}>
+                        <Warehouse className="mr-2 h-4 w-4" /> Manage Warehouses
+                      </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => setAuditFor(m)}>
                         <ScrollText className="mr-2 h-4 w-4" /> View timeline
                       </DropdownMenuItem>
