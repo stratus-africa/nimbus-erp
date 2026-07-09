@@ -42,6 +42,8 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "@/hooks/use-profile";
+import { usePermissions } from "@/hooks/use-permissions";
+
 import { useSidebarPrefs } from "@/hooks/use-sidebar-prefs";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -60,8 +62,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-type NavItem = { title: string; url: string; icon: any };
-type NavGroup = { label: string; icon: any; url?: string; items?: NavItem[] };
+type NavItem = { title: string; url: string; icon: any; module?: string };
+type NavGroup = { label: string; icon: any; url?: string; items?: NavItem[]; module?: string };
 
 const NAV_GROUPS: NavGroup[] = [
   { label: "Dashboard", icon: LayoutDashboard, url: "/dashboard" },
@@ -69,53 +71,54 @@ const NAV_GROUPS: NavGroup[] = [
     label: "Sales",
     icon: ShoppingBag,
     items: [
-      { title: "Customers", url: "/customers", icon: Users },
-      { title: "Quotes", url: "/quotes", icon: FileText },
-      { title: "Sales Orders", url: "/sales-orders", icon: FileText },
-      { title: "Invoices", url: "/invoices", icon: ReceiptText },
-      { title: "Payments Received", url: "/payments-received", icon: ReceiptText },
-      { title: "Credit Notes", url: "/credit-notes", icon: FileText },
+      { title: "Customers", url: "/customers", icon: Users, module: "customers" },
+      { title: "Quotes", url: "/quotes", icon: FileText, module: "quotes" },
+      { title: "Sales Orders", url: "/sales-orders", icon: FileText, module: "sales_orders" },
+      { title: "Invoices", url: "/invoices", icon: ReceiptText, module: "invoices" },
+      { title: "Payments Received", url: "/payments-received", icon: ReceiptText, module: "invoices" },
+      { title: "Credit Notes", url: "/credit-notes", icon: FileText, module: "invoices" },
     ],
   },
   {
     label: "Purchases",
     icon: ShoppingCart,
     items: [
-      { title: "Suppliers", url: "/suppliers", icon: Truck },
-      { title: "Purchase Orders", url: "/purchase-orders", icon: ShoppingCart },
-      { title: "Bills", url: "/bills", icon: FileCheck },
-      { title: "Expenses", url: "/expenses", icon: ReceiptText },
-      { title: "Payments Made", url: "/payments-made", icon: FileCheck },
-      { title: "Supplier Credits", url: "/supplier-credits", icon: FileCheck },
+      { title: "Suppliers", url: "/suppliers", icon: Truck, module: "suppliers" },
+      { title: "Purchase Orders", url: "/purchase-orders", icon: ShoppingCart, module: "purchase_orders" },
+      { title: "Bills", url: "/bills", icon: FileCheck, module: "bills" },
+      { title: "Expenses", url: "/expenses", icon: ReceiptText, module: "expenses" },
+      { title: "Payments Made", url: "/payments-made", icon: FileCheck, module: "bills" },
+      { title: "Supplier Credits", url: "/supplier-credits", icon: FileCheck, module: "bills" },
     ],
   },
   {
     label: "Inventory",
     icon: Boxes,
     items: [
-      { title: "Items", url: "/items", icon: Boxes },
-      { title: "Production Items", url: "/production-items", icon: Boxes },
-      { title: "Production", url: "/assembly-orders", icon: ClipboardList },
-      { title: "Adjustments", url: "/inventory-adjustments", icon: ClipboardList },
-      { title: "Packages", url: "/packages", icon: Boxes },
-      { title: "Deliveries", url: "/deliveries", icon: Truck },
-      { title: "Warehouses", url: "/warehouses", icon: Boxes },
-      { title: "Transfer Orders", url: "/transfer-orders", icon: ClipboardList },
+      { title: "Items", url: "/items", icon: Boxes, module: "items" },
+      { title: "Production Items", url: "/production-items", icon: Boxes, module: "items" },
+      { title: "Production", url: "/assembly-orders", icon: ClipboardList, module: "items" },
+      { title: "Adjustments", url: "/inventory-adjustments", icon: ClipboardList, module: "items" },
+      { title: "Packages", url: "/packages", icon: Boxes, module: "items" },
+      { title: "Deliveries", url: "/deliveries", icon: Truck, module: "items" },
+      { title: "Warehouses", url: "/warehouses", icon: Boxes, module: "warehouses" },
+      { title: "Transfer Orders", url: "/transfer-orders", icon: ClipboardList, module: "transfer_orders" },
     ],
   },
-  { label: "Banking", icon: Wallet, url: "/banking" },
+  { label: "Banking", icon: Wallet, url: "/banking", module: "banking" },
   {
     label: "Accountant",
     icon: Calculator,
     items: [
-      { title: "Manual Journals", url: "/journals", icon: NotebookPen },
-      { title: "Tax Payments", url: "/tax-payments", icon: ReceiptText },
-      { title: "Chart of Accounts", url: "/chart-of-accounts", icon: BookOpen },
-      { title: "Fixed Assets", url: "/fixed-assets", icon: Landmark },
+      { title: "Manual Journals", url: "/journals", icon: NotebookPen, module: "chart_of_accounts" },
+      { title: "Tax Payments", url: "/tax-payments", icon: ReceiptText, module: "chart_of_accounts" },
+      { title: "Chart of Accounts", url: "/chart-of-accounts", icon: BookOpen, module: "chart_of_accounts" },
+      { title: "Fixed Assets", url: "/fixed-assets", icon: Landmark, module: "chart_of_accounts" },
     ],
   },
-  { label: "Reports", icon: BarChart3, url: "/reports" },
+  { label: "Reports", icon: BarChart3, url: "/reports", module: "reports" },
 ];
+
 
 export function AppShell({ children }: { children: ReactNode }) {
   const { data: profile, isLoading } = useProfile();
@@ -155,6 +158,20 @@ function AppSidebar({
   const collapsed = state === "collapsed";
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { data: profile } = useProfile();
+  const { can, ready } = usePermissions();
+
+  // Filter nav items by module view permission (ready=true unless custom-role query is loading).
+  const visibleGroups = ready
+    ? NAV_GROUPS.map((g) => {
+        if (g.items) {
+          const items = g.items.filter((i) => !i.module || can(i.module as any, "view"));
+          return items.length ? { ...g, items } : null;
+        }
+        if (g.module && !can(g.module as any, "view")) return null;
+        return g;
+      }).filter(Boolean) as NavGroup[]
+    : NAV_GROUPS;
+
 
   return (
     <Sidebar collapsible="icon" aria-label="Primary">
@@ -173,10 +190,10 @@ function AppSidebar({
             <SidebarMenu>
               {(() => {
                 // Determine the single open group (accordion).
-                const explicit = NAV_GROUPS.find(
+                const explicit = visibleGroups.find(
                   (g) => g.items && groupPrefs[g.label] === true,
                 );
-                const activeGroup = NAV_GROUPS.find(
+                const activeGroup = visibleGroups.find(
                   (g) => g.items && g.items!.some((i) => pathname === i.url || pathname.startsWith(i.url + "/")),
                 );
                 const openLabel =
@@ -184,7 +201,7 @@ function AppSidebar({
                     ? explicit?.label
                     : activeGroup?.label;
 
-                return NAV_GROUPS.map((g) => {
+                return visibleGroups.map((g) => {
                 const Icon = g.icon;
                 if (!g.items) {
                   const active = pathname === g.url || (g.url ? pathname.startsWith(g.url + "/") : false);
