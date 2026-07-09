@@ -169,7 +169,7 @@ function SettingsRolesPage() {
 
   const updateRole = useMutation({
     mutationFn: async (v: { id: string; name: string; description: string }) => {
-      const { error } = await supabase.rpc("update_custom_role", {
+      const { error } = await (supabase.rpc as any)("update_custom_role", {
         _id: v.id,
         _name: v.name,
         _description: v.description || null,
