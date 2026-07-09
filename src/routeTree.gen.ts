@@ -72,6 +72,7 @@ import { Route as AuthenticatedExpensesCategoriesRouteImport } from './routes/_a
 import { Route as AuthenticatedExpensesIdRouteImport } from './routes/_authenticated/expenses_.$id'
 import { Route as AuthenticatedCustomersNewRouteImport } from './routes/_authenticated/customers.new'
 import { Route as AuthenticatedCustomersCustomerIdRouteImport } from './routes/_authenticated/customers.$customerId'
+import { Route as AuthenticatedCreditNotesNewRouteImport } from './routes/_authenticated/credit-notes_.new'
 import { Route as AuthenticatedBillsNewRouteImport } from './routes/_authenticated/bills_.new'
 import { Route as AuthenticatedBillsBillIdRouteImport } from './routes/_authenticated/bills_.$billId'
 import { Route as AuthenticatedBankingAccountIdRouteImport } from './routes/_authenticated/banking_.$accountId'
@@ -445,6 +446,12 @@ const AuthenticatedCustomersCustomerIdRoute =
     path: '/customers/$customerId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedCreditNotesNewRoute =
+  AuthenticatedCreditNotesNewRouteImport.update({
+    id: '/credit-notes_/new',
+    path: '/credit-notes/new',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedBillsNewRoute = AuthenticatedBillsNewRouteImport.update({
   id: '/bills_/new',
   path: '/bills/new',
@@ -560,6 +567,7 @@ export interface FileRoutesByFullPath {
   '/banking/$accountId': typeof AuthenticatedBankingAccountIdRoute
   '/bills/$billId': typeof AuthenticatedBillsBillIdRoute
   '/bills/new': typeof AuthenticatedBillsNewRoute
+  '/credit-notes/new': typeof AuthenticatedCreditNotesNewRoute
   '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
   '/customers/new': typeof AuthenticatedCustomersNewRoute
   '/expenses/$id': typeof AuthenticatedExpensesIdRoute
@@ -638,6 +646,7 @@ export interface FileRoutesByTo {
   '/banking/$accountId': typeof AuthenticatedBankingAccountIdRoute
   '/bills/$billId': typeof AuthenticatedBillsBillIdRoute
   '/bills/new': typeof AuthenticatedBillsNewRoute
+  '/credit-notes/new': typeof AuthenticatedCreditNotesNewRoute
   '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
   '/customers/new': typeof AuthenticatedCustomersNewRoute
   '/expenses/$id': typeof AuthenticatedExpensesIdRoute
@@ -718,6 +727,7 @@ export interface FileRoutesById {
   '/_authenticated/banking_/$accountId': typeof AuthenticatedBankingAccountIdRoute
   '/_authenticated/bills_/$billId': typeof AuthenticatedBillsBillIdRoute
   '/_authenticated/bills_/new': typeof AuthenticatedBillsNewRoute
+  '/_authenticated/credit-notes_/new': typeof AuthenticatedCreditNotesNewRoute
   '/_authenticated/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
   '/_authenticated/customers/new': typeof AuthenticatedCustomersNewRoute
   '/_authenticated/expenses_/$id': typeof AuthenticatedExpensesIdRoute
@@ -798,6 +808,7 @@ export interface FileRouteTypes {
     | '/banking/$accountId'
     | '/bills/$billId'
     | '/bills/new'
+    | '/credit-notes/new'
     | '/customers/$customerId'
     | '/customers/new'
     | '/expenses/$id'
@@ -876,6 +887,7 @@ export interface FileRouteTypes {
     | '/banking/$accountId'
     | '/bills/$billId'
     | '/bills/new'
+    | '/credit-notes/new'
     | '/customers/$customerId'
     | '/customers/new'
     | '/expenses/$id'
@@ -955,6 +967,7 @@ export interface FileRouteTypes {
     | '/_authenticated/banking_/$accountId'
     | '/_authenticated/bills_/$billId'
     | '/_authenticated/bills_/new'
+    | '/_authenticated/credit-notes_/new'
     | '/_authenticated/customers/$customerId'
     | '/_authenticated/customers/new'
     | '/_authenticated/expenses_/$id'
@@ -1453,6 +1466,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCustomersCustomerIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/credit-notes_/new': {
+      id: '/_authenticated/credit-notes_/new'
+      path: '/credit-notes/new'
+      fullPath: '/credit-notes/new'
+      preLoaderRoute: typeof AuthenticatedCreditNotesNewRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/bills_/new': {
       id: '/_authenticated/bills_/new'
       path: '/bills/new'
@@ -1582,6 +1602,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedBankingAccountIdRoute: typeof AuthenticatedBankingAccountIdRoute
   AuthenticatedBillsBillIdRoute: typeof AuthenticatedBillsBillIdRoute
   AuthenticatedBillsNewRoute: typeof AuthenticatedBillsNewRoute
+  AuthenticatedCreditNotesNewRoute: typeof AuthenticatedCreditNotesNewRoute
   AuthenticatedCustomersCustomerIdRoute: typeof AuthenticatedCustomersCustomerIdRoute
   AuthenticatedCustomersNewRoute: typeof AuthenticatedCustomersNewRoute
   AuthenticatedExpensesIdRoute: typeof AuthenticatedExpensesIdRoute
@@ -1659,6 +1680,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedBankingAccountIdRoute: AuthenticatedBankingAccountIdRoute,
   AuthenticatedBillsBillIdRoute: AuthenticatedBillsBillIdRoute,
   AuthenticatedBillsNewRoute: AuthenticatedBillsNewRoute,
+  AuthenticatedCreditNotesNewRoute: AuthenticatedCreditNotesNewRoute,
   AuthenticatedCustomersCustomerIdRoute: AuthenticatedCustomersCustomerIdRoute,
   AuthenticatedCustomersNewRoute: AuthenticatedCustomersNewRoute,
   AuthenticatedExpensesIdRoute: AuthenticatedExpensesIdRoute,
