@@ -7,9 +7,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { formatDate } from "@/lib/format";
 import { toast } from "sonner";
-import { Truck, X, Mail, FileText, MoreHorizontal, ChevronRight, MessageSquare, ExternalLink } from "lucide-react";
+import { Truck, X, Mail, FileText, MoreHorizontal, ChevronRight, MessageSquare, ExternalLink, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/packages_/$packageId")({
@@ -39,6 +46,8 @@ function PackageDetailPage() {
   const [tracking, setTracking] = useState("");
   const [trackingUrl, setTrackingUrl] = useState("");
   const [notesDraft, setNotesDraft] = useState("");
+  const [confirmStatus, setConfirmStatus] = useState<string | null>(null);
+  const [pdfBusy, setPdfBusy] = useState(false);
 
   const { data: pkg, isLoading } = useQuery({
     queryKey: ["package-detail-v2", packageId],
@@ -125,6 +134,46 @@ function PackageDetailPage() {
     onError: (e: any) => toast.error(e.message ?? "Failed"),
   });
 
+  const setStatus = useMutation({
+    mutationFn: async (next: string) => {
+      const { error } = await (supabase as any).rpc("set_package_status", { _id: packageId, _status: next });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Status updated");
+      setConfirmStatus(null);
+      qc.invalidateQueries();
+    },
+    onError: (e: any) => toast.error(e.message ?? "Failed to update status"),
+  });
+
+  const downloadPdf = async () => {
+    setPdfBusy(true);
+    try {
+      const { data: sess } = await supabase.auth.getSession();
+      const token = sess.session?.access_token;
+      if (!token) throw new Error("Not signed in");
+      const res = await fetch(`/api/pdf/package/${packageId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error(await res.text());
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${pkg?.package_number ?? "package"}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      toast.success("PDF downloaded");
+    } catch (e: any) {
+      toast.error(e.message ?? "PDF failed");
+    } finally {
+      setPdfBusy(false);
+    }
+  };
+
   if (isLoading) return <div className="p-6 text-muted-foreground">Loading…</div>;
   if (!pkg) return <div className="p-6">Package not found.</div>;
 
@@ -151,10 +200,28 @@ function PackageDetailPage() {
         <Button variant="ghost" size="sm" className="h-8 gap-1.5 text-sm">
           <Mail className="h-4 w-4" /> Send Email
         </Button>
-        <Button variant="ghost" size="sm" className="h-8 gap-1.5 text-sm">
-          <FileText className="h-4 w-4" /> PDF/Print
-          <ChevronRight className="h-3 w-3 rotate-90" />
+        <Button variant="ghost" size="sm" className="h-8 gap-1.5 text-sm" onClick={downloadPdf} disabled={pdfBusy}>
+          <FileText className="h-4 w-4" /> {pdfBusy ? "Generating…" : "PDF/Print"}
         </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm" className="h-8 gap-1.5 text-sm">
+              Status: <span className="font-semibold uppercase">{pkg.status.replace("_", " ")}</span>
+              <ChevronDown className="h-3.5 w-3.5" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start">
+            <DropdownMenuItem onClick={() => setConfirmStatus("not_shipped")} disabled={pkg.status === "not_shipped"}>
+              Mark as Not Shipped
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setConfirmStatus("shipped")} disabled={pkg.status === "shipped"}>
+              Mark as Shipped
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setConfirmStatus("delivered")} disabled={pkg.status === "delivered"}>
+              Mark as Delivered
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
         <Button variant="ghost" size="icon" className="h-8 w-8">
           <MoreHorizontal className="h-4 w-4" />
         </Button>
@@ -383,6 +450,24 @@ function PackageDetailPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Status change confirmation */}
+      <AlertDialog open={!!confirmStatus} onOpenChange={(v) => !v && setConfirmStatus(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Change status to {confirmStatus?.replace("_", " ").toUpperCase()}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will update the package status{confirmStatus === "shipped" || confirmStatus === "delivered" ? " and any linked shipment" : ""}. The change will be recorded in the audit log.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => confirmStatus && setStatus.mutate(confirmStatus)}>
+              Confirm
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

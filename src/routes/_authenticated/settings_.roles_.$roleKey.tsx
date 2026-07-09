@@ -42,6 +42,17 @@ const ACTION_LABELS: Record<string, string> = {
   export: "Export",
 };
 
+const MODULE_GROUPS: { title: string; modules: string[] }[] = [
+  { title: "Contacts", modules: ["customers", "suppliers"] },
+  { title: "Items", modules: ["items"] },
+  { title: "Banking", modules: ["banking"] },
+  { title: "Sales", modules: ["invoices", "quotes", "sales_orders"] },
+  { title: "Purchases", modules: ["bills", "purchase_orders", "expenses"] },
+  { title: "Accountant", modules: ["chart_of_accounts", "reports"] },
+  { title: "Inventory", modules: ["warehouses", "transfer_orders"] },
+  { title: "Administration", modules: ["users", "roles", "settings"] },
+];
+
 function RoleDetailPage() {
   const { roleKey } = Route.useParams();
   const { data: profile } = useProfile();
@@ -213,49 +224,48 @@ function RoleDetailPage() {
         </TabsList>
 
         <TabsContent value="permissions" className="mt-4">
-          <div className="overflow-hidden rounded-md border bg-card">
-            <table className="w-full text-sm">
-              <thead className="bg-muted/40 text-[11px] uppercase tracking-wide text-muted-foreground">
-                <tr>
-                  <th className="px-4 py-2.5 text-left font-semibold">Module</th>
-                  {ACTIONS.map((a) => (
-                    <th key={a} className="px-3 py-2.5 text-center font-semibold">{ACTION_LABELS[a]}</th>
-                  ))}
-                  <th className="px-3 py-2.5 text-right font-semibold">All</th>
-                </tr>
-              </thead>
-              <tbody>
-                {MODULES.map((m, idx) => {
-                  const row = grid[m];
-                  if (!row) return null;
-                  return (
-                    <tr key={m} className={idx % 2 === 1 ? "bg-muted/20" : ""}>
-                      <td className="px-4 py-2.5 font-medium">{MODULE_LABELS[m]}</td>
+          <div className="space-y-4">
+            {MODULE_GROUPS.map((group) => (
+              <div key={group.title} className="overflow-hidden rounded-md border bg-card">
+                <div className="border-b bg-muted/50 px-4 py-2 text-sm font-semibold">{group.title}</div>
+                <table className="w-full text-sm">
+                  <thead className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                    <tr className="border-b">
+                      <th className="px-4 py-2 text-left font-medium">Particulars</th>
                       {ACTIONS.map((a) => (
-                        <td key={a} className="px-3 py-2.5 text-center">
-                          <Checkbox
-                            disabled={cannotEdit}
-                            checked={(row as any)[ACTION_COLUMNS[a]]}
-                            onCheckedChange={() => toggle(m, a)}
-                          />
-                        </td>
+                        <th key={a} className="px-3 py-2 text-center font-medium">{ACTION_LABELS[a]}</th>
                       ))}
-                      <td className="px-3 py-2.5 text-right">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-7 text-xs"
-                          onClick={() => toggleModuleAll(m)}
-                          disabled={cannotEdit}
-                        >
-                          Toggle
-                        </Button>
-                      </td>
+                      <th className="px-3 py-2 text-right font-medium">All</th>
                     </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                  </thead>
+                  <tbody>
+                    {group.modules.filter((m) => MODULES.includes(m as any)).map((m, idx) => {
+                      const row = grid[m as any];
+                      if (!row) return null;
+                      return (
+                        <tr key={m} className={idx % 2 === 1 ? "bg-muted/10" : ""}>
+                          <td className="px-4 py-2 font-medium">{(MODULE_LABELS as any)[m]}</td>
+                          {ACTIONS.map((a) => (
+                            <td key={a} className="px-3 py-2 text-center">
+                              <Checkbox
+                                disabled={cannotEdit}
+                                checked={(row as any)[ACTION_COLUMNS[a]]}
+                                onCheckedChange={() => toggle(m as any, a)}
+                              />
+                            </td>
+                          ))}
+                          <td className="px-3 py-2 text-right">
+                            <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => toggleModuleAll(m as any)} disabled={cannotEdit}>
+                              Toggle
+                            </Button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            ))}
           </div>
         </TabsContent>
 
