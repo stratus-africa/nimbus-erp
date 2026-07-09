@@ -44,6 +44,7 @@ import { Route as AuthenticatedTransferOrdersNewRouteImport } from './routes/_au
 import { Route as AuthenticatedTransferOrdersIdRouteImport } from './routes/_authenticated/transfer-orders_.$id'
 import { Route as AuthenticatedSuppliersNewRouteImport } from './routes/_authenticated/suppliers.new'
 import { Route as AuthenticatedSuppliersSupplierIdRouteImport } from './routes/_authenticated/suppliers.$supplierId'
+import { Route as AuthenticatedShipmentsShipmentIdRouteImport } from './routes/_authenticated/shipments_.$shipmentId'
 import { Route as AuthenticatedSettingsVatRouteImport } from './routes/_authenticated/settings_.vat'
 import { Route as AuthenticatedSettingsUsersRouteImport } from './routes/_authenticated/settings_.users'
 import { Route as AuthenticatedSettingsTransferOrdersRouteImport } from './routes/_authenticated/settings_.transfer-orders'
@@ -282,6 +283,12 @@ const AuthenticatedSuppliersSupplierIdRoute =
   AuthenticatedSuppliersSupplierIdRouteImport.update({
     id: '/suppliers/$supplierId',
     path: '/suppliers/$supplierId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedShipmentsShipmentIdRoute =
+  AuthenticatedShipmentsShipmentIdRouteImport.update({
+    id: '/shipments_/$shipmentId',
+    path: '/shipments/$shipmentId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedSettingsVatRoute =
@@ -642,6 +649,7 @@ export interface FileRoutesByFullPath {
   '/settings/transfer-orders': typeof AuthenticatedSettingsTransferOrdersRoute
   '/settings/users': typeof AuthenticatedSettingsUsersRoute
   '/settings/vat': typeof AuthenticatedSettingsVatRoute
+  '/shipments/$shipmentId': typeof AuthenticatedShipmentsShipmentIdRoute
   '/suppliers/$supplierId': typeof AuthenticatedSuppliersSupplierIdRoute
   '/suppliers/new': typeof AuthenticatedSuppliersNewRoute
   '/transfer-orders/$id': typeof AuthenticatedTransferOrdersIdRoute
@@ -727,6 +735,7 @@ export interface FileRoutesByTo {
   '/settings/transfer-orders': typeof AuthenticatedSettingsTransferOrdersRoute
   '/settings/users': typeof AuthenticatedSettingsUsersRoute
   '/settings/vat': typeof AuthenticatedSettingsVatRoute
+  '/shipments/$shipmentId': typeof AuthenticatedShipmentsShipmentIdRoute
   '/suppliers/$supplierId': typeof AuthenticatedSuppliersSupplierIdRoute
   '/suppliers/new': typeof AuthenticatedSuppliersNewRoute
   '/transfer-orders/$id': typeof AuthenticatedTransferOrdersIdRoute
@@ -814,6 +823,7 @@ export interface FileRoutesById {
   '/_authenticated/settings_/transfer-orders': typeof AuthenticatedSettingsTransferOrdersRoute
   '/_authenticated/settings_/users': typeof AuthenticatedSettingsUsersRoute
   '/_authenticated/settings_/vat': typeof AuthenticatedSettingsVatRoute
+  '/_authenticated/shipments_/$shipmentId': typeof AuthenticatedShipmentsShipmentIdRoute
   '/_authenticated/suppliers/$supplierId': typeof AuthenticatedSuppliersSupplierIdRoute
   '/_authenticated/suppliers/new': typeof AuthenticatedSuppliersNewRoute
   '/_authenticated/transfer-orders_/$id': typeof AuthenticatedTransferOrdersIdRoute
@@ -901,6 +911,7 @@ export interface FileRouteTypes {
     | '/settings/transfer-orders'
     | '/settings/users'
     | '/settings/vat'
+    | '/shipments/$shipmentId'
     | '/suppliers/$supplierId'
     | '/suppliers/new'
     | '/transfer-orders/$id'
@@ -986,6 +997,7 @@ export interface FileRouteTypes {
     | '/settings/transfer-orders'
     | '/settings/users'
     | '/settings/vat'
+    | '/shipments/$shipmentId'
     | '/suppliers/$supplierId'
     | '/suppliers/new'
     | '/transfer-orders/$id'
@@ -1072,6 +1084,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings_/transfer-orders'
     | '/_authenticated/settings_/users'
     | '/_authenticated/settings_/vat'
+    | '/_authenticated/shipments_/$shipmentId'
     | '/_authenticated/suppliers/$supplierId'
     | '/_authenticated/suppliers/new'
     | '/_authenticated/transfer-orders_/$id'
@@ -1344,6 +1357,13 @@ declare module '@tanstack/react-router' {
       path: '/suppliers/$supplierId'
       fullPath: '/suppliers/$supplierId'
       preLoaderRoute: typeof AuthenticatedSuppliersSupplierIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/shipments_/$shipmentId': {
+      id: '/_authenticated/shipments_/$shipmentId'
+      path: '/shipments/$shipmentId'
+      fullPath: '/shipments/$shipmentId'
+      preLoaderRoute: typeof AuthenticatedShipmentsShipmentIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/settings_/vat': {
@@ -1755,6 +1775,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSettingsTransferOrdersRoute: typeof AuthenticatedSettingsTransferOrdersRoute
   AuthenticatedSettingsUsersRoute: typeof AuthenticatedSettingsUsersRoute
   AuthenticatedSettingsVatRoute: typeof AuthenticatedSettingsVatRoute
+  AuthenticatedShipmentsShipmentIdRoute: typeof AuthenticatedShipmentsShipmentIdRoute
   AuthenticatedSuppliersSupplierIdRoute: typeof AuthenticatedSuppliersSupplierIdRoute
   AuthenticatedSuppliersNewRoute: typeof AuthenticatedSuppliersNewRoute
   AuthenticatedTransferOrdersIdRoute: typeof AuthenticatedTransferOrdersIdRoute
@@ -1843,6 +1864,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
     AuthenticatedSettingsTransferOrdersRoute,
   AuthenticatedSettingsUsersRoute: AuthenticatedSettingsUsersRoute,
   AuthenticatedSettingsVatRoute: AuthenticatedSettingsVatRoute,
+  AuthenticatedShipmentsShipmentIdRoute: AuthenticatedShipmentsShipmentIdRoute,
   AuthenticatedSuppliersSupplierIdRoute: AuthenticatedSuppliersSupplierIdRoute,
   AuthenticatedSuppliersNewRoute: AuthenticatedSuppliersNewRoute,
   AuthenticatedTransferOrdersIdRoute: AuthenticatedTransferOrdersIdRoute,
