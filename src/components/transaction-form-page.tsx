@@ -126,16 +126,21 @@ export function TransactionFormPage({
     },
   });
 
+  const { ids: visibleWhIds } = useVisibleWarehouseIds();
+  const { data: allowedItemIds } = useItemIdsInWarehouses(visibleWhIds);
   const { data: items } = useQuery({
-    queryKey: ["items-pick", tenantId],
+    queryKey: ["items-pick", tenantId, visibleWhIds?.slice().sort().join(",")],
     queryFn: async () => {
       const { data } = await supabase
         .from("items")
-        .select("id, name, selling_price, cost_price")
+        .select("id, name, selling_price, cost_price, item_type")
         .eq("tenant_id", tenantId)
         .is("deleted_at", null)
         .order("name");
-      return data ?? [];
+      const rows = data ?? [];
+      if (!visibleWhIds || !allowedItemIds) return rows;
+      const allowed = new Set(allowedItemIds);
+      return rows.filter((i: any) => i.item_type !== "inventory" || allowed.has(i.id));
     },
   });
 
