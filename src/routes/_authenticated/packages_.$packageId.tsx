@@ -450,6 +450,24 @@ function PackageDetailPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Status change confirmation */}
+      <AlertDialog open={!!confirmStatus} onOpenChange={(v) => !v && setConfirmStatus(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Change status to {confirmStatus?.replace("_", " ").toUpperCase()}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will update the package status{confirmStatus === "shipped" || confirmStatus === "delivered" ? " and any linked shipment" : ""}. The change will be recorded in the audit log.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => confirmStatus && setStatus.mutate(confirmStatus)}>
+              Confirm
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
