@@ -40,6 +40,7 @@ import {
   UserCheck,
   UserX,
   ScrollText,
+  Warehouse,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
