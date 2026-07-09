@@ -190,10 +190,10 @@ function AppSidebar({
             <SidebarMenu>
               {(() => {
                 // Determine the single open group (accordion).
-                const explicit = NAV_GROUPS.find(
+                const explicit = visibleGroups.find(
                   (g) => g.items && groupPrefs[g.label] === true,
                 );
-                const activeGroup = NAV_GROUPS.find(
+                const activeGroup = visibleGroups.find(
                   (g) => g.items && g.items!.some((i) => pathname === i.url || pathname.startsWith(i.url + "/")),
                 );
                 const openLabel =
@@ -201,7 +201,7 @@ function AppSidebar({
                     ? explicit?.label
                     : activeGroup?.label;
 
-                return NAV_GROUPS.map((g) => {
+                return visibleGroups.map((g) => {
                 const Icon = g.icon;
                 if (!g.items) {
                   const active = pathname === g.url || (g.url ? pathname.startsWith(g.url + "/") : false);
