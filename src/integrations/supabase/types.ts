@@ -924,6 +924,47 @@ export type Database = {
           },
         ]
       }
+      custom_roles: {
+        Row: {
+          cloned_from: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          name: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          cloned_from?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          cloned_from?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "custom_roles_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       customer_credits: {
         Row: {
           amount: number
@@ -2196,6 +2237,44 @@ export type Database = {
           },
         ]
       }
+      pending_invitations: {
+        Row: {
+          accepted_at: string | null
+          email: string
+          id: string
+          invited_at: string
+          invited_by: string | null
+          role_key: string
+          tenant_id: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          email: string
+          id?: string
+          invited_at?: string
+          invited_by?: string | null
+          role_key: string
+          tenant_id: string
+        }
+        Update: {
+          accepted_at?: string | null
+          email?: string
+          id?: string
+          invited_at?: string
+          invited_by?: string | null
+          role_key?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pending_invitations_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -2564,6 +2643,59 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "related_lists_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      role_permissions: {
+        Row: {
+          can_approve: boolean
+          can_create: boolean
+          can_delete: boolean
+          can_edit: boolean
+          can_export: boolean
+          can_view: boolean
+          created_at: string
+          id: string
+          module: string
+          role_key: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          can_approve?: boolean
+          can_create?: boolean
+          can_delete?: boolean
+          can_edit?: boolean
+          can_export?: boolean
+          can_view?: boolean
+          created_at?: string
+          id?: string
+          module: string
+          role_key: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          can_approve?: boolean
+          can_create?: boolean
+          can_delete?: boolean
+          can_edit?: boolean
+          can_export?: boolean
+          can_view?: boolean
+          created_at?: string
+          id?: string
+          module?: string
+          role_key?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "role_permissions_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
@@ -2992,6 +3124,9 @@ export type Database = {
           id: string
           invited_by: string | null
           joined_at: string
+          status: string
+          suspended_at: string | null
+          suspended_by: string | null
           tenant_id: string
           user_id: string
         }
@@ -2999,6 +3134,9 @@ export type Database = {
           id?: string
           invited_by?: string | null
           joined_at?: string
+          status?: string
+          suspended_at?: string | null
+          suspended_by?: string | null
           tenant_id: string
           user_id: string
         }
@@ -3006,6 +3144,9 @@ export type Database = {
           id?: string
           invited_by?: string | null
           joined_at?: string
+          status?: string
+          suspended_at?: string | null
+          suspended_by?: string | null
           tenant_id?: string
           user_id?: string
         }
@@ -3540,6 +3681,14 @@ export type Database = {
         Args: { _id: string; _note?: string }
         Returns: undefined
       }
+      assign_user_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _tenant: string
+          _user: string
+        }
+        Returns: undefined
+      }
       can_transfer_action: {
         Args: { _action: string; _tenant: string }
         Returns: boolean
@@ -3551,8 +3700,22 @@ export type Database = {
       }
       complete_assembly_order: { Args: { _id: string }; Returns: undefined }
       confirm_transfer_order: { Args: { _id: string }; Returns: undefined }
+      create_custom_role: {
+        Args: { _clone_from: string; _description: string; _name: string }
+        Returns: string
+      }
       current_tenant: { Args: never; Returns: string }
+      delete_custom_role: { Args: { _id: string }; Returns: undefined }
       delete_item: { Args: { _id: string }; Returns: undefined }
+      has_permission: {
+        Args: {
+          _action: string
+          _module: string
+          _tenant: string
+          _user: string
+        }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -3560,6 +3723,10 @@ export type Database = {
           _user: string
         }
         Returns: boolean
+      }
+      invite_tenant_user: {
+        Args: { _email: string; _role: Database["public"]["Enums"]["app_role"] }
+        Returns: string
       }
       is_super_admin: { Args: { _user: string }; Returns: boolean }
       is_tenant_member: {
@@ -3595,6 +3762,14 @@ export type Database = {
         Args: { _id: string; _note?: string }
         Returns: undefined
       }
+      save_role_permissions: {
+        Args: { _role_key: string; _rows: Json }
+        Returns: undefined
+      }
+      set_user_status: {
+        Args: { _status: string; _tenant: string; _user: string }
+        Returns: undefined
+      }
       ship_transfer_order:
         | { Args: { _id: string; _quantities?: Json }; Returns: undefined }
         | {
@@ -3609,6 +3784,10 @@ export type Database = {
             Returns: string
           }
       switch_tenant: { Args: { _tenant: string }; Returns: undefined }
+      update_custom_role: {
+        Args: { _description: string; _id: string; _name: string }
+        Returns: undefined
+      }
     }
     Enums: {
       account_type: "asset" | "liability" | "equity" | "income" | "expense"
