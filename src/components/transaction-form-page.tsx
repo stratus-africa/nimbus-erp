@@ -57,6 +57,7 @@ export function TransactionFormPage({
   backTo,
 }: TransactionFormPageProps) {
   const navigate = useNavigate();
+  const qc = useQueryClient();
   const [partyId, setPartyId] = useState<string>("");
   const [date, setDate] = useState<string>(new Date().toISOString().slice(0, 10));
   const [date2, setDate2] = useState<string>("");
