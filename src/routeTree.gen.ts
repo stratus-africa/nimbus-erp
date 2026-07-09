@@ -29,6 +29,7 @@ import { Route as AuthenticatedInvoicesRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedInventoryAdjustmentsRouteImport } from './routes/_authenticated/inventory-adjustments'
 import { Route as AuthenticatedExpensesRouteImport } from './routes/_authenticated/expenses'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedCreditNotesRouteImport } from './routes/_authenticated/credit-notes'
 import { Route as AuthenticatedChartOfAccountsRouteImport } from './routes/_authenticated/chart-of-accounts'
 import { Route as AuthenticatedBillsRouteImport } from './routes/_authenticated/bills'
 import { Route as AuthenticatedBankingRouteImport } from './routes/_authenticated/banking'
@@ -192,6 +193,12 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedCreditNotesRoute =
+  AuthenticatedCreditNotesRouteImport.update({
+    id: '/credit-notes',
+    path: '/credit-notes',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedChartOfAccountsRoute =
   AuthenticatedChartOfAccountsRouteImport.update({
     id: '/chart-of-accounts',
@@ -531,6 +538,7 @@ export interface FileRoutesByFullPath {
   '/banking': typeof AuthenticatedBankingRoute
   '/bills': typeof AuthenticatedBillsRoute
   '/chart-of-accounts': typeof AuthenticatedChartOfAccountsRoute
+  '/credit-notes': typeof AuthenticatedCreditNotesRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/expenses': typeof AuthenticatedExpensesRoute
   '/inventory-adjustments': typeof AuthenticatedInventoryAdjustmentsRoute
@@ -608,6 +616,7 @@ export interface FileRoutesByTo {
   '/banking': typeof AuthenticatedBankingRoute
   '/bills': typeof AuthenticatedBillsRoute
   '/chart-of-accounts': typeof AuthenticatedChartOfAccountsRoute
+  '/credit-notes': typeof AuthenticatedCreditNotesRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/expenses': typeof AuthenticatedExpensesRoute
   '/inventory-adjustments': typeof AuthenticatedInventoryAdjustmentsRoute
@@ -687,6 +696,7 @@ export interface FileRoutesById {
   '/_authenticated/banking': typeof AuthenticatedBankingRoute
   '/_authenticated/bills': typeof AuthenticatedBillsRoute
   '/_authenticated/chart-of-accounts': typeof AuthenticatedChartOfAccountsRoute
+  '/_authenticated/credit-notes': typeof AuthenticatedCreditNotesRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/expenses': typeof AuthenticatedExpensesRoute
   '/_authenticated/inventory-adjustments': typeof AuthenticatedInventoryAdjustmentsRoute
@@ -766,6 +776,7 @@ export interface FileRouteTypes {
     | '/banking'
     | '/bills'
     | '/chart-of-accounts'
+    | '/credit-notes'
     | '/dashboard'
     | '/expenses'
     | '/inventory-adjustments'
@@ -843,6 +854,7 @@ export interface FileRouteTypes {
     | '/banking'
     | '/bills'
     | '/chart-of-accounts'
+    | '/credit-notes'
     | '/dashboard'
     | '/expenses'
     | '/inventory-adjustments'
@@ -921,6 +933,7 @@ export interface FileRouteTypes {
     | '/_authenticated/banking'
     | '/_authenticated/bills'
     | '/_authenticated/chart-of-accounts'
+    | '/_authenticated/credit-notes'
     | '/_authenticated/dashboard'
     | '/_authenticated/expenses'
     | '/_authenticated/inventory-adjustments'
@@ -1137,6 +1150,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/credit-notes': {
+      id: '/_authenticated/credit-notes'
+      path: '/credit-notes'
+      fullPath: '/credit-notes'
+      preLoaderRoute: typeof AuthenticatedCreditNotesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/chart-of-accounts': {
@@ -1540,6 +1560,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedBankingRoute: typeof AuthenticatedBankingRoute
   AuthenticatedBillsRoute: typeof AuthenticatedBillsRoute
   AuthenticatedChartOfAccountsRoute: typeof AuthenticatedChartOfAccountsRoute
+  AuthenticatedCreditNotesRoute: typeof AuthenticatedCreditNotesRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedExpensesRoute: typeof AuthenticatedExpensesRoute
   AuthenticatedInventoryAdjustmentsRoute: typeof AuthenticatedInventoryAdjustmentsRoute
@@ -1615,6 +1636,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedBankingRoute: AuthenticatedBankingRoute,
   AuthenticatedBillsRoute: AuthenticatedBillsRoute,
   AuthenticatedChartOfAccountsRoute: AuthenticatedChartOfAccountsRoute,
+  AuthenticatedCreditNotesRoute: AuthenticatedCreditNotesRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedExpensesRoute: AuthenticatedExpensesRoute,
   AuthenticatedInventoryAdjustmentsRoute:
