@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Package, Search, ChevronDown, MoreHorizontal, List, Columns } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { NewPackageDialog } from "@/components/packages/new-package-dialog";
 
 export const Route = createFileRoute("/_authenticated/packages")({
   head: () => ({ meta: [{ title: "Packages — Nimbus ERP" }] }),

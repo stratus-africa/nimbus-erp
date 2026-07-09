@@ -83,6 +83,7 @@ import { Route as AuthenticatedCreditNotesNewRouteImport } from './routes/_authe
 import { Route as AuthenticatedBillsNewRouteImport } from './routes/_authenticated/bills_.new'
 import { Route as AuthenticatedBillsBillIdRouteImport } from './routes/_authenticated/bills_.$billId'
 import { Route as AuthenticatedBankingAccountIdRouteImport } from './routes/_authenticated/banking_.$accountId'
+import { Route as ApiPdfPackageIdRouteImport } from './routes/api/pdf.package.$id'
 import { Route as AuthenticatedSuppliersSupplierIdEditRouteImport } from './routes/_authenticated/suppliers.$supplierId_.edit'
 import { Route as AuthenticatedSettingsRolesRoleKeyRouteImport } from './routes/_authenticated/settings_.roles_.$roleKey'
 import { Route as AuthenticatedSettingsLocationsNewRouteImport } from './routes/_authenticated/settings_.locations_.new'
@@ -515,6 +516,11 @@ const AuthenticatedBankingAccountIdRoute =
     path: '/banking/$accountId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const ApiPdfPackageIdRoute = ApiPdfPackageIdRouteImport.update({
+  id: '/api/pdf/package/$id',
+  path: '/api/pdf/package/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedSuppliersSupplierIdEditRoute =
   AuthenticatedSuppliersSupplierIdEditRouteImport.update({
     id: '/suppliers/$supplierId_/edit',
@@ -666,6 +672,7 @@ export interface FileRoutesByFullPath {
   '/settings/locations/new': typeof AuthenticatedSettingsLocationsNewRoute
   '/settings/roles/$roleKey': typeof AuthenticatedSettingsRolesRoleKeyRoute
   '/suppliers/$supplierId/edit': typeof AuthenticatedSuppliersSupplierIdEditRoute
+  '/api/pdf/package/$id': typeof ApiPdfPackageIdRoute
   '/settings/locations/$locationId/edit': typeof AuthenticatedSettingsLocationsLocationIdEditRoute
 }
 export interface FileRoutesByTo {
@@ -752,6 +759,7 @@ export interface FileRoutesByTo {
   '/settings/locations/new': typeof AuthenticatedSettingsLocationsNewRoute
   '/settings/roles/$roleKey': typeof AuthenticatedSettingsRolesRoleKeyRoute
   '/suppliers/$supplierId/edit': typeof AuthenticatedSuppliersSupplierIdEditRoute
+  '/api/pdf/package/$id': typeof ApiPdfPackageIdRoute
   '/settings/locations/$locationId/edit': typeof AuthenticatedSettingsLocationsLocationIdEditRoute
 }
 export interface FileRoutesById {
@@ -840,6 +848,7 @@ export interface FileRoutesById {
   '/_authenticated/settings_/locations_/new': typeof AuthenticatedSettingsLocationsNewRoute
   '/_authenticated/settings_/roles_/$roleKey': typeof AuthenticatedSettingsRolesRoleKeyRoute
   '/_authenticated/suppliers/$supplierId_/edit': typeof AuthenticatedSuppliersSupplierIdEditRoute
+  '/api/pdf/package/$id': typeof ApiPdfPackageIdRoute
   '/_authenticated/settings_/locations_/$locationId_/edit': typeof AuthenticatedSettingsLocationsLocationIdEditRoute
 }
 export interface FileRouteTypes {
@@ -928,6 +937,7 @@ export interface FileRouteTypes {
     | '/settings/locations/new'
     | '/settings/roles/$roleKey'
     | '/suppliers/$supplierId/edit'
+    | '/api/pdf/package/$id'
     | '/settings/locations/$locationId/edit'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -1014,6 +1024,7 @@ export interface FileRouteTypes {
     | '/settings/locations/new'
     | '/settings/roles/$roleKey'
     | '/suppliers/$supplierId/edit'
+    | '/api/pdf/package/$id'
     | '/settings/locations/$locationId/edit'
   id:
     | '__root__'
@@ -1101,6 +1112,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings_/locations_/new'
     | '/_authenticated/settings_/roles_/$roleKey'
     | '/_authenticated/suppliers/$supplierId_/edit'
+    | '/api/pdf/package/$id'
     | '/_authenticated/settings_/locations_/$locationId_/edit'
   fileRoutesById: FileRoutesById
 }
@@ -1110,6 +1122,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   SignupRoute: typeof SignupRoute
   SuspendedRoute: typeof SuspendedRoute
+  ApiPdfPackageIdRoute: typeof ApiPdfPackageIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -1632,6 +1645,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedBankingAccountIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/pdf/package/$id': {
+      id: '/api/pdf/package/$id'
+      path: '/api/pdf/package/$id'
+      fullPath: '/api/pdf/package/$id'
+      preLoaderRoute: typeof ApiPdfPackageIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/suppliers/$supplierId_/edit': {
       id: '/_authenticated/suppliers/$supplierId_/edit'
       path: '/suppliers/$supplierId/edit'
@@ -1901,6 +1921,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   SignupRoute: SignupRoute,
   SuspendedRoute: SuspendedRoute,
+  ApiPdfPackageIdRoute: ApiPdfPackageIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
