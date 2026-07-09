@@ -151,7 +151,7 @@ function SettingsRolesPage() {
 
   const createRole = useMutation({
     mutationFn: async (v: { name: string; description: string; cloneFrom: string | null }) => {
-      const { data, error } = await supabase.rpc("create_custom_role", {
+      const { data, error } = await (supabase.rpc as any)("create_custom_role", {
         _name: v.name,
         _description: v.description || null,
         _clone_from: v.cloneFrom,
