@@ -302,7 +302,7 @@ export function SalesOrderFormPage({
       </div>
 
       <div className="flex-1 overflow-auto">
-        <div className="mx-auto max-w-5xl space-y-0 px-6 py-6">
+        <div className="w-full space-y-0 px-6 py-6">
           <section className="space-y-4 border-b pb-6">
             <Field label="Customer Name" required>
               <div className="flex items-center gap-0">
