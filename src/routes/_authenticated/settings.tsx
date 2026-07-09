@@ -42,7 +42,7 @@ const SECTIONS: Section[] = [
         title: "Users & Roles", icon: Users, tone: "rose",
         items: [
           { label: "Users", to: "/settings/users" },
-          { label: "Roles" },
+          { label: "Roles", to: "/settings/roles" },
           { label: "User Preferences" },
         ],
       }],

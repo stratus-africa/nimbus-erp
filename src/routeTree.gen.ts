@@ -43,6 +43,7 @@ import { Route as AuthenticatedSuppliersSupplierIdRouteImport } from './routes/_
 import { Route as AuthenticatedSettingsVatRouteImport } from './routes/_authenticated/settings_.vat'
 import { Route as AuthenticatedSettingsUsersRouteImport } from './routes/_authenticated/settings_.users'
 import { Route as AuthenticatedSettingsTransferOrdersRouteImport } from './routes/_authenticated/settings_.transfer-orders'
+import { Route as AuthenticatedSettingsRolesRouteImport } from './routes/_authenticated/settings_.roles'
 import { Route as AuthenticatedSettingsQuotesRouteImport } from './routes/_authenticated/settings_.quotes'
 import { Route as AuthenticatedSettingsProfileRouteImport } from './routes/_authenticated/settings_.profile'
 import { Route as AuthenticatedSettingsLocationsRouteImport } from './routes/_authenticated/settings_.locations'
@@ -269,6 +270,12 @@ const AuthenticatedSettingsTransferOrdersRoute =
   AuthenticatedSettingsTransferOrdersRouteImport.update({
     id: '/settings_/transfer-orders',
     path: '/settings/transfer-orders',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedSettingsRolesRoute =
+  AuthenticatedSettingsRolesRouteImport.update({
+    id: '/settings_/roles',
+    path: '/settings/roles',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedSettingsQuotesRoute =
@@ -565,6 +572,7 @@ export interface FileRoutesByFullPath {
   '/settings/locations': typeof AuthenticatedSettingsLocationsRoute
   '/settings/profile': typeof AuthenticatedSettingsProfileRoute
   '/settings/quotes': typeof AuthenticatedSettingsQuotesRoute
+  '/settings/roles': typeof AuthenticatedSettingsRolesRoute
   '/settings/transfer-orders': typeof AuthenticatedSettingsTransferOrdersRoute
   '/settings/users': typeof AuthenticatedSettingsUsersRoute
   '/settings/vat': typeof AuthenticatedSettingsVatRoute
@@ -640,6 +648,7 @@ export interface FileRoutesByTo {
   '/settings/locations': typeof AuthenticatedSettingsLocationsRoute
   '/settings/profile': typeof AuthenticatedSettingsProfileRoute
   '/settings/quotes': typeof AuthenticatedSettingsQuotesRoute
+  '/settings/roles': typeof AuthenticatedSettingsRolesRoute
   '/settings/transfer-orders': typeof AuthenticatedSettingsTransferOrdersRoute
   '/settings/users': typeof AuthenticatedSettingsUsersRoute
   '/settings/vat': typeof AuthenticatedSettingsVatRoute
@@ -717,6 +726,7 @@ export interface FileRoutesById {
   '/_authenticated/settings_/locations': typeof AuthenticatedSettingsLocationsRoute
   '/_authenticated/settings_/profile': typeof AuthenticatedSettingsProfileRoute
   '/_authenticated/settings_/quotes': typeof AuthenticatedSettingsQuotesRoute
+  '/_authenticated/settings_/roles': typeof AuthenticatedSettingsRolesRoute
   '/_authenticated/settings_/transfer-orders': typeof AuthenticatedSettingsTransferOrdersRoute
   '/_authenticated/settings_/users': typeof AuthenticatedSettingsUsersRoute
   '/_authenticated/settings_/vat': typeof AuthenticatedSettingsVatRoute
@@ -794,6 +804,7 @@ export interface FileRouteTypes {
     | '/settings/locations'
     | '/settings/profile'
     | '/settings/quotes'
+    | '/settings/roles'
     | '/settings/transfer-orders'
     | '/settings/users'
     | '/settings/vat'
@@ -869,6 +880,7 @@ export interface FileRouteTypes {
     | '/settings/locations'
     | '/settings/profile'
     | '/settings/quotes'
+    | '/settings/roles'
     | '/settings/transfer-orders'
     | '/settings/users'
     | '/settings/vat'
@@ -945,6 +957,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings_/locations'
     | '/_authenticated/settings_/profile'
     | '/_authenticated/settings_/quotes'
+    | '/_authenticated/settings_/roles'
     | '/_authenticated/settings_/transfer-orders'
     | '/_authenticated/settings_/users'
     | '/_authenticated/settings_/vat'
@@ -1209,6 +1222,13 @@ declare module '@tanstack/react-router' {
       path: '/settings/transfer-orders'
       fullPath: '/settings/transfer-orders'
       preLoaderRoute: typeof AuthenticatedSettingsTransferOrdersRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/settings_/roles': {
+      id: '/_authenticated/settings_/roles'
+      path: '/settings/roles'
+      fullPath: '/settings/roles'
+      preLoaderRoute: typeof AuthenticatedSettingsRolesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/settings_/quotes': {
@@ -1548,6 +1568,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSettingsLocationsRoute: typeof AuthenticatedSettingsLocationsRoute
   AuthenticatedSettingsProfileRoute: typeof AuthenticatedSettingsProfileRoute
   AuthenticatedSettingsQuotesRoute: typeof AuthenticatedSettingsQuotesRoute
+  AuthenticatedSettingsRolesRoute: typeof AuthenticatedSettingsRolesRoute
   AuthenticatedSettingsTransferOrdersRoute: typeof AuthenticatedSettingsTransferOrdersRoute
   AuthenticatedSettingsUsersRoute: typeof AuthenticatedSettingsUsersRoute
   AuthenticatedSettingsVatRoute: typeof AuthenticatedSettingsVatRoute
@@ -1626,6 +1647,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSettingsLocationsRoute: AuthenticatedSettingsLocationsRoute,
   AuthenticatedSettingsProfileRoute: AuthenticatedSettingsProfileRoute,
   AuthenticatedSettingsQuotesRoute: AuthenticatedSettingsQuotesRoute,
+  AuthenticatedSettingsRolesRoute: AuthenticatedSettingsRolesRoute,
   AuthenticatedSettingsTransferOrdersRoute:
     AuthenticatedSettingsTransferOrdersRoute,
   AuthenticatedSettingsUsersRoute: AuthenticatedSettingsUsersRoute,
