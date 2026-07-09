@@ -45,9 +45,15 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { formatDate } from "@/lib/format";
 
+import { PermissionGate } from "@/components/permission-gate";
+
 export const Route = createFileRoute("/_authenticated/settings_/users")({
   head: () => ({ meta: [{ title: "Users — Nimbus ERP" }] }),
-  component: SettingsUsersPage,
+  component: () => (
+    <PermissionGate module="users">
+      <SettingsUsersPage />
+    </PermissionGate>
+  ),
 });
 
 type Member = {
