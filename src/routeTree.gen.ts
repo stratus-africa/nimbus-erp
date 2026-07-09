@@ -58,6 +58,7 @@ import { Route as AuthenticatedQuotesNewRouteImport } from './routes/_authentica
 import { Route as AuthenticatedQuotesQuoteIdRouteImport } from './routes/_authenticated/quotes_.$quoteId'
 import { Route as AuthenticatedPurchaseOrdersNewRouteImport } from './routes/_authenticated/purchase-orders_.new'
 import { Route as AuthenticatedPurchaseOrdersPoIdRouteImport } from './routes/_authenticated/purchase-orders_.$poId'
+import { Route as AuthenticatedProductionOrdersNewRouteImport } from './routes/_authenticated/production-orders_.new'
 import { Route as AuthenticatedProductionItemsNewRouteImport } from './routes/_authenticated/production-items_.new'
 import { Route as AuthenticatedProductionItemsIdRouteImport } from './routes/_authenticated/production-items_.$id'
 import { Route as AuthenticatedPaymentsReceivedNewRouteImport } from './routes/_authenticated/payments-received_.new'
@@ -366,6 +367,12 @@ const AuthenticatedPurchaseOrdersPoIdRoute =
     path: '/purchase-orders/$poId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedProductionOrdersNewRoute =
+  AuthenticatedProductionOrdersNewRouteImport.update({
+    id: '/production-orders_/new',
+    path: '/production-orders/new',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedProductionItemsNewRoute =
   AuthenticatedProductionItemsNewRouteImport.update({
     id: '/production-items_/new',
@@ -598,6 +605,7 @@ export interface FileRoutesByFullPath {
   '/payments-received/new': typeof AuthenticatedPaymentsReceivedNewRoute
   '/production-items/$id': typeof AuthenticatedProductionItemsIdRoute
   '/production-items/new': typeof AuthenticatedProductionItemsNewRoute
+  '/production-orders/new': typeof AuthenticatedProductionOrdersNewRoute
   '/purchase-orders/$poId': typeof AuthenticatedPurchaseOrdersPoIdRoute
   '/purchase-orders/new': typeof AuthenticatedPurchaseOrdersNewRoute
   '/quotes/$quoteId': typeof AuthenticatedQuotesQuoteIdRoute
@@ -679,6 +687,7 @@ export interface FileRoutesByTo {
   '/payments-received/new': typeof AuthenticatedPaymentsReceivedNewRoute
   '/production-items/$id': typeof AuthenticatedProductionItemsIdRoute
   '/production-items/new': typeof AuthenticatedProductionItemsNewRoute
+  '/production-orders/new': typeof AuthenticatedProductionOrdersNewRoute
   '/purchase-orders/$poId': typeof AuthenticatedPurchaseOrdersPoIdRoute
   '/purchase-orders/new': typeof AuthenticatedPurchaseOrdersNewRoute
   '/quotes/$quoteId': typeof AuthenticatedQuotesQuoteIdRoute
@@ -762,6 +771,7 @@ export interface FileRoutesById {
   '/_authenticated/payments-received_/new': typeof AuthenticatedPaymentsReceivedNewRoute
   '/_authenticated/production-items_/$id': typeof AuthenticatedProductionItemsIdRoute
   '/_authenticated/production-items_/new': typeof AuthenticatedProductionItemsNewRoute
+  '/_authenticated/production-orders_/new': typeof AuthenticatedProductionOrdersNewRoute
   '/_authenticated/purchase-orders_/$poId': typeof AuthenticatedPurchaseOrdersPoIdRoute
   '/_authenticated/purchase-orders_/new': typeof AuthenticatedPurchaseOrdersNewRoute
   '/_authenticated/quotes_/$quoteId': typeof AuthenticatedQuotesQuoteIdRoute
@@ -845,6 +855,7 @@ export interface FileRouteTypes {
     | '/payments-received/new'
     | '/production-items/$id'
     | '/production-items/new'
+    | '/production-orders/new'
     | '/purchase-orders/$poId'
     | '/purchase-orders/new'
     | '/quotes/$quoteId'
@@ -926,6 +937,7 @@ export interface FileRouteTypes {
     | '/payments-received/new'
     | '/production-items/$id'
     | '/production-items/new'
+    | '/production-orders/new'
     | '/purchase-orders/$poId'
     | '/purchase-orders/new'
     | '/quotes/$quoteId'
@@ -1008,6 +1020,7 @@ export interface FileRouteTypes {
     | '/_authenticated/payments-received_/new'
     | '/_authenticated/production-items_/$id'
     | '/_authenticated/production-items_/new'
+    | '/_authenticated/production-orders_/new'
     | '/_authenticated/purchase-orders_/$poId'
     | '/_authenticated/purchase-orders_/new'
     | '/_authenticated/quotes_/$quoteId'
@@ -1394,6 +1407,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPurchaseOrdersPoIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/production-orders_/new': {
+      id: '/_authenticated/production-orders_/new'
+      path: '/production-orders/new'
+      fullPath: '/production-orders/new'
+      preLoaderRoute: typeof AuthenticatedProductionOrdersNewRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/production-items_/new': {
       id: '/_authenticated/production-items_/new'
       path: '/production-items/new'
@@ -1659,6 +1679,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedPaymentsReceivedNewRoute: typeof AuthenticatedPaymentsReceivedNewRoute
   AuthenticatedProductionItemsIdRoute: typeof AuthenticatedProductionItemsIdRoute
   AuthenticatedProductionItemsNewRoute: typeof AuthenticatedProductionItemsNewRoute
+  AuthenticatedProductionOrdersNewRoute: typeof AuthenticatedProductionOrdersNewRoute
   AuthenticatedPurchaseOrdersPoIdRoute: typeof AuthenticatedPurchaseOrdersPoIdRoute
   AuthenticatedPurchaseOrdersNewRoute: typeof AuthenticatedPurchaseOrdersNewRoute
   AuthenticatedQuotesQuoteIdRoute: typeof AuthenticatedQuotesQuoteIdRoute
@@ -1741,6 +1762,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedPaymentsReceivedNewRoute: AuthenticatedPaymentsReceivedNewRoute,
   AuthenticatedProductionItemsIdRoute: AuthenticatedProductionItemsIdRoute,
   AuthenticatedProductionItemsNewRoute: AuthenticatedProductionItemsNewRoute,
+  AuthenticatedProductionOrdersNewRoute: AuthenticatedProductionOrdersNewRoute,
   AuthenticatedPurchaseOrdersPoIdRoute: AuthenticatedPurchaseOrdersPoIdRoute,
   AuthenticatedPurchaseOrdersNewRoute: AuthenticatedPurchaseOrdersNewRoute,
   AuthenticatedQuotesQuoteIdRoute: AuthenticatedQuotesQuoteIdRoute,
