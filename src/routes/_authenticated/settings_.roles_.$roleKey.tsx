@@ -42,6 +42,17 @@ const ACTION_LABELS: Record<string, string> = {
   export: "Export",
 };
 
+const MODULE_GROUPS: { title: string; modules: string[] }[] = [
+  { title: "Contacts", modules: ["customers", "suppliers"] },
+  { title: "Items", modules: ["items"] },
+  { title: "Banking", modules: ["banking"] },
+  { title: "Sales", modules: ["invoices", "quotes", "sales_orders"] },
+  { title: "Purchases", modules: ["bills", "purchase_orders", "expenses"] },
+  { title: "Accountant", modules: ["chart_of_accounts", "reports"] },
+  { title: "Inventory", modules: ["warehouses", "transfer_orders"] },
+  { title: "Administration", modules: ["users", "roles", "settings"] },
+];
+
 function RoleDetailPage() {
   const { roleKey } = Route.useParams();
   const { data: profile } = useProfile();
