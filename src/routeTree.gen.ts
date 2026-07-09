@@ -86,6 +86,7 @@ import { Route as AuthenticatedSettingsRolesRoleKeyRouteImport } from './routes/
 import { Route as AuthenticatedSettingsLocationsNewRouteImport } from './routes/_authenticated/settings_.locations_.new'
 import { Route as AuthenticatedSalesOrdersSoIdEditRouteImport } from './routes/_authenticated/sales-orders_.$soId_.edit'
 import { Route as AuthenticatedQuotesQuoteIdEditRouteImport } from './routes/_authenticated/quotes_.$quoteId_.edit'
+import { Route as AuthenticatedProductionOrdersIdEditRouteImport } from './routes/_authenticated/production-orders_.$id_.edit'
 import { Route as AuthenticatedItemsItemIdEditRouteImport } from './routes/_authenticated/items_.$itemId_.edit'
 import { Route as AuthenticatedInvoicesInvoiceIdEditRouteImport } from './routes/_authenticated/invoices_.$invoiceId_.edit'
 import { Route as AuthenticatedCustomersCustomerIdEditRouteImport } from './routes/_authenticated/customers.$customerId_.edit'
@@ -533,6 +534,12 @@ const AuthenticatedQuotesQuoteIdEditRoute =
     path: '/quotes/$quoteId/edit',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedProductionOrdersIdEditRoute =
+  AuthenticatedProductionOrdersIdEditRouteImport.update({
+    id: '/production-orders_/$id_/edit',
+    path: '/production-orders/$id/edit',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedItemsItemIdEditRoute =
   AuthenticatedItemsItemIdEditRouteImport.update({
     id: '/items_/$itemId_/edit',
@@ -640,6 +647,7 @@ export interface FileRoutesByFullPath {
   '/customers/$customerId/edit': typeof AuthenticatedCustomersCustomerIdEditRoute
   '/invoices/$invoiceId/edit': typeof AuthenticatedInvoicesInvoiceIdEditRoute
   '/items/$itemId/edit': typeof AuthenticatedItemsItemIdEditRoute
+  '/production-orders/$id/edit': typeof AuthenticatedProductionOrdersIdEditRoute
   '/quotes/$quoteId/edit': typeof AuthenticatedQuotesQuoteIdEditRoute
   '/sales-orders/$soId/edit': typeof AuthenticatedSalesOrdersSoIdEditRoute
   '/settings/locations/new': typeof AuthenticatedSettingsLocationsNewRoute
@@ -723,6 +731,7 @@ export interface FileRoutesByTo {
   '/customers/$customerId/edit': typeof AuthenticatedCustomersCustomerIdEditRoute
   '/invoices/$invoiceId/edit': typeof AuthenticatedInvoicesInvoiceIdEditRoute
   '/items/$itemId/edit': typeof AuthenticatedItemsItemIdEditRoute
+  '/production-orders/$id/edit': typeof AuthenticatedProductionOrdersIdEditRoute
   '/quotes/$quoteId/edit': typeof AuthenticatedQuotesQuoteIdEditRoute
   '/sales-orders/$soId/edit': typeof AuthenticatedSalesOrdersSoIdEditRoute
   '/settings/locations/new': typeof AuthenticatedSettingsLocationsNewRoute
@@ -808,6 +817,7 @@ export interface FileRoutesById {
   '/_authenticated/customers/$customerId_/edit': typeof AuthenticatedCustomersCustomerIdEditRoute
   '/_authenticated/invoices_/$invoiceId_/edit': typeof AuthenticatedInvoicesInvoiceIdEditRoute
   '/_authenticated/items_/$itemId_/edit': typeof AuthenticatedItemsItemIdEditRoute
+  '/_authenticated/production-orders_/$id_/edit': typeof AuthenticatedProductionOrdersIdEditRoute
   '/_authenticated/quotes_/$quoteId_/edit': typeof AuthenticatedQuotesQuoteIdEditRoute
   '/_authenticated/sales-orders_/$soId_/edit': typeof AuthenticatedSalesOrdersSoIdEditRoute
   '/_authenticated/settings_/locations_/new': typeof AuthenticatedSettingsLocationsNewRoute
@@ -893,6 +903,7 @@ export interface FileRouteTypes {
     | '/customers/$customerId/edit'
     | '/invoices/$invoiceId/edit'
     | '/items/$itemId/edit'
+    | '/production-orders/$id/edit'
     | '/quotes/$quoteId/edit'
     | '/sales-orders/$soId/edit'
     | '/settings/locations/new'
@@ -976,6 +987,7 @@ export interface FileRouteTypes {
     | '/customers/$customerId/edit'
     | '/invoices/$invoiceId/edit'
     | '/items/$itemId/edit'
+    | '/production-orders/$id/edit'
     | '/quotes/$quoteId/edit'
     | '/sales-orders/$soId/edit'
     | '/settings/locations/new'
@@ -1060,6 +1072,7 @@ export interface FileRouteTypes {
     | '/_authenticated/customers/$customerId_/edit'
     | '/_authenticated/invoices_/$invoiceId_/edit'
     | '/_authenticated/items_/$itemId_/edit'
+    | '/_authenticated/production-orders_/$id_/edit'
     | '/_authenticated/quotes_/$quoteId_/edit'
     | '/_authenticated/sales-orders_/$soId_/edit'
     | '/_authenticated/settings_/locations_/new'
@@ -1616,6 +1629,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedQuotesQuoteIdEditRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/production-orders_/$id_/edit': {
+      id: '/_authenticated/production-orders_/$id_/edit'
+      path: '/production-orders/$id/edit'
+      fullPath: '/production-orders/$id/edit'
+      preLoaderRoute: typeof AuthenticatedProductionOrdersIdEditRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/items_/$itemId_/edit': {
       id: '/_authenticated/items_/$itemId_/edit'
       path: '/items/$itemId/edit'
@@ -1727,6 +1747,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedCustomersCustomerIdEditRoute: typeof AuthenticatedCustomersCustomerIdEditRoute
   AuthenticatedInvoicesInvoiceIdEditRoute: typeof AuthenticatedInvoicesInvoiceIdEditRoute
   AuthenticatedItemsItemIdEditRoute: typeof AuthenticatedItemsItemIdEditRoute
+  AuthenticatedProductionOrdersIdEditRoute: typeof AuthenticatedProductionOrdersIdEditRoute
   AuthenticatedQuotesQuoteIdEditRoute: typeof AuthenticatedQuotesQuoteIdEditRoute
   AuthenticatedSalesOrdersSoIdEditRoute: typeof AuthenticatedSalesOrdersSoIdEditRoute
   AuthenticatedSettingsLocationsNewRoute: typeof AuthenticatedSettingsLocationsNewRoute
@@ -1817,6 +1838,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedInvoicesInvoiceIdEditRoute:
     AuthenticatedInvoicesInvoiceIdEditRoute,
   AuthenticatedItemsItemIdEditRoute: AuthenticatedItemsItemIdEditRoute,
+  AuthenticatedProductionOrdersIdEditRoute:
+    AuthenticatedProductionOrdersIdEditRoute,
   AuthenticatedQuotesQuoteIdEditRoute: AuthenticatedQuotesQuoteIdEditRoute,
   AuthenticatedSalesOrdersSoIdEditRoute: AuthenticatedSalesOrdersSoIdEditRoute,
   AuthenticatedSettingsLocationsNewRoute:
