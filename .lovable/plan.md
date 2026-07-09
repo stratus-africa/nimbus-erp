@@ -1,78 +1,76 @@
-# Settings → Items: Full Implementation
+# RBAC & Users Management — Full Implementation Plan
 
-## 1. Database (one migration)
+This is a large, cross-cutting change (users, roles, permissions, audit, guards). Below is the plan I'll execute end-to-end. Please review before I proceed.
 
-**`tenant_settings`** — tenant-scoped JSONB, one row per (tenant, namespace).
-- columns: `tenant_id`, `namespace text` (e.g. `'items'`), `settings jsonb`, timestamps
-- unique (tenant_id, namespace); RLS: tenant members read/write
+## 1. Database changes (single migration)
 
-**Customization tables** — all scoped by `tenant_id` + `entity` (string; starts with `'items'`, designed to extend to invoices/bills later):
+**New tables**
 
-- `custom_fields` — `entity`, `field_key`, `label`, `data_type` (text/number/date/boolean/select), `options jsonb`, `required bool`, `default_value`, `position`, `is_active`
-- `validation_rules` — `entity`, `name`, `field_key`, `operator` (eq/neq/gt/lt/between/regex/required), `value jsonb`, `error_message`, `is_active`
-- `record_locks` — `entity`, `name`, `condition jsonb` (status/field-based), `lock_fields jsonb`, `roles_allowed app_role[]`, `is_active`
-- `custom_buttons` — `entity`, `label`, `placement` (detail/list), `action_type` (url/webhook/copy), `action_config jsonb`, `icon`, `position`, `is_active`
-- `related_lists` — `entity`, `label`, `related_entity`, `filter jsonb`, `columns jsonb`, `position`, `is_active`
+- `custom_roles` — tenant-defined roles (name, description, cloned_from, is_system=false, created_by).
+- `role_permissions` — per-role permission grid. Columns: `tenant_id`, `role_key` (text — either an `app_role` enum value or a `custom_roles.id`), `module` (text: items, invoices, sales_orders, purchase_orders, bills, quotes, transfer_orders, warehouses, expenses, customers, suppliers, banking, chart_of_accounts, reports, users, roles, settings), `can_view`, `can_create`, `can_edit`, `can_delete`, `can_approve`, `can_export`. Unique `(tenant_id, role_key, module)`.
+- `user_status` on `tenant_members` — `active | suspended`, plus `suspended_at`, `suspended_by`.
 
-All include `created_at`/`updated_at`, `set_updated_at` trigger, GRANT to authenticated + service_role, RLS via `is_tenant_member`.
+**New / updated functions**
 
-**`items` extension** — add `archived_at timestamptz` (soft delete distinct from hard delete). Existing `is_active` stays for enable/disable.
+- `has_permission(_user uuid, _tenant uuid, _module text, _action text) returns boolean` — resolves all roles held by the user for that tenant, unions permissions, treats `company_admin` / `super_admin` as full-access, and honours `is_active` on the membership.
+- `invite_tenant_user(_email text, _role_key text) returns uuid` — SECURITY DEFINER; company_admin-only; inserts pending `tenant_members` + `user_roles` row keyed on email until the auth user exists (holding table `pending_invitations`).
+- `set_user_status(_user uuid, _tenant uuid, _status text)` — writes `tenant_members.status` and audit_logs entry.
+- `assign_user_role(_user uuid, _tenant uuid, _role text)` — replaces the user's tenant-scoped role rows and audits.
+- Role CRUD helpers `create_custom_role`, `update_custom_role`, `clone_role`, `delete_custom_role` — audit each action.
 
-## 2. Settings persistence
+**Seed defaults**: on `provision_tenant`, seed `role_permissions` with sensible defaults for the built-in enum roles across every module.
 
-- `useItemsSettings()` hook: TanStack Query loads `tenant_settings` row for `namespace='items'`, falls back to defaults.
-- Save mutation upserts JSONB. All General-tab fields live in one JSONB blob.
-- Zod schema validates the blob on save with cross-field rules:
-  - If `inventoryTracking=false` → `valuationMethod` forced to `'none'`, locked in UI
-  - If any item with `track_inventory=true` exists → `valuationMethod` becomes read-only with explanation banner (queried alongside settings)
-  - Batch tracking sub-options disabled when `batchTracking=false`
-  - Reorder email required if `reorderNotify=true`
+## 2. Server functions (`src/lib/*.functions.ts`)
 
-## 3. Items CRUD
+All authenticated (`requireSupabaseAuth`), all admin-gated where mutating:
 
-**`/items` (existing page)** — polish to a real CRUD table:
-- Search (name/SKU/barcode), filters (type, active/archived), sort
-- Row actions menu: Edit, Archive/Unarchive, Delete (red, confirm dialog)
-- "New Item" + "Edit Item" dialogs with zod validation
-- Honors settings: decimal precision, dimension/weight units, duplicate-name rule, HS code field visibility, batch/serial UI
+- `inviteUser({ email, roleKey })` — calls `supabaseAdmin.auth.admin.inviteUserByEmail`, then `invite_tenant_user` RPC to record membership/role, then audit.
+- `setUserStatus({ userId, status })`, `assignUserRole({ userId, roleKey })`.
+- `saveRolePermissions({ roleKey, rows })`, `createRole`, `updateRole`, `cloneRole`, `deleteRole`.
+- `listAuditForRole(roleKey)` — for the role detail timeline.
 
-**`/settings/items` — compact embedded manager** at the bottom of the General tab:
-- Mini items table (10 rows, search) with same row actions, links to full `/items`
+RBAC enforcement middleware `requirePermission(module, action)` composes with `requireSupabaseAuth` and calls `has_permission`. Attach it to any server fn that mutates a module (invoices, items, etc.) — start with the fns already in use; catalog covered below.
 
-## 4. Tabs (replace placeholders)
+## 3. Front-end changes
 
-Each tab gets a working list + add/edit dialog backed by its table:
-- **Field Customization** — list custom_fields, drag-reorder, type picker, options editor for select
-- **Validation Rules** — pick field + operator + value + message
-- **Record Locking** — condition builder (e.g., `status = 'archived'` → lock everything), role allowlist
-- **Custom Buttons** — label + placement + action (URL template with {{sku}}, etc.)
-- **Related Lists** — pick related entity (invoices, bills, sales orders) + filter + visible columns
+**`/settings/users`**
+- "Invite User" button opens dialog: email, role select (populated from enum + tenant custom_roles), submit → `inviteUser`.
+- Row actions (3-dot): Change Role (submenu of roles, saves via `assignUserRole` + toast), Activate / Suspend (toggle), Remove.
+- Status column reflects `tenant_members.status`. Filter view "Suspended Users" wired up.
 
-All tabs use a shared `<CrudTable />` + `<EntityDialog />` component built on shadcn Dialog + react-hook-form + zod.
+**`/settings/roles`**
+- New Role button → dialog (name, description, clone from). Opens editor.
+- Row actions on custom roles: Edit / Clone / Delete → real handlers, confirmations for delete.
+- Row click on any role → `/settings/roles/$roleKey` detail page.
 
-## 5. Files
+**`/settings/roles/$roleKey`** (new)
+- Header: name, description, badge (System / Custom).
+- Permissions matrix: rows = modules, columns = View / Create / Edit / Delete / Approve / Export. Checkboxes bound to `role_permissions`. Save writes the whole grid.
+- Timeline tab: audit_logs filtered to `entity_type='roles'` and this role.
 
-New:
-- `supabase/migrations/<ts>_items_settings_and_customization.sql`
-- `src/hooks/use-items-settings.ts`
-- `src/hooks/use-item-customization.ts` (one hook, switches by table)
-- `src/components/settings/items-general-tab.tsx`
-- `src/components/settings/items-customization-tab.tsx` (reused per tab)
-- `src/components/settings/items-mini-list.tsx`
-- `src/components/items/item-form-dialog.tsx`
+**Route guards**
+- Client-side `useHasPermission(module, action)` (reads a cached `role_permissions` snapshot for current user's roles) — used to hide nav items and disable action buttons across the app.
+- `_authenticated` child layouts for admin-only surfaces (`/settings/users`, `/settings/roles`) already gated by company_admin via `has_role`; extend with `has_permission('users','view')` / `('roles','view')` fallback so custom roles can be granted access.
 
-Edited:
-- `src/routes/_authenticated/settings_.items.tsx` (wire tabs to components, replace local state)
-- `src/routes/_authenticated/items.tsx` (CRUD polish, settings-driven inputs)
+## 4. Audit logging
 
-## Technical notes
+Every mutating action (invite, status change, role change, role CRUD, permission save) inserts an `audit_logs` row: `entity_type` = `tenant_members` or `roles`, plus a human summary + JSONB details (before/after). Users page adds an audit drawer per member; role detail page shows its timeline.
 
-- Settings load/save via `createServerFn` with `requireSupabaseAuth`; tenant resolved from `current_tenant()`.
-- Customization tabs use direct supabase client (browser) since RLS scopes by tenant — simpler than server fns for table-driven UIs.
-- Soft delete: archive sets `archived_at`; hard delete only allowed when no transactions reference the item (checked client-side from joins).
-- Cross-field zod refinements live in `src/lib/items-settings-schema.ts` to share between hook and UI.
+## 5. Scope of RBAC enforcement in this pass
 
-## Out of scope
+Enforce `has_permission` on:
+- All existing transfer-order RPCs (already partial via `can_transfer_action` — align to `has_permission`).
+- Item delete, invoice create/update/delete, sales-order confirm/ship, bill approve/pay, expense approve, journal-entry post, user/role management. Everything else stays functional but not yet guarded — I'll list what's covered vs. deferred in the final message.
 
-- Migrating existing hardcoded item fields to custom_fields engine (engine exists; runtime rendering on item forms is additive)
-- Per-warehouse stock prevention enforcement at write-time (UI option stored; enforcement is a follow-up)
+## Notes
+
+- No native "user suspension" in Supabase Auth is used — status lives on `tenant_members` so multi-tenant is respected. Suspended users still authenticate but the `_authenticated` gate redirects them to `/suspended`.
+- All new tables get GRANTs (`authenticated`, `service_role`) and RLS scoped via `is_tenant_member` + `has_role('company_admin')`.
+- No changes to `src/integrations/supabase/*` generated files; types will regenerate after migration.
+
+## Confirm before I start
+
+Please confirm:
+1. OK to add `custom_roles`, `role_permissions`, `pending_invitations` tables + membership `status` column.
+2. OK that "suspended" is enforced at app-level (not by disabling the Supabase auth user).
+3. OK to enforce RBAC on the modules listed in §5 in this pass and defer the rest to a follow-up.
