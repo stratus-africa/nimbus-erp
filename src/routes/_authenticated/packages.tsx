@@ -60,6 +60,7 @@ function PackagesListPage() {
   const tenantId = profile?.currentTenant?.id;
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
+  const [newOpen, setNewOpen] = useState(false);
 
   const { data: rows, isLoading } = useQuery({
     enabled: !!tenantId,
