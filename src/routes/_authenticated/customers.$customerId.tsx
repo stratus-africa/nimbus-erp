@@ -12,7 +12,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { useMemo, useState } from "react";
 import {
   ChevronDown, Plus, Search, X, Paperclip, MoreHorizontal, Settings2,
-  ChevronRight, MessageSquare,
+  ChevronRight,
 } from "lucide-react";
 import { formatCurrency, formatDate, statusLabel, STATUS_COLORS } from "@/lib/format";
 import { cn } from "@/lib/utils";
