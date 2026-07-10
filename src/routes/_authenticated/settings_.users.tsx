@@ -174,6 +174,7 @@ function SettingsUsersPage() {
 
   // ---- Mutations ----
   const invoke = useServerFn(inviteUser);
+  const invokeCreate = useServerFn(createUser);
 
   const invite = useMutation({
     mutationFn: (v: { email: string; role: string }) =>
@@ -184,6 +185,17 @@ function SettingsUsersPage() {
       setInviteOpen(false);
     },
     onError: (e: any) => toast.error(e.message ?? "Failed to invite user"),
+  });
+
+  const createUserMut = useMutation({
+    mutationFn: (v: { email: string; password: string; fullName?: string; role: string }) =>
+      invokeCreate({ data: v }),
+    onSuccess: () => {
+      toast.success("User created");
+      qc.invalidateQueries({ queryKey: ["tenant-members"] });
+      setCreateOpen(false);
+    },
+    onError: (e: any) => toast.error(e.message ?? "Failed to create user"),
   });
 
   const setStatus = useMutation({
