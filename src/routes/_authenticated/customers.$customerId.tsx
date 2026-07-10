@@ -405,13 +405,7 @@ function CustomerDetailsPage() {
                   </div>
                 </TabsContent>
 
-                {/* COMMENTS */}
-                <TabsContent value="comments" className="pt-6">
-                  <div className="flex items-start gap-3 rounded-md border bg-muted/20 p-4 text-sm text-muted-foreground">
-                    <MessageSquare className="mt-0.5 h-4 w-4" />
-                    No comments yet.
-                  </div>
-                </TabsContent>
+
 
                 {/* TRANSACTIONS */}
                 <TabsContent value="transactions" className="pt-6 space-y-6">
