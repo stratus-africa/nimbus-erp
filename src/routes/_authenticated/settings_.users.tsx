@@ -652,3 +652,100 @@ function WarehousesDialog({
     </Dialog>
   );
 }
+
+function CreateUserDialog({
+  open,
+  onOpenChange,
+  onSubmit,
+  pending,
+  tenantName,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  onSubmit: (v: { email: string; password: string; fullName?: string; role: string }) => void;
+  pending: boolean;
+  tenantName: string;
+}) {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [role, setRole] = useState("readonly");
+
+  const canSubmit = email.trim() && password.length >= 8 && !pending;
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Create user</DialogTitle>
+          <DialogDescription>
+            Create an account with email + password. The user can sign in immediately to{" "}
+            <span className="font-medium">{tenantName}</span>.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="cu-name">Full name</Label>
+            <Input
+              id="cu-name"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              placeholder="Jane Doe"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="cu-email">Email address *</Label>
+            <Input
+              id="cu-email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="name@example.com"
+              autoFocus
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="cu-password">Password *</Label>
+            <Input
+              id="cu-password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="At least 8 characters"
+            />
+            <p className="text-xs text-muted-foreground">Minimum 8 characters. Share this with the user securely.</p>
+          </div>
+          <div className="space-y-2">
+            <Label>Role *</Label>
+            <Select value={role} onValueChange={setRole}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {ENUM_ROLES.map((r) => (
+                  <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={pending}>Cancel</Button>
+          <Button
+            disabled={!canSubmit}
+            onClick={() =>
+              onSubmit({
+                email: email.trim(),
+                password,
+                fullName: fullName.trim() || undefined,
+                role,
+              })
+            }
+            className="bg-violet-600 hover:bg-violet-700 text-white"
+          >
+            {pending ? "Creating…" : "Create user"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
