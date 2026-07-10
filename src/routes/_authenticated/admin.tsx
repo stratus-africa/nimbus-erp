@@ -113,12 +113,32 @@ function AdminPage() {
     enabled: !!profile?.isSuperAdmin,
     queryKey: ["admin-members-list"],
     queryFn: async () => {
-      const { data } = await (supabase as any)
+      const { data: mems } = await (supabase as any)
         .from("tenant_members")
-        .select("user_id, role, tenant_id, joined_at, tenants(name), profiles:user_id(email, full_name)")
+        .select("user_id, tenant_id, joined_at, status, tenants(name)")
         .order("joined_at", { ascending: false })
         .limit(500);
-      return data ?? [];
+      const rows = mems ?? [];
+      if (!rows.length) return [];
+      const userIds = Array.from(new Set(rows.map((r: any) => r.user_id)));
+      const [profRes, roleRes] = await Promise.all([
+        (supabase as any).from("profiles").select("user_id, email, full_name").in("user_id", userIds),
+        (supabase as any).from("user_roles").select("user_id, tenant_id, role").in("user_id", userIds),
+      ]);
+      const profByUser = new Map<string, any>();
+      for (const p of profRes.data ?? []) profByUser.set(p.user_id, p);
+      const roleByKey = new Map<string, string[]>();
+      for (const r of roleRes.data ?? []) {
+        const k = `${r.user_id}|${r.tenant_id ?? ""}`;
+        const arr = roleByKey.get(k) ?? [];
+        arr.push(r.role);
+        roleByKey.set(k, arr);
+      }
+      return rows.map((r: any) => ({
+        ...r,
+        profiles: profByUser.get(r.user_id) ?? null,
+        role: (roleByKey.get(`${r.user_id}|${r.tenant_id}`) ?? []).join(", ") || "—",
+      }));
     },
   });
 
