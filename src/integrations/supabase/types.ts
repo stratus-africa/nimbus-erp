@@ -3981,6 +3981,15 @@ export type Database = {
         }
         Returns: string
       }
+      create_shipment_from_packages: {
+        Args: {
+          _carrier?: string
+          _package_ids: string[]
+          _tracking?: string
+          _tracking_url?: string
+        }
+        Returns: string
+      }
       current_tenant: { Args: never; Returns: string }
       delete_custom_role: { Args: { _id: string }; Returns: undefined }
       delete_item: { Args: { _id: string }; Returns: undefined }
