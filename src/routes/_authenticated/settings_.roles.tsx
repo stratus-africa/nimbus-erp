@@ -90,11 +90,12 @@ function SettingsRolesPage() {
   const { data: profile } = useProfile();
   const tenantId = profile?.currentTenant?.id;
   const qc = useQueryClient();
+  const navigate = useNavigate();
   const [view, setView] = useState<(typeof VIEWS)[number]>("All Roles");
   const [search, setSearch] = useState("");
   const [sortAsc, setSortAsc] = useState(true);
   const [newOpen, setNewOpen] = useState(false);
-  const [editing, setEditing] = useState<{ id: string; name: string; description: string } | null>(null);
+  const [renaming, setRenaming] = useState<{ id: string; name: string; description: string } | null>(null);
   const [deleting, setDeleting] = useState<{ id: string; name: string } | null>(null);
 
   const { data: counts = {} } = useQuery({
