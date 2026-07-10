@@ -1,9 +1,12 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "@/hooks/use-profile";
 import { formatDate } from "@/lib/format";
-import { Truck } from "lucide-react";
+import { Truck, Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { NewShipmentDialog } from "@/components/shipments/new-shipment-dialog";
 
 export const Route = createFileRoute("/_authenticated/shipments")({
   head: () => ({ meta: [{ title: "Shipments — Nimbus ERP" }] }),
@@ -14,6 +17,8 @@ function ShipmentsListPage() {
   const { data: profile } = useProfile();
   const tenantId = profile?.currentTenant?.id;
   const navigate = useNavigate();
+  const [newOpen, setNewOpen] = useState(false);
+
   const { data: rows, isLoading } = useQuery({
     enabled: !!tenantId,
     queryKey: ["shipments-list", tenantId],
@@ -30,7 +35,17 @@ function ShipmentsListPage() {
 
   return (
     <div className="flex h-full flex-col bg-background">
-      <div className="border-b bg-card px-5 py-3"><h1 className="text-lg font-semibold">Shipments</h1></div>
+      <div className="flex items-center justify-between border-b bg-card px-5 py-3">
+        <h1 className="text-lg font-semibold">Shipments</h1>
+        <Button
+          size="sm"
+          className="gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white"
+          onClick={() => setNewOpen(true)}
+        >
+          <Plus className="h-4 w-4" /> New Shipment
+        </Button>
+      </div>
+      <NewShipmentDialog open={newOpen} onOpenChange={setNewOpen} />
       <div className="flex-1 overflow-auto">
         <table className="w-full text-sm">
           <thead className="sticky top-0 border-b bg-card">
