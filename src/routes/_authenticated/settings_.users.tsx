@@ -263,13 +263,24 @@ function SettingsUsersPage() {
           <Button variant="ghost" size="sm" className="h-8 gap-1.5 text-primary">
             <PlayCircle className="h-4 w-4" /> How to add users
           </Button>
-          <Button
-            size="sm"
-            className="h-8 gap-1.5 bg-violet-600 hover:bg-violet-700 text-white"
-            onClick={() => setInviteOpen(true)}
-          >
-            <Plus className="h-4 w-4" /> Invite User
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                size="sm"
+                className="h-8 gap-1.5 bg-violet-600 hover:bg-violet-700 text-white"
+              >
+                <Plus className="h-4 w-4" /> Add User <ChevronDown className="h-3.5 w-3.5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => setInviteOpen(true)}>
+                <UserPlus className="mr-2 h-4 w-4" /> Invite User
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setCreateOpen(true)}>
+                <Plus className="mr-2 h-4 w-4" /> Create User
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 
