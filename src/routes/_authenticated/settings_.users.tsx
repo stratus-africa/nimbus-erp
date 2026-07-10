@@ -408,6 +408,14 @@ function SettingsUsersPage() {
         tenantName={profile?.currentTenant?.name ?? ""}
       />
 
+      <CreateUserDialog
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        onSubmit={(v) => createUserMut.mutate(v)}
+        pending={createUserMut.isPending}
+        tenantName={profile?.currentTenant?.name ?? ""}
+      />
+
       <AuditDrawer member={auditFor} tenantId={tenantId} onClose={() => setAuditFor(null)} />
       <WarehousesDialog member={warehouseFor} tenantId={tenantId} onClose={() => setWarehouseFor(null)} />
     </div>
