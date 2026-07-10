@@ -305,15 +305,17 @@ function SettingsRolesPage() {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem
-                      onClick={() =>
-                        r.system
-                          ? toast.info("System roles can't be edited")
-                          : setEditing({ id: r.key, name: r.name, description: r.description })
-                      }
-                      disabled={r.system}
+                      onClick={() => navigate({ to: "/settings/roles/$roleKey", params: { roleKey: r.key } })}
                     >
                       <Pencil className="mr-2 h-4 w-4" /> Edit
                     </DropdownMenuItem>
+                    {!r.system && (
+                      <DropdownMenuItem
+                        onClick={() => setRenaming({ id: r.key, name: r.name, description: r.description })}
+                      >
+                        <Pencil className="mr-2 h-4 w-4" /> Rename / Description
+                      </DropdownMenuItem>
+                    )}
                     <DropdownMenuItem
                       onClick={() =>
                         createRole.mutate({
