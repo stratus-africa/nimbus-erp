@@ -186,7 +186,7 @@ function SettingsRolesPage() {
     onSuccess: () => {
       toast.success("Role updated");
       qc.invalidateQueries({ queryKey: ["custom-roles"] });
-      setEditing(null);
+      setRenaming(null);
     },
     onError: (e: any) => toast.error(e.message ?? "Failed"),
   });
