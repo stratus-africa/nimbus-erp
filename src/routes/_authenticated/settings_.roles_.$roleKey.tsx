@@ -49,7 +49,7 @@ const MODULE_GROUPS: { title: string; modules: string[] }[] = [
   { title: "Sales", modules: ["invoices", "quotes", "sales_orders"] },
   { title: "Purchases", modules: ["bills", "purchase_orders", "expenses"] },
   { title: "Accountant", modules: ["chart_of_accounts", "reports"] },
-  { title: "Inventory", modules: ["warehouses", "transfer_orders"] },
+  { title: "Inventory", modules: ["warehouses", "production", "transfer_orders"] },
   { title: "Administration", modules: ["users", "roles", "settings"] },
 ];
 

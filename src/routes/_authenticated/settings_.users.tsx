@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "@/hooks/use-profile";
-import { inviteUser } from "@/lib/users.functions";
+import { inviteUser, createUser } from "@/lib/users.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -83,6 +83,7 @@ function SettingsUsersPage() {
   const [search, setSearch] = useState("");
   const [sortAsc, setSortAsc] = useState(true);
   const [inviteOpen, setInviteOpen] = useState(false);
+  const [createOpen, setCreateOpen] = useState(false);
   const [auditFor, setAuditFor] = useState<Member | null>(null);
   const [warehouseFor, setWarehouseFor] = useState<Member | null>(null);
   const qc = useQueryClient();
@@ -173,6 +174,7 @@ function SettingsUsersPage() {
 
   // ---- Mutations ----
   const invoke = useServerFn(inviteUser);
+  const invokeCreate = useServerFn(createUser);
 
   const invite = useMutation({
     mutationFn: (v: { email: string; role: string }) =>
@@ -183,6 +185,17 @@ function SettingsUsersPage() {
       setInviteOpen(false);
     },
     onError: (e: any) => toast.error(e.message ?? "Failed to invite user"),
+  });
+
+  const createUserMut = useMutation({
+    mutationFn: (v: { email: string; password: string; fullName?: string; role: string }) =>
+      invokeCreate({ data: v }),
+    onSuccess: () => {
+      toast.success("User created");
+      qc.invalidateQueries({ queryKey: ["tenant-members"] });
+      setCreateOpen(false);
+    },
+    onError: (e: any) => toast.error(e.message ?? "Failed to create user"),
   });
 
   const setStatus = useMutation({
@@ -250,13 +263,24 @@ function SettingsUsersPage() {
           <Button variant="ghost" size="sm" className="h-8 gap-1.5 text-primary">
             <PlayCircle className="h-4 w-4" /> How to add users
           </Button>
-          <Button
-            size="sm"
-            className="h-8 gap-1.5 bg-violet-600 hover:bg-violet-700 text-white"
-            onClick={() => setInviteOpen(true)}
-          >
-            <Plus className="h-4 w-4" /> Invite User
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                size="sm"
+                className="h-8 gap-1.5 bg-violet-600 hover:bg-violet-700 text-white"
+              >
+                <Plus className="h-4 w-4" /> Add User <ChevronDown className="h-3.5 w-3.5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => setInviteOpen(true)}>
+                <UserPlus className="mr-2 h-4 w-4" /> Invite User
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setCreateOpen(true)}>
+                <Plus className="mr-2 h-4 w-4" /> Create User
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 
@@ -381,6 +405,14 @@ function SettingsUsersPage() {
         onOpenChange={setInviteOpen}
         onSubmit={(v) => invite.mutate(v)}
         pending={invite.isPending}
+        tenantName={profile?.currentTenant?.name ?? ""}
+      />
+
+      <CreateUserDialog
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        onSubmit={(v) => createUserMut.mutate(v)}
+        pending={createUserMut.isPending}
         tenantName={profile?.currentTenant?.name ?? ""}
       />
 
@@ -620,3 +652,100 @@ function WarehousesDialog({
     </Dialog>
   );
 }
+
+function CreateUserDialog({
+  open,
+  onOpenChange,
+  onSubmit,
+  pending,
+  tenantName,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  onSubmit: (v: { email: string; password: string; fullName?: string; role: string }) => void;
+  pending: boolean;
+  tenantName: string;
+}) {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [role, setRole] = useState("readonly");
+
+  const canSubmit = email.trim() && password.length >= 8 && !pending;
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Create user</DialogTitle>
+          <DialogDescription>
+            Create an account with email + password. The user can sign in immediately to{" "}
+            <span className="font-medium">{tenantName}</span>.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="cu-name">Full name</Label>
+            <Input
+              id="cu-name"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              placeholder="Jane Doe"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="cu-email">Email address *</Label>
+            <Input
+              id="cu-email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="name@example.com"
+              autoFocus
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="cu-password">Password *</Label>
+            <Input
+              id="cu-password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="At least 8 characters"
+            />
+            <p className="text-xs text-muted-foreground">Minimum 8 characters. Share this with the user securely.</p>
+          </div>
+          <div className="space-y-2">
+            <Label>Role *</Label>
+            <Select value={role} onValueChange={setRole}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {ENUM_ROLES.map((r) => (
+                  <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={pending}>Cancel</Button>
+          <Button
+            disabled={!canSubmit}
+            onClick={() =>
+              onSubmit({
+                email: email.trim(),
+                password,
+                fullName: fullName.trim() || undefined,
+                role,
+              })
+            }
+            className="bg-violet-600 hover:bg-violet-700 text-white"
+          >
+            {pending ? "Creating…" : "Create user"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+

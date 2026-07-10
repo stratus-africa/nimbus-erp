@@ -12,7 +12,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { useMemo, useState } from "react";
 import {
   ChevronDown, Plus, Search, X, Paperclip, MoreHorizontal, Settings2,
-  ChevronRight, MessageSquare,
+  ChevronRight,
 } from "lucide-react";
 import { formatCurrency, formatDate, statusLabel, STATUS_COLORS } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -272,7 +272,6 @@ function CustomerDetailsPage() {
                 <TabsList className="h-10 w-full justify-start gap-6 rounded-none border-b bg-transparent p-0">
                   {[
                     { v: "overview", l: "Overview" },
-                    { v: "comments", l: "Comments" },
                     { v: "transactions", l: "Transactions" },
                     { v: "mails", l: "Mails & Messages" },
                     { v: "statement", l: "Statement" },
@@ -406,13 +405,7 @@ function CustomerDetailsPage() {
                   </div>
                 </TabsContent>
 
-                {/* COMMENTS */}
-                <TabsContent value="comments" className="pt-6">
-                  <div className="flex items-start gap-3 rounded-md border bg-muted/20 p-4 text-sm text-muted-foreground">
-                    <MessageSquare className="mt-0.5 h-4 w-4" />
-                    No comments yet.
-                  </div>
-                </TabsContent>
+
 
                 {/* TRANSACTIONS */}
                 <TabsContent value="transactions" className="pt-6 space-y-6">

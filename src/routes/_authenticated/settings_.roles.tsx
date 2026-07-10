@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -90,11 +90,12 @@ function SettingsRolesPage() {
   const { data: profile } = useProfile();
   const tenantId = profile?.currentTenant?.id;
   const qc = useQueryClient();
+  const navigate = useNavigate();
   const [view, setView] = useState<(typeof VIEWS)[number]>("All Roles");
   const [search, setSearch] = useState("");
   const [sortAsc, setSortAsc] = useState(true);
   const [newOpen, setNewOpen] = useState(false);
-  const [editing, setEditing] = useState<{ id: string; name: string; description: string } | null>(null);
+  const [renaming, setRenaming] = useState<{ id: string; name: string; description: string } | null>(null);
   const [deleting, setDeleting] = useState<{ id: string; name: string } | null>(null);
 
   const { data: counts = {} } = useQuery({
@@ -185,7 +186,7 @@ function SettingsRolesPage() {
     onSuccess: () => {
       toast.success("Role updated");
       qc.invalidateQueries({ queryKey: ["custom-roles"] });
-      setEditing(null);
+      setRenaming(null);
     },
     onError: (e: any) => toast.error(e.message ?? "Failed"),
   });
@@ -304,15 +305,17 @@ function SettingsRolesPage() {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem
-                      onClick={() =>
-                        r.system
-                          ? toast.info("System roles can't be edited")
-                          : setEditing({ id: r.key, name: r.name, description: r.description })
-                      }
-                      disabled={r.system}
+                      onClick={() => navigate({ to: "/settings/roles/$roleKey", params: { roleKey: r.key } })}
                     >
                       <Pencil className="mr-2 h-4 w-4" /> Edit
                     </DropdownMenuItem>
+                    {!r.system && (
+                      <DropdownMenuItem
+                        onClick={() => setRenaming({ id: r.key, name: r.name, description: r.description })}
+                      >
+                        <Pencil className="mr-2 h-4 w-4" /> Rename / Description
+                      </DropdownMenuItem>
+                    )}
                     <DropdownMenuItem
                       onClick={() =>
                         createRole.mutate({
@@ -353,31 +356,31 @@ function SettingsRolesPage() {
       />
 
       {/* Edit role */}
-      <Dialog open={!!editing} onOpenChange={(v) => !v && setEditing(null)}>
+      <Dialog open={!!renaming} onOpenChange={(v) => !v && setRenaming(null)}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Edit role</DialogTitle>
           </DialogHeader>
-          {editing && (
+          {renaming && (
             <div className="space-y-3">
               <div className="space-y-2">
                 <Label>Name *</Label>
-                <Input value={editing.name} onChange={(e) => setEditing({ ...editing, name: e.target.value })} />
+                <Input value={renaming.name} onChange={(e) => setRenaming({ ...renaming, name: e.target.value })} />
               </div>
               <div className="space-y-2">
                 <Label>Description</Label>
                 <Textarea
-                  value={editing.description}
-                  onChange={(e) => setEditing({ ...editing, description: e.target.value })}
+                  value={renaming.description}
+                  onChange={(e) => setRenaming({ ...renaming, description: e.target.value })}
                 />
               </div>
             </div>
           )}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setEditing(null)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setRenaming(null)}>Cancel</Button>
             <Button
-              onClick={() => editing && updateRole.mutate(editing)}
-              disabled={!editing?.name.trim() || updateRole.isPending}
+              onClick={() => renaming && updateRole.mutate(renaming)}
+              disabled={!renaming?.name.trim() || updateRole.isPending}
             >
               Save
             </Button>
