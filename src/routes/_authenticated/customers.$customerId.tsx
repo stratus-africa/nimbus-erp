@@ -272,7 +272,6 @@ function CustomerDetailsPage() {
                 <TabsList className="h-10 w-full justify-start gap-6 rounded-none border-b bg-transparent p-0">
                   {[
                     { v: "overview", l: "Overview" },
-                    { v: "comments", l: "Comments" },
                     { v: "transactions", l: "Transactions" },
                     { v: "mails", l: "Mails & Messages" },
                     { v: "statement", l: "Statement" },
