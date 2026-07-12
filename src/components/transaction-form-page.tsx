@@ -425,6 +425,16 @@ export function TransactionFormPage({
                 </div>
               </div>
             )}
+            {config.kind === "invoice" && !initial?.id && partyId && (
+              <InvoiceSuggestionBanner
+                tenantId={tenantId}
+                customerId={partyId}
+                onImport={(imported, label) => {
+                  setLines(imported);
+                  toast.success(`Imported lines from ${label}`);
+                }}
+              />
+            )}
           </div>
 
           <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-[180px_1fr_180px_1fr] sm:items-center">
