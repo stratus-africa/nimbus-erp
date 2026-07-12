@@ -64,6 +64,23 @@ function PackagesListPage() {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [newOpen, setNewOpen] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const qc = useQueryClient();
+
+  const del = useMutation({
+    mutationFn: async (id: string) => {
+      await (supabase as any).from("package_items").delete().eq("package_id", id);
+      await (supabase as any).from("shipment_packages").delete().eq("package_id", id);
+      const { error } = await (supabase as any).from("packages").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Package deleted");
+      setDeleteId(null);
+      qc.invalidateQueries({ queryKey: ["packages-list-v2"] });
+    },
+    onError: (e: any) => toast.error(e.message ?? "Failed"),
+  });
 
   const { data: rows, isLoading } = useQuery({
     enabled: !!tenantId,
