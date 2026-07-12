@@ -133,7 +133,7 @@ function AdjustmentDialog({ open, onOpenChange, tenantId, onSaved }: { open: boo
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl">
+      <DialogContent className="max-w-5xl">
         <DialogHeader><DialogTitle>New inventory adjustment</DialogTitle></DialogHeader>
         <div className="grid gap-4 sm:grid-cols-3">
           <div className="space-y-2"><Label>Date</Label><Input type="date" value={date} onChange={(e) => setDate(e.target.value)} /></div>
