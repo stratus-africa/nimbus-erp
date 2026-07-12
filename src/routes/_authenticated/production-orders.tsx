@@ -117,6 +117,31 @@ function ProductionOrdersPage() {
     qc.invalidateQueries({ queryKey: ["production-orders"] });
   };
 
+  const { can } = usePermissions();
+  const showDashboard = can("production", "approve") || can("production", "export");
+
+  const kpis = useMemo(() => {
+    const list = rows ?? [];
+    const draft = list.filter((r: any) => r.status === "draft");
+    const inProgress = list.filter((r: any) => r.status === "in_progress");
+    const completed = list.filter((r: any) => r.status === "completed");
+    const cancelled = list.filter((r: any) => r.status === "cancelled");
+    const inProgressQty = inProgress.reduce((s: number, r: any) => s + Number(r.quantity ?? 0), 0);
+    const completedQty = completed.reduce((s: number, r: any) => s + Number(r.quantity ?? 0), 0);
+    const last30 = Date.now() - 30 * 86400000;
+    const completed30 = completed.filter((r: any) => r.completed_at && new Date(r.completed_at).getTime() >= last30);
+    return {
+      total: list.length,
+      draft: draft.length,
+      inProgress: inProgress.length,
+      completed: completed.length,
+      cancelled: cancelled.length,
+      inProgressQty,
+      completedQty,
+      completed30: completed30.length,
+    };
+  }, [rows]);
+
   return (
     <div className="-m-6">
       <div className="flex items-center gap-3 border-b bg-card px-6 py-2.5">
