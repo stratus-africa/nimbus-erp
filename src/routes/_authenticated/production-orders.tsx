@@ -13,6 +13,8 @@ import { Plus, RefreshCw, Factory, Search, X, Trash2, XCircle, CheckCircle2, Fil
 import { formatDate } from "@/lib/format";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
+import { usePermissions } from "@/hooks/use-permissions";
+import { Card, CardContent } from "@/components/ui/card";
 
 export const Route = createFileRoute("/_authenticated/production-orders")({
   head: () => ({ meta: [{ title: "Production Orders — Nimbus ERP" }] }),
@@ -115,6 +117,31 @@ function ProductionOrdersPage() {
     qc.invalidateQueries({ queryKey: ["production-orders"] });
   };
 
+  const { can } = usePermissions();
+  const showDashboard = can("production", "approve") || can("production", "export");
+
+  const kpis = useMemo(() => {
+    const list = rows ?? [];
+    const draft = list.filter((r: any) => r.status === "draft");
+    const inProgress = list.filter((r: any) => r.status === "in_progress");
+    const completed = list.filter((r: any) => r.status === "completed");
+    const cancelled = list.filter((r: any) => r.status === "cancelled");
+    const inProgressQty = inProgress.reduce((s: number, r: any) => s + Number(r.quantity ?? 0), 0);
+    const completedQty = completed.reduce((s: number, r: any) => s + Number(r.quantity ?? 0), 0);
+    const last30 = Date.now() - 30 * 86400000;
+    const completed30 = completed.filter((r: any) => r.completed_at && new Date(r.completed_at).getTime() >= last30);
+    return {
+      total: list.length,
+      draft: draft.length,
+      inProgress: inProgress.length,
+      completed: completed.length,
+      cancelled: cancelled.length,
+      inProgressQty,
+      completedQty,
+      completed30: completed30.length,
+    };
+  }, [rows]);
+
   return (
     <div className="-m-6">
       <div className="flex items-center gap-3 border-b bg-card px-6 py-2.5">
@@ -131,6 +158,26 @@ function ProductionOrdersPage() {
           <Plus className="h-4 w-4" /> New Production Order
         </Button>
       </div>
+
+      {showDashboard && (
+        <div className="grid gap-3 border-b bg-muted/20 px-6 py-4 sm:grid-cols-2 lg:grid-cols-4">
+          {[
+            { label: "In Progress", value: kpis.inProgress, sub: `${kpis.inProgressQty} units` },
+            { label: "Completed (30d)", value: kpis.completed30, sub: `${kpis.completedQty} total units` },
+            { label: "Draft", value: kpis.draft, sub: "awaiting start" },
+            { label: "Cancelled", value: kpis.cancelled, sub: `${kpis.total} orders total` },
+          ].map((k) => (
+            <Card key={k.label}>
+              <CardContent className="py-4">
+                <div className="text-xs uppercase tracking-wide text-muted-foreground">{k.label}</div>
+                <div className="mt-1 text-2xl font-semibold tabular-nums">{k.value}</div>
+                <div className="text-xs text-muted-foreground">{k.sub}</div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+
 
       <div className="flex flex-wrap items-center gap-2 px-6 pb-3">
         <div className="relative">

@@ -28,6 +28,8 @@ import { toast } from "sonner";
 import { FileText, Plus, Settings, Trash2, X, AlertTriangle } from "lucide-react";
 import { useCVSettings } from "@/hooks/use-cv-settings";
 import { applyCompositeExplosion } from "@/lib/composite-explode";
+import { ItemPicker } from "@/components/item-picker";
+import { InvoiceSuggestionBanner } from "@/components/invoices/invoice-suggestion-banner";
 
 type Line = {
   id?: string;
@@ -134,7 +136,7 @@ export function TransactionFormPage({
     queryFn: async () => {
       const { data } = await supabase
         .from("items")
-        .select("id, name, selling_price, cost_price, item_type")
+        .select("id, name, sku, selling_price, cost_price, item_type")
         .eq("tenant_id", tenantId)
         .is("deleted_at", null)
         .order("name");
@@ -423,6 +425,16 @@ export function TransactionFormPage({
                 </div>
               </div>
             )}
+            {config.kind === "invoice" && !initial?.id && partyId && (
+              <InvoiceSuggestionBanner
+                tenantId={tenantId}
+                customerId={partyId}
+                onImport={(imported, label) => {
+                  setLines(imported);
+                  toast.success(`Imported lines from ${label}`);
+                }}
+              />
+            )}
           </div>
 
           <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-[180px_1fr_180px_1fr] sm:items-center">
@@ -487,21 +499,11 @@ export function TransactionFormPage({
                   {lines.map((l, idx) => (
                     <TableRow key={idx}>
                       <TableCell>
-                        <Select
-                          value={l.item_id ?? ""}
-                          onValueChange={(v) => pickItem(idx, v)}
-                        >
-                          <SelectTrigger className="h-8 text-xs">
-                            <SelectValue placeholder="Type or click to select an item…" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {items?.map((it: any) => (
-                              <SelectItem key={it.id} value={it.id}>
-                                {it.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <ItemPicker
+                          items={items ?? []}
+                          value={l.item_id ?? undefined}
+                          onSelect={(v) => pickItem(idx, v)}
+                        />
                         <Input
                           className="mt-1 h-8 text-xs"
                           placeholder="Description"
