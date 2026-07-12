@@ -28,6 +28,8 @@ import { toast } from "sonner";
 import { FileText, Plus, Settings, Trash2, X, AlertTriangle } from "lucide-react";
 import { useCVSettings } from "@/hooks/use-cv-settings";
 import { applyCompositeExplosion } from "@/lib/composite-explode";
+import { ItemPicker } from "@/components/item-picker";
+import { InvoiceSuggestionBanner } from "@/components/invoices/invoice-suggestion-banner";
 
 type Line = {
   id?: string;
