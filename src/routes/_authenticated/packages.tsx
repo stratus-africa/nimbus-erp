@@ -201,13 +201,14 @@ function PackagesListPage() {
               <th className="px-3 py-2.5 text-left font-medium">Shipment Date</th>
               <th className="px-3 py-2.5 text-left font-medium">Customer Name</th>
               <th className="px-3 py-2.5 text-right font-medium">Quantity</th>
+              <th className="w-10 px-3 py-2.5"></th>
             </tr>
           </thead>
           <tbody>
             {isLoading ? (
-              <tr><td colSpan={10} className="px-4 py-10 text-center text-muted-foreground">Loading…</td></tr>
+              <tr><td colSpan={11} className="px-4 py-10 text-center text-muted-foreground">Loading…</td></tr>
             ) : filtered.length === 0 ? (
-              <tr><td colSpan={10} className="px-4 py-16 text-center text-muted-foreground">
+              <tr><td colSpan={11} className="px-4 py-16 text-center text-muted-foreground">
                 <Package className="mx-auto mb-2 h-8 w-8 opacity-40" />
                 No packages found.
               </td></tr>
@@ -233,11 +234,39 @@ function PackagesListPage() {
                 </td>
                 <td className="px-3 py-3">{r.customer_name ?? ""}</td>
                 <td className="px-3 py-3 text-right tabular-nums">{r.quantity.toFixed(2)}</td>
+                <td className="px-3 py-3" onClick={(e) => e.stopPropagation()}>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-7 w-7"><MoreHorizontal className="h-4 w-4" /></Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => navigate({ to: "/packages/$packageId", params: { packageId: r.id } })}>
+                        <Pencil className="mr-2 h-4 w-4" /> Open / Edit
+                      </DropdownMenuItem>
+                      <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => setDeleteId(r.id)}>
+                        <Trash2 className="mr-2 h-4 w-4" /> Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+
+      <AlertDialog open={!!deleteId} onOpenChange={(v) => !v && setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this package?</AlertDialogTitle>
+            <AlertDialogDescription>The package and its line items will be permanently removed. Any shipment linkage will also be cleared.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90" onClick={() => deleteId && del.mutate(deleteId)}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
