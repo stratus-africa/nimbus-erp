@@ -1,14 +1,17 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "@/hooks/use-profile";
 import { formatDate } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Package, Search, ChevronDown, MoreHorizontal, List, Columns } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Package, Search, ChevronDown, MoreHorizontal, List, Columns, Pencil, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NewPackageDialog } from "@/components/packages/new-package-dialog";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/packages")({
   head: () => ({ meta: [{ title: "Packages — Nimbus ERP" }] }),
