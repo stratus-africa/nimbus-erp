@@ -13,6 +13,8 @@ import { Plus, RefreshCw, Factory, Search, X, Trash2, XCircle, CheckCircle2, Fil
 import { formatDate } from "@/lib/format";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
+import { usePermissions } from "@/hooks/use-permissions";
+import { Card, CardContent } from "@/components/ui/card";
 
 export const Route = createFileRoute("/_authenticated/production-orders")({
   head: () => ({ meta: [{ title: "Production Orders — Nimbus ERP" }] }),
