@@ -134,7 +134,7 @@ export function TransactionFormPage({
     queryFn: async () => {
       const { data } = await supabase
         .from("items")
-        .select("id, name, selling_price, cost_price, item_type")
+        .select("id, name, sku, selling_price, cost_price, item_type")
         .eq("tenant_id", tenantId)
         .is("deleted_at", null)
         .order("name");
