@@ -29,6 +29,20 @@ function TransferOrdersPage() {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+
+  const del = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("transfer_orders" as any).delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Transfer order deleted");
+      setDeleteId(null);
+      qc.invalidateQueries({ queryKey: ["transfer-orders"] });
+    },
+    onError: (e: any) => toast.error(e.message ?? "Failed to delete"),
+  });
 
   const { data: rows = [], isLoading } = useQuery({
     enabled: !!tenantId,
