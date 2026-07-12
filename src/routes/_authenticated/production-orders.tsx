@@ -159,6 +159,26 @@ function ProductionOrdersPage() {
         </Button>
       </div>
 
+      {showDashboard && (
+        <div className="grid gap-3 border-b bg-muted/20 px-6 py-4 sm:grid-cols-2 lg:grid-cols-4">
+          {[
+            { label: "In Progress", value: kpis.inProgress, sub: `${kpis.inProgressQty} units` },
+            { label: "Completed (30d)", value: kpis.completed30, sub: `${kpis.completedQty} total units` },
+            { label: "Draft", value: kpis.draft, sub: "awaiting start" },
+            { label: "Cancelled", value: kpis.cancelled, sub: `${kpis.total} orders total` },
+          ].map((k) => (
+            <Card key={k.label}>
+              <CardContent className="py-4">
+                <div className="text-xs uppercase tracking-wide text-muted-foreground">{k.label}</div>
+                <div className="mt-1 text-2xl font-semibold tabular-nums">{k.value}</div>
+                <div className="text-xs text-muted-foreground">{k.sub}</div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+
+
       <div className="flex flex-wrap items-center gap-2 px-6 pb-3">
         <div className="relative">
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
