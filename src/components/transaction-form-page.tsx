@@ -487,21 +487,11 @@ export function TransactionFormPage({
                   {lines.map((l, idx) => (
                     <TableRow key={idx}>
                       <TableCell>
-                        <Select
-                          value={l.item_id ?? ""}
-                          onValueChange={(v) => pickItem(idx, v)}
-                        >
-                          <SelectTrigger className="h-8 text-xs">
-                            <SelectValue placeholder="Type or click to select an item…" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {items?.map((it: any) => (
-                              <SelectItem key={it.id} value={it.id}>
-                                {it.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <ItemPicker
+                          items={items ?? []}
+                          value={l.item_id ?? undefined}
+                          onSelect={(v) => pickItem(idx, v)}
+                        />
                         <Input
                           className="mt-1 h-8 text-xs"
                           placeholder="Description"
