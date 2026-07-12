@@ -107,6 +107,11 @@ export function InvoiceSuggestionBanner({
     setDismissed(true);
   };
 
+  const applyMostRecent = () => {
+    if (!docs || !docs.length) return;
+    importFrom(docs[0]);
+  };
+
   return (
     <>
       <div className="mt-3 flex items-start gap-3 rounded-md border border-sky-200 bg-sky-50 px-3 py-2 text-xs text-sky-900">
@@ -117,16 +122,25 @@ export function InvoiceSuggestionBanner({
             {docs.length === 1 ? "document" : "documents"} you can invoice.
           </div>
           <div className="text-sky-700/80">
-            Import line items from an existing sales order or accepted quote.
+            {docs.length === 1
+              ? `Apply lines from ${docs[0].kind === "sales_order" ? "SO" : "Quote"} ${docs[0].number}.`
+              : "Apply the most recent, or review and pick one."}
           </div>
         </div>
+        <Button
+          size="sm"
+          className="h-7 bg-sky-600 text-white hover:bg-sky-700"
+          onClick={applyMostRecent}
+        >
+          Apply suggestion
+        </Button>
         <Button
           size="sm"
           variant="outline"
           className="h-7 border-sky-300 bg-white text-sky-800"
           onClick={() => setOpen(true)}
         >
-          Review & import
+          Review
         </Button>
         <button
           className="rounded p-0.5 text-sky-700 hover:bg-sky-100"

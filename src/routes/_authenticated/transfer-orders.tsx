@@ -1,14 +1,17 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "@/hooks/use-profile";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Plus, RefreshCw, ArrowLeftRight, Download } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Plus, RefreshCw, ArrowLeftRight, Download, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import { formatDate } from "@/lib/format";
 import { useMemo, useState } from "react";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/transfer-orders")({
   head: () => ({ meta: [{ title: "Transfer Orders — Nimbus ERP" }] }),
@@ -26,6 +29,20 @@ function TransferOrdersPage() {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+
+  const del = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("transfer_orders" as any).delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Transfer order deleted");
+      setDeleteId(null);
+      qc.invalidateQueries({ queryKey: ["transfer-orders"] });
+    },
+    onError: (e: any) => toast.error(e.message ?? "Failed to delete"),
+  });
 
   const { data: rows = [], isLoading } = useQuery({
     enabled: !!tenantId,
@@ -95,13 +112,14 @@ function TransferOrdersPage() {
               <TableHead>To Warehouse</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Created</TableHead>
+              <TableHead className="w-10"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
-              <TableRow><TableCell colSpan={6} className="py-10 text-center text-muted-foreground">Loading…</TableCell></TableRow>
+              <TableRow><TableCell colSpan={7} className="py-10 text-center text-muted-foreground">Loading…</TableCell></TableRow>
             ) : !filtered.length ? (
-              <TableRow><TableCell colSpan={6} className="py-10 text-center text-muted-foreground">No transfer orders yet.</TableCell></TableRow>
+              <TableRow><TableCell colSpan={7} className="py-10 text-center text-muted-foreground">No transfer orders yet.</TableCell></TableRow>
             ) : filtered.map((r: any) => (
               <TableRow key={r.id}>
                 <TableCell className="pl-6">
@@ -112,11 +130,39 @@ function TransferOrdersPage() {
                 <TableCell>{r.dst?.name ?? "—"}</TableCell>
                 <TableCell><Badge variant={STATUS_VARIANT[r.status] ?? "secondary"} className="capitalize">{r.status}</Badge></TableCell>
                 <TableCell className="text-muted-foreground">{formatDate(r.created_at)}</TableCell>
+                <TableCell className="text-right pr-4">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-7 w-7"><MoreHorizontal className="h-4 w-4" /></Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => navigate({ to: "/transfer-orders/$id", params: { id: r.id } })}>
+                        <Pencil className="mr-2 h-4 w-4" /> Open / Edit
+                      </DropdownMenuItem>
+                      <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => setDeleteId(r.id)}>
+                        <Trash2 className="mr-2 h-4 w-4" /> Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
       </div>
+
+      <AlertDialog open={!!deleteId} onOpenChange={(v) => !v && setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this transfer order?</AlertDialogTitle>
+            <AlertDialogDescription>This permanently removes the transfer order and its line items. This cannot be undone.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90" onClick={() => deleteId && del.mutate(deleteId)}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

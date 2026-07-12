@@ -45,15 +45,19 @@ export function ItemPicker({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="h-8 w-full justify-between px-2 text-xs font-normal"
+          className={cn(
+            "h-9 w-full justify-between px-3 text-sm font-normal",
+            "border-sky-200 bg-white hover:border-sky-400 hover:bg-sky-50/40",
+            selected && "border-sky-300 bg-sky-50/60 text-foreground",
+          )}
         >
-          <span className={cn("truncate", !selected && "text-muted-foreground")}>
+          <span className={cn("truncate", !selected && "text-sky-600/70")}>
             {selected ? selected.name : placeholder}
           </span>
-          <ChevronsUpDown className="h-3.5 w-3.5 shrink-0 opacity-50" />
+          <ChevronsUpDown className="h-4 w-4 shrink-0 text-sky-600" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[320px] p-0" align="start">
+      <PopoverContent className="w-[420px] p-0 shadow-lg" align="start">
         <Command
           filter={(v, search) => {
             const it = items.find((i) => i.id === v);
@@ -62,8 +66,8 @@ export function ItemPicker({
             return hay.includes(search.toLowerCase()) ? 1 : 0;
           }}
         >
-          <CommandInput placeholder="Search by name or SKU…" />
-          <CommandList>
+          <CommandInput placeholder="Search by name or SKU…" className="h-10" />
+          <CommandList className="max-h-[320px]">
             <CommandEmpty>No items found.</CommandEmpty>
             <CommandGroup>
               {items.map((it) => (
@@ -74,24 +78,25 @@ export function ItemPicker({
                     onSelect(it.id);
                     setOpen(false);
                   }}
+                  className="py-2.5"
                 >
                   <Check
                     className={cn(
-                      "mr-2 h-3.5 w-3.5",
+                      "mr-2 h-4 w-4 text-sky-600",
                       value === it.id ? "opacity-100" : "opacity-0",
                     )}
                   />
                   <div className="flex flex-1 items-center justify-between gap-3">
                     <div className="flex flex-col">
-                      <span className="truncate">{it.name}</span>
+                      <span className="truncate text-sm font-medium">{it.name}</span>
                       {it.sku && (
-                        <span className="text-[10px] text-muted-foreground">
-                          {it.sku}
+                        <span className="text-[11px] text-muted-foreground">
+                          SKU: {it.sku}
                         </span>
                       )}
                     </div>
                     {typeof it.selling_price === "number" && (
-                      <span className="text-[11px] tabular-nums text-muted-foreground">
+                      <span className="text-xs font-semibold tabular-nums text-sky-700">
                         {Number(it.selling_price).toFixed(2)}
                       </span>
                     )}
