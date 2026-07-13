@@ -10,6 +10,7 @@ import { ArrowLeft, CheckCircle2, Pencil, Trash2, XCircle, History } from "lucid
 import { toast } from "sonner";
 import { formatCurrency, formatDate } from "@/lib/format";
 import { formatDistanceToNow } from "date-fns";
+import { usePermissions } from "@/hooks/use-permissions";
 
 export const Route = createFileRoute("/_authenticated/production-orders_/$id")({
   head: () => ({ meta: [{ title: "Production Order — Nimbus ERP" }] }),
