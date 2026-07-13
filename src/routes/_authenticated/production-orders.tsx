@@ -158,9 +158,11 @@ function ProductionOrdersPage() {
           <Factory className="h-5 w-5 text-muted-foreground" />
           <h1 className="text-xl font-semibold">Production Orders</h1>
         </div>
-        <Button onClick={() => navigate({ to: "/production-orders/new" })} className="h-9 gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white">
-          <Plus className="h-4 w-4" /> New Production Order
-        </Button>
+        {canCreate && (
+          <Button onClick={() => navigate({ to: "/production-orders/new" })} className="h-9 gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white">
+            <Plus className="h-4 w-4" /> New Production Order
+          </Button>
+        )}
       </div>
 
       {showDashboard && (
