@@ -118,7 +118,11 @@ function ProductionOrdersPage() {
   };
 
   const { can } = usePermissions();
-  const showDashboard = can("production", "approve") || can("production", "export");
+  const canCreate = can("production", "create");
+  const canEdit = can("production", "edit");
+  const canDelete = can("production", "delete");
+  const canApprove = can("production", "approve");
+  const showDashboard = canApprove || can("production", "export");
 
   const kpis = useMemo(() => {
     const list = rows ?? [];
@@ -154,9 +158,11 @@ function ProductionOrdersPage() {
           <Factory className="h-5 w-5 text-muted-foreground" />
           <h1 className="text-xl font-semibold">Production Orders</h1>
         </div>
-        <Button onClick={() => navigate({ to: "/production-orders/new" })} className="h-9 gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white">
-          <Plus className="h-4 w-4" /> New Production Order
-        </Button>
+        {canCreate && (
+          <Button onClick={() => navigate({ to: "/production-orders/new" })} className="h-9 gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white">
+            <Plus className="h-4 w-4" /> New Production Order
+          </Button>
+        )}
       </div>
 
       {showDashboard && (
@@ -220,9 +226,9 @@ function ProductionOrdersPage() {
       {selected.size > 0 && (
         <div className="flex items-center gap-2 border-y bg-muted/40 px-6 py-2 text-sm">
           <span className="font-medium">{selected.size} selected</span>
-          <Button size="sm" variant="outline" onClick={bulkComplete}><CheckCircle2 className="h-4 w-4 mr-1.5" /> Complete</Button>
-          <Button size="sm" variant="outline" onClick={bulkCancel}><XCircle className="h-4 w-4 mr-1.5" /> Cancel</Button>
-          <Button size="sm" variant="outline" onClick={bulkDelete} className="text-rose-600 hover:text-rose-700"><Trash2 className="h-4 w-4 mr-1.5" /> Delete</Button>
+          {canApprove && <Button size="sm" variant="outline" onClick={bulkComplete}><CheckCircle2 className="h-4 w-4 mr-1.5" /> Complete</Button>}
+          {canEdit && <Button size="sm" variant="outline" onClick={bulkCancel}><XCircle className="h-4 w-4 mr-1.5" /> Cancel</Button>}
+          {canDelete && <Button size="sm" variant="outline" onClick={bulkDelete} className="text-rose-600 hover:text-rose-700"><Trash2 className="h-4 w-4 mr-1.5" /> Delete</Button>}
           <Button size="sm" variant="ghost" onClick={() => setSelected(new Set())}>Clear</Button>
         </div>
       )}

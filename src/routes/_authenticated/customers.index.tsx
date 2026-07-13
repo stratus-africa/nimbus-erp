@@ -7,7 +7,8 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -15,7 +16,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ChevronDown, Plus, MoreHorizontal, SlidersHorizontal, Search, Mail, Phone, Pencil, ArrowUpRight } from "lucide-react";
+import { ChevronDown, Plus, MoreHorizontal, SlidersHorizontal, Search, Mail, Phone, Pencil, ArrowUpRight, Trash2, Eye } from "lucide-react";
 import { formatCurrency, formatDate, statusLabel, STATUS_COLORS } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -59,6 +60,7 @@ function CustomersPage() {
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [viewingId, setViewingId] = useState<string | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   const highlightRef = useRef<HTMLTableRowElement | null>(null);
 
   // Scroll & clear highlight after a moment
@@ -111,6 +113,19 @@ function CustomersPage() {
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["customers"] }); toast.success("Saved"); setDialogOpen(false); },
     onError: (e: any) => toast.error(e.message),
+  });
+
+  const remove = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("customers").update({ deleted_at: new Date().toISOString() } as any).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Customer deleted");
+      setDeleteId(null);
+      qc.invalidateQueries({ queryKey: ["customers"] });
+    },
+    onError: (e: any) => toast.error(e.message ?? "Failed to delete"),
   });
 
   const filtered = useMemo(() => {
@@ -237,7 +252,27 @@ function CustomersPage() {
                   <TableCell className="text-muted-foreground">{c.phone ?? ""}</TableCell>
                   <TableCell className="text-right tabular-nums">{formatCurrency(receivable, currency)}</TableCell>
                   <TableCell className="text-right tabular-nums">{formatCurrency(0, currency)}</TableCell>
-                  <TableCell className="pr-6"></TableCell>
+                  <TableCell className="pr-6 text-right">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-7 w-7 opacity-0 group-hover:opacity-100 focus:opacity-100 data-[state=open]:opacity-100">
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => setViewingId(c.id)}>
+                          <Eye className="mr-2 h-4 w-4" /> View
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => openEdit(c)}>
+                          <Pencil className="mr-2 h-4 w-4" /> Edit
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => setDeleteId(c.id)}>
+                          <Trash2 className="mr-2 h-4 w-4" /> Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
                 </TableRow>
               );
             })}
@@ -261,6 +296,26 @@ function CustomersPage() {
         onOpenChange={(v) => !v && setViewingId(null)}
         onEdit={(c) => { setViewingId(null); openEdit(c); }}
       />
+
+      <AlertDialog open={!!deleteId} onOpenChange={(v) => !v && setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this customer?</AlertDialogTitle>
+            <AlertDialogDescription>
+              The customer will be removed from active lists. Related invoices, quotes, and history are preserved.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => deleteId && remove.mutate(deleteId)}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

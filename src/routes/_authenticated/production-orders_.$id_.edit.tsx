@@ -67,7 +67,7 @@ function EditProductionOrderPage() {
     }
   }, [order]);
 
-  const locked = order?.status === "completed" || order?.status === "cancelled";
+  const locked = false;
 
   const options = useMemo(
     () => (assemblies ?? []).filter((a: any) => a.items?.id),
@@ -150,6 +150,8 @@ function EditProductionOrderPage() {
             <SelectContent>
               <SelectItem value="draft">Draft</SelectItem>
               <SelectItem value="in_progress">In Progress</SelectItem>
+              <SelectItem value="completed">Completed</SelectItem>
+              <SelectItem value="cancelled">Cancelled</SelectItem>
             </SelectContent>
           </Select>
         </div>
