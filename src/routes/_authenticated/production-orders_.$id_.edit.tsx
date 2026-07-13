@@ -67,7 +67,7 @@ function EditProductionOrderPage() {
     }
   }, [order]);
 
-  const locked = order?.status === "completed" || order?.status === "cancelled";
+  const locked = false;
 
   const options = useMemo(
     () => (assemblies ?? []).filter((a: any) => a.items?.id),
