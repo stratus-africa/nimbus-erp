@@ -89,6 +89,10 @@ function ProductionOrderDetail() {
   const cons = order.assembly_consumptions ?? [];
   const totalCost = cons.reduce((s: number, c: any) => s + Number(c.quantity_used) * Number(c.unit_cost), 0);
   const editable = order.status !== "completed" && order.status !== "cancelled";
+  const { can } = usePermissions();
+  const canEdit = can("production", "edit");
+  const canDelete = can("production", "delete");
+  const canApprove = can("production", "approve");
 
   return (
     <div className="space-y-4">
@@ -99,22 +103,22 @@ function ProductionOrderDetail() {
           <Badge variant={order.status === "completed" ? "default" : order.status === "cancelled" ? "destructive" : "secondary"} className="capitalize">{order.status}</Badge>
         </div>
         <div className="flex gap-2">
-          {editable && (
+          {canEdit && (
             <Button variant="outline" onClick={() => navigate({ to: "/production-orders/$id/edit", params: { id } })}>
               <Pencil className="h-4 w-4 mr-2" /> Edit
             </Button>
           )}
-          {editable && (
+          {editable && canEdit && (
             <Button variant="outline" onClick={cancel}>
               <XCircle className="h-4 w-4 mr-2" /> Cancel
             </Button>
           )}
-          {order.status !== "completed" && (
+          {canDelete && (
             <Button variant="outline" onClick={remove} className="text-rose-600 hover:text-rose-700">
               <Trash2 className="h-4 w-4 mr-2" /> Delete
             </Button>
           )}
-          {editable && (
+          {editable && canApprove && (
             <Button onClick={complete} className="bg-emerald-600 hover:bg-emerald-700"><CheckCircle2 className="h-4 w-4 mr-2" /> Complete Production</Button>
           )}
         </div>
