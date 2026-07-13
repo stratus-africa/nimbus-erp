@@ -118,7 +118,11 @@ function ProductionOrdersPage() {
   };
 
   const { can } = usePermissions();
-  const showDashboard = can("production", "approve") || can("production", "export");
+  const canCreate = can("production", "create");
+  const canEdit = can("production", "edit");
+  const canDelete = can("production", "delete");
+  const canApprove = can("production", "approve");
+  const showDashboard = canApprove || can("production", "export");
 
   const kpis = useMemo(() => {
     const list = rows ?? [];
