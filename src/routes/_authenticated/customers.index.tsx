@@ -16,7 +16,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ChevronDown, Plus, MoreHorizontal, SlidersHorizontal, Search, Mail, Phone, Pencil, ArrowUpRight } from "lucide-react";
+import { ChevronDown, Plus, MoreHorizontal, SlidersHorizontal, Search, Mail, Phone, Pencil, ArrowUpRight, Trash2, Eye } from "lucide-react";
 import { formatCurrency, formatDate, statusLabel, STATUS_COLORS } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
