@@ -115,6 +115,19 @@ function CustomersPage() {
     onError: (e: any) => toast.error(e.message),
   });
 
+  const remove = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("customers").update({ deleted_at: new Date().toISOString() } as any).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Customer deleted");
+      setDeleteId(null);
+      qc.invalidateQueries({ queryKey: ["customers"] });
+    },
+    onError: (e: any) => toast.error(e.message ?? "Failed to delete"),
+  });
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     return (customers ?? []).filter((c: any) => {
