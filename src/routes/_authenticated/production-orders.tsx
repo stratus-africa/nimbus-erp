@@ -226,9 +226,9 @@ function ProductionOrdersPage() {
       {selected.size > 0 && (
         <div className="flex items-center gap-2 border-y bg-muted/40 px-6 py-2 text-sm">
           <span className="font-medium">{selected.size} selected</span>
-          <Button size="sm" variant="outline" onClick={bulkComplete}><CheckCircle2 className="h-4 w-4 mr-1.5" /> Complete</Button>
-          <Button size="sm" variant="outline" onClick={bulkCancel}><XCircle className="h-4 w-4 mr-1.5" /> Cancel</Button>
-          <Button size="sm" variant="outline" onClick={bulkDelete} className="text-rose-600 hover:text-rose-700"><Trash2 className="h-4 w-4 mr-1.5" /> Delete</Button>
+          {canApprove && <Button size="sm" variant="outline" onClick={bulkComplete}><CheckCircle2 className="h-4 w-4 mr-1.5" /> Complete</Button>}
+          {canEdit && <Button size="sm" variant="outline" onClick={bulkCancel}><XCircle className="h-4 w-4 mr-1.5" /> Cancel</Button>}
+          {canDelete && <Button size="sm" variant="outline" onClick={bulkDelete} className="text-rose-600 hover:text-rose-700"><Trash2 className="h-4 w-4 mr-1.5" /> Delete</Button>}
           <Button size="sm" variant="ghost" onClick={() => setSelected(new Set())}>Clear</Button>
         </div>
       )}
